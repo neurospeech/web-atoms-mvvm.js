@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "out": "web-atoms-rest.js",
+        "watch": true,
+        "experimentalDecorators": true,
+        "allowJs": true
+    }
+}
