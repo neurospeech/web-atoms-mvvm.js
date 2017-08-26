@@ -1,45 +1,83 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Promise = Promise || function () { };
+function methodBuilder(method) {
+    return function (url) {
+        return function (target, propertyKey, descriptor) {
+            var a = target.methods[propertyKey];
+            descriptor.value = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                return target.invoke(url, method, a, args);
+            };
+            //console.log("Instance");
+            //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
+        };
     };
-})();
-if (!window["Promise"]) {
-    var Promise;
 }
-function parameterBuilder(name) {
-    return function () {
+function parameterBuilder(paramName) {
+    return function (key) {
+        //console.log("Declaration");
+        //console.log({ key:key});
+        return function (target, propertyKey, parameterIndex) {
+            //console.log("Instance");
+            //console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
+            var a = target.methods[propertyKey];
+            if (!a) {
+                a = [];
+                target.methods[propertyKey] = a;
+            }
+            a[parameterIndex] = new WebAtoms.Rest.ServiceParameter(paramName, key);
+        };
     };
 }
+exports.Path = parameterBuilder("Path");
+exports.Query = parameterBuilder("Query");
+exports.Body = parameterBuilder("Body");
+exports.Post = methodBuilder("Post");
 var WebAtoms;
 (function (WebAtoms) {
     var Rest;
     (function (Rest) {
         var ServiceParameter = (function () {
-            function ServiceParameter() {
+            function ServiceParameter(type, key) {
+                this.type = type.toLowerCase();
+                this.key = key;
             }
             return ServiceParameter;
         }());
+        Rest.ServiceParameter = ServiceParameter;
         var BaseService = (function () {
             function BaseService() {
             }
-            BaseService.prototype.invoke = function () {
+            BaseService.prototype.invoke = function (url, method, bag, values) {
+                var options = {
+                    method: method
+                };
+                for (var i = 0; i < bag.length; i++) {
+                    var p = bag[i];
+                    var v = values[i];
+                    switch (p.type) {
+                        case 'path':
+                            url = url.replace("{" + p.key + "}", encodeURIComponent(v));
+                            break;
+                        case 'query':
+                            if (url.indexOf('?') === -1) {
+                                url += "?";
+                            }
+                            url += "&" + p.key + "=" + encodeURIComponent(v);
+                            break;
+                        case 'body':
+                            options.data = v;
+                            break;
+                    }
+                }
                 return null;
             };
             return BaseService;
         }());
         Rest.BaseService = BaseService;
     })(Rest = WebAtoms.Rest || (WebAtoms.Rest = {}));
-})(WebAtoms || (WebAtoms = {}));
-/// <reference path="../web-atoms-rest.ts"/>
-var ServiceTest = (function (_super) {
-    __extends(ServiceTest, _super);
-    function ServiceTest() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return ServiceTest;
-}(WebAtoms.Rest.BaseService));
+})(WebAtoms = exports.WebAtoms || (exports.WebAtoms = {}));
