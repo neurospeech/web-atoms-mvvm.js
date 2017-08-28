@@ -1,4 +1,4 @@
-"use strict";
+//import * as R from "./../web-atoms-rest";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -53,14 +53,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-var R = require("./../web-atoms-rest");
-if (!Promise) {
-    var Promise;
-}
-var Post = R.Post;
-var Body = R.Body;
-var Path = R.Path;
+/// <reference path="./../web-atoms-rest.ts"/>
 var ServiceTest = (function (_super) {
     __extends(ServiceTest, _super);
     function ServiceTest() {
@@ -79,6 +72,8 @@ var ServiceTest = (function (_super) {
         __param(1, Path("a"))
     ], ServiceTest.prototype, "postData", null);
     return ServiceTest;
-}(R.WebAtoms.Rest.BaseService));
+}(WebAtoms.Rest.BaseService));
 var test = new ServiceTest();
-test.postData(null);
+test.postData({}, 2).then(function (v) {
+    console.log("Done");
+});

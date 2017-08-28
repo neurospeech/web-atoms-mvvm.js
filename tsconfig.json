@@ -3,10 +3,14 @@
         "target": "es5",
         "watch": true,
         "experimentalDecorators": true,
-        "module":"commonjs"
+        "module":"none",
+        "outDir": "dist"
     },
     "include": [
         "**/*"
+    ],
+    "files": [
+        "node_modules/typescript/lib/lib.es6.d.ts"
     ],
     "exclude": [
         "node_modules"

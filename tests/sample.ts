@@ -1,14 +1,8 @@
-import * as R from "./../web-atoms-rest";
+//import * as R from "./../web-atoms-rest";
 
-if (!Promise) {
-    var Promise;
-}
+/// <reference path="./../web-atoms-rest.ts"/>
 
-var Post = R.Post;
-var Body = R.Body;
-var Path = R.Path;
-
-class ServiceTest extends R.WebAtoms.Rest.BaseService {
+class ServiceTest extends WebAtoms.Rest.BaseService {
 
     @Post("/post/data/{a}")
     async postData(
@@ -20,4 +14,6 @@ class ServiceTest extends R.WebAtoms.Rest.BaseService {
 }
 
 var test:ServiceTest = new ServiceTest();
-test.postData(null);
+test.postData({},2).then(v => {
+    console.log("Done");
+});

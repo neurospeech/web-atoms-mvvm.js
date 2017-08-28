@@ -1,7 +1,3 @@
-
-var Promise = Promise || function(){};
-
-
 function methodBuilder(method:string){
     return function(url:string){
         return function(target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any){
@@ -9,10 +5,13 @@ function methodBuilder(method:string){
             var a = target.methods[propertyKey] as Array<WebAtoms.Rest.ServiceParameter>;
 
             descriptor.value = function(... args:any[]){
-                return target.invoke(url, method ,a, args);
+                console.log("methodBuilder executed");
+                var r = target.invoke(url, method ,a, args);
+                console.log(r);
+                return r;
             };
 
-            //console.log("Instance");
+            console.log("methodBuilder called");
             //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
         }
     }
@@ -25,6 +24,10 @@ function parameterBuilder(paramName:string){
         return function(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number){
             //console.log("Instance");
             //console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
+            if(!target.methods){
+                target.methods = {};
+            }
+
             var a = target.methods[propertyKey];
             if(!a){
                 a = [];
@@ -36,14 +39,15 @@ function parameterBuilder(paramName:string){
     };
 }
 
+declare var Atom:any;
 
-export var Path = parameterBuilder("Path");
-export var Query = parameterBuilder("Query");
-export var Body = parameterBuilder("Body");
+var Path = parameterBuilder("Path");
+var Query = parameterBuilder("Query");
+var Body = parameterBuilder("Body");
 
-export var Post = methodBuilder("Post");
+var Post = methodBuilder("Post");
 
-export module WebAtoms.Rest{
+namespace WebAtoms.Rest{
 
 
     export class ServiceParameter{
@@ -57,18 +61,28 @@ export module WebAtoms.Rest{
         }
     }
 
+    export class AjaxOptions{
+        public method:string;
+        public url:string;
+        public data: any;
+        public type: string;
+    }
+
     export class BaseService{
 
         //bs
 
-        public methods: any;
+        public methods: any = {};
 
-        invoke(url:string,method:string, bag:Array<ServiceParameter>,values:Array<any>):Promise<any>{
+        public encodeData(o:AjaxOptions):AjaxOptions{
+            o.type = "JSON";
+            return o;
+        }
 
-            var options:any = {
-                method: method
-            };
+        async invoke(url:string,method:string, bag:Array<ServiceParameter>,values:Array<any>):Promise<any>{
 
+            var options:AjaxOptions = new AjaxOptions();
+            options.method = method;
             for(var i=0;i<bag.length;i++){
                 var p:ServiceParameter = bag[i];
                 var v = values[i];
@@ -84,11 +98,13 @@ export module WebAtoms.Rest{
                     break;
                     case 'body':
                         options.data = v;
+                        options = this.encodeData(options);
                     break;
                 }
             }
+            options.url = url;            
 
-            return null;
+            return Atom.json(url,options).toNativePromise();
         }
 
     }
