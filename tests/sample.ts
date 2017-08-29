@@ -1,6 +1,4 @@
-//import * as R from "./../web-atoms-rest";
-
-/// <reference path="./../web-atoms-rest.ts"/>
+/// <reference path="./../src/retro-ajax.ts"/>
 
 class ServiceTest extends WebAtoms.Rest.BaseService {
 

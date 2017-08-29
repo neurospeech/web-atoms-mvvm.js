@@ -1,0 +1,43 @@
+{
+  "name": "web-atoms-rest",
+  "version": "1.0.1",
+  "description": "REST Json Service for Web Atoms",
+  "main": "web-atoms-rest.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "ts-promise": "^0.3.4",
+    "typescript": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^20.0.8",
+    "ts-jest": "^20.0.11"
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": ["ts", "tsx", "js"]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neurospeech/web-atoms-rest.git"
+  },
+  "keywords": [
+    "Web",
+    "Atoms",
+    "REST",
+    "Json"
+  ],
+  "author": "Akash Kava",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/neurospeech/web-atoms-rest/issues"
+  },
+  "homepage": "https://github.com/neurospeech/web-atoms-rest#readme"
+}
