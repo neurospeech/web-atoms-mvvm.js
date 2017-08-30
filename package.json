@@ -1,6 +1,6 @@
 {
   "name": "web-atoms-mvvm",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "MVVM, REST Json Service, Message Subscriptions for Web Atoms",
   "main": "web-atoms-mvvm.js",
   "directories": {
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neurospeech/web-atoms-mvvm.git"
+    "url": "git+https://github.com/neurospeech/web-atoms-mvvm.js.git"
   },
   "keywords": [
     "Web",
@@ -26,7 +26,7 @@
   "author": "Akash Kava",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/neurospeech/web-atoms-mvvm/issues"
+    "url": "https://github.com/neurospeech/web-atoms-mvvm.js/issues"
   },
-  "homepage": "https://github.com/neurospeech/web-atoms-mvvm#readme"
+  "homepage": "https://github.com/neurospeech/web-atoms-mvvm.js#readme"
 }

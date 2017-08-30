@@ -16,7 +16,7 @@ Web Atoms script has to be added on the page before using `Web Atoms MVVM`
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.15/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.16/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
