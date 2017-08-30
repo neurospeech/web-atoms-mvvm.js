@@ -5,15 +5,25 @@ function methodBuilder(method:string){
             var a = target.methods[propertyKey] as Array<WebAtoms.Rest.ServiceParameter>;
 
             descriptor.value = function(... args:any[]){
-                console.log("methodBuilder executed");
-                var r = target.invoke(url, method ,a, args);
-                console.log(r);
+                //console.log("methodBuilder executed");
+                var rn = target.methodReturns[propertyKey];
+                var r = target.invoke(url, method ,a, args,rn);
+                //console.log(r);
                 return r;
             };
 
-            console.log("methodBuilder called");
-            //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
+            //console.log("methodBuilder called");
+            console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
         }
+    }
+}
+
+function Return(type: {new()}){
+    return function(target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any){
+        if(!target.methodReturns){
+            target.methodReturns = {};
+        }
+        target.methodReturns[propertyKey] = type;
     }
 }
 
@@ -38,6 +48,7 @@ function parameterBuilder(paramName:string){
 
     };
 }
+
 
 declare var Atom:any;
 
@@ -77,12 +88,14 @@ namespace WebAtoms.Rest{
 
         public methods: any = {};
 
+        public methodReturns: any = {};
+
         public encodeData(o:AjaxOptions):AjaxOptions{
             o.type = "JSON";
             return o;
         }
 
-        async invoke(url:string,method:string, bag:Array<ServiceParameter>,values:Array<any>):Promise<any>{
+        async invoke(url:string,method:string, bag:Array<ServiceParameter>,values:Array<any>, returns: {new ()}):Promise<any>{
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
@@ -107,7 +120,25 @@ namespace WebAtoms.Rest{
             }
             options.url = url;            
 
-            return Atom.json(url,options).toNativePromise();
+            var pr = Atom.json(url,options);
+
+            pr.invoke("Ok");
+
+            return new Promise((resolve: (v?: any | PromiseLike<any>) => void, reject: (reason?:any) => void)=>{
+
+                pr.then(()=>{
+                    var v = pr.value();
+
+                    // deep clone...
+                    var rv = new returns();
+                    reject("Clone pending");
+
+                    //resolve(v);
+                });
+                pr.failed( e=>{
+                    reject(e);
+                });
+            });
         }
 
     }

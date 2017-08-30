@@ -4,19 +4,15 @@
         "watch": true,
         "experimentalDecorators": true,
         "module":"none",
-        "outFile": "dist/web-atoms-mvvm.js",
         "sourceMap": true,
-        "declaration": true
+        "outDir": "build"
     },
     "include": [
         "src/**/*"
     ],
     "files": [
-        "node_modules/typescript/lib/lib.es6.d.ts"
+        "../node_modules/typescript/lib/lib.es6.d.ts"
     ],
     "exclude": [
-        "node_modules",
-        "tests",
-        "dist"
     ]
 }

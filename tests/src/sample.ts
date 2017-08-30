@@ -1,8 +1,16 @@
-/// <reference path="./../src/retro-ajax.ts"/>
+/// <reference path="./../../dist/web-atoms-mvvm.d.ts"/>
+
+class Task extends WebAtoms.AtomModel{
+
+    @bindableProperty
+    label:String;
+
+}
 
 class ServiceTest extends WebAtoms.Rest.BaseService {
 
     @Post("/post/data/{a}")
+    @Return(Task)
     async postData(
         @Body("") data:any,
         @Path("a") a:number): Promise<any>{

@@ -342,14 +342,23 @@ function methodBuilder(method) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
                 }
-                console.log("methodBuilder executed");
-                var r = target.invoke(url, method, a, args);
-                console.log(r);
+                //console.log("methodBuilder executed");
+                var rn = target.methodReturns[propertyKey];
+                var r = target.invoke(url, method, a, args, rn);
+                //console.log(r);
                 return r;
             };
-            console.log("methodBuilder called");
-            //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
+            //console.log("methodBuilder called");
+            console.log({ url: url, propertyKey: propertyKey, descriptor: descriptor });
         };
+    };
+}
+function Return(type) {
+    return function (target, propertyKey, descriptor) {
+        if (!target.methodReturns) {
+            target.methodReturns = {};
+        }
+        target.methodReturns[propertyKey] = type;
     };
 }
 function parameterBuilder(paramName) {
@@ -400,14 +409,15 @@ var WebAtoms;
             function BaseService() {
                 //bs
                 this.methods = {};
+                this.methodReturns = {};
             }
             BaseService.prototype.encodeData = function (o) {
                 o.type = "JSON";
                 return o;
             };
-            BaseService.prototype.invoke = function (url, method, bag, values) {
+            BaseService.prototype.invoke = function (url, method, bag, values, returns) {
                 return __awaiter(this, void 0, void 0, function () {
-                    var options, i, p, v;
+                    var options, i, p, v, pr;
                     return __generator(this, function (_a) {
                         options = new AjaxOptions();
                         options.method = method;
@@ -431,7 +441,20 @@ var WebAtoms;
                             }
                         }
                         options.url = url;
-                        return [2 /*return*/, Atom.json(url, options).toNativePromise()];
+                        pr = Atom.json(url, options);
+                        pr.invoke("Ok");
+                        return [2 /*return*/, new Promise(function (resolve, reject) {
+                                pr.then(function () {
+                                    var v = pr.value();
+                                    // deep clone...
+                                    var rv = new returns();
+                                    reject("Clone pending");
+                                    //resolve(v);
+                                });
+                                pr.failed(function (e) {
+                                    reject(e);
+                                });
+                            })];
                     });
                 });
             };

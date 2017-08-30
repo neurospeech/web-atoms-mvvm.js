@@ -10,6 +10,14 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "type": "typescript",
+            "tsconfig": "tests/tsconfig.json",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
     
