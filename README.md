@@ -11,7 +11,9 @@ Web Atoms MVVM Pattern Library
 
 ## Dependency
 
-Web Atoms script has to be added on the page before using `Web Atoms MVVM`
+Please add following Web Atoms to your Html page or Project.
+
+<a href="//github.com/neurospeech/web-atoms.js">`Web Atoms`</a>
 
 ## CDN in Production
 
@@ -20,7 +22,7 @@ Web Atoms script has to be added on the page before using `Web Atoms MVVM`
 
 ## NPM Package
 
-    npm install web-atoms-mvvm    
+    npm install web-atoms-mvvm
 
 ## All Samples are in TypeScript
 
