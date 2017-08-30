@@ -437,3 +437,4 @@ var WebAtoms;
         Rest.BaseService = BaseService;
     })(Rest = WebAtoms.Rest || (WebAtoms.Rest = {}));
 })(WebAtoms || (WebAtoms = {}));
+//# sourceMappingURL=web-atoms-mvvm.js.map

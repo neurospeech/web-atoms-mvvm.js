@@ -4,7 +4,8 @@
         "watch": true,
         "experimentalDecorators": true,
         "module":"none",
-        "outFile": "dist/web-atoms-mvvm.js"
+        "outFile": "dist/web-atoms-mvvm.js",
+        "sourceMap": true
     },
     "include": [
         "src/**/*"
