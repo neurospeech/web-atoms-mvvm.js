@@ -227,7 +227,7 @@ And you have set `atom-view-model` to `NotificationServiceViewModel`
 
 
             // subscribe to UI notifications sent by anyone...
-            onMessage<AtomNotification>(
+            this.onMessage<AtomNotification>(
                 "ui-notification",
                 (m, n) => this.onNotified(n);
         }
