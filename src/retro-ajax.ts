@@ -46,6 +46,9 @@ var Query = parameterBuilder("Query");
 var Body = parameterBuilder("Body");
 
 var Post = methodBuilder("Post");
+var Get = methodBuilder("Get");
+var Delete = methodBuilder("Delete");
+var Put = methodBuilder("Put");
 
 namespace WebAtoms.Rest{
 

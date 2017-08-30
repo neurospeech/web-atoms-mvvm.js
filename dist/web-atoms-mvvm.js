@@ -39,7 +39,7 @@ function bindableProperty(target, key) {
 var WebAtoms;
 (function (WebAtoms) {
     var Atom = window["Atom"];
-    var AtomModel = (function () {
+    var AtomModel = /** @class */ (function () {
         function AtomModel() {
         }
         AtomModel.prototype.refresh = function (name) {
@@ -48,7 +48,7 @@ var WebAtoms;
         return AtomModel;
     }());
     WebAtoms.AtomModel = AtomModel;
-    var AtomCommand = (function (_super) {
+    var AtomCommand = /** @class */ (function (_super) {
         __extends(AtomCommand, _super);
         function AtomCommand(action) {
             var _this = _super.call(this) || this;
@@ -154,14 +154,14 @@ var WebAtoms;
     var Atom = window["Atom"];
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
-    var AtomHandler = (function () {
+    var AtomHandler = /** @class */ (function () {
         function AtomHandler(message) {
             this.message = message;
             this.list = new Array();
         }
         return AtomHandler;
     }());
-    var AtomMessageAction = (function () {
+    var AtomMessageAction = /** @class */ (function () {
         function AtomMessageAction(msg, a) {
             this.message = msg;
             this.action = a;
@@ -169,7 +169,7 @@ var WebAtoms;
         return AtomMessageAction;
     }());
     WebAtoms.AtomMessageAction = AtomMessageAction;
-    var AtomDevice = (function () {
+    var AtomDevice = /** @class */ (function () {
         function AtomDevice() {
             this.bag = {};
         }
@@ -228,7 +228,7 @@ var WebAtoms;
 (function (WebAtoms) {
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
-    var AtomList = (function (_super) {
+    var AtomList = /** @class */ (function (_super) {
         __extends(AtomList, _super);
         function AtomList() {
             var _this = _super.call(this) || this;
@@ -284,11 +284,11 @@ var WebAtoms;
 /// <reference path="atom-command.ts"/>
 var WebAtoms;
 (function (WebAtoms) {
-    var AtomViewModel = (function (_super) {
+    var AtomViewModel = /** @class */ (function (_super) {
         __extends(AtomViewModel, _super);
         function AtomViewModel() {
             var _this = _super.call(this) || this;
-            WebAtoms.AtomDevice.instance.runAsync(_this.initAsync());
+            WebAtoms.AtomDevice.instance.runAsync(_this.init());
             return _this;
         }
         AtomViewModel.prototype.onMessage = function (msg, a) {
@@ -302,7 +302,7 @@ var WebAtoms;
         AtomViewModel.prototype.broadcast = function (msg, data) {
             WebAtoms.AtomDevice.instance.broadcast(msg, data);
         };
-        AtomViewModel.prototype.initAsync = function () {
+        AtomViewModel.prototype.init = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     return [2 /*return*/];
@@ -326,7 +326,7 @@ var WebAtoms;
  */
 var WebAtoms;
 (function (WebAtoms) {
-    var DI = (function () {
+    var DI = /** @class */ (function () {
         function DI() {
         }
         return DI;
@@ -375,11 +375,14 @@ var Path = parameterBuilder("Path");
 var Query = parameterBuilder("Query");
 var Body = parameterBuilder("Body");
 var Post = methodBuilder("Post");
+var Get = methodBuilder("Get");
+var Delete = methodBuilder("Delete");
+var Put = methodBuilder("Put");
 var WebAtoms;
 (function (WebAtoms) {
     var Rest;
     (function (Rest) {
-        var ServiceParameter = (function () {
+        var ServiceParameter = /** @class */ (function () {
             function ServiceParameter(type, key) {
                 this.type = type.toLowerCase();
                 this.key = key;
@@ -387,13 +390,13 @@ var WebAtoms;
             return ServiceParameter;
         }());
         Rest.ServiceParameter = ServiceParameter;
-        var AjaxOptions = (function () {
+        var AjaxOptions = /** @class */ (function () {
             function AjaxOptions() {
             }
             return AjaxOptions;
         }());
         Rest.AjaxOptions = AjaxOptions;
-        var BaseService = (function () {
+        var BaseService = /** @class */ (function () {
             function BaseService() {
                 //bs
                 this.methods = {};

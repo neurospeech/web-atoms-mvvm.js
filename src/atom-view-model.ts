@@ -9,7 +9,7 @@ namespace WebAtoms{
         constructor() {
             super();
 
-            AtomDevice.instance.runAsync(this.initAsync());
+            AtomDevice.instance.runAsync(this.init());
         }
 
         protected onMessage<T>(msg: string, a: (data: T) => void) {
@@ -26,7 +26,7 @@ namespace WebAtoms{
             AtomDevice.instance.broadcast(msg, data);
         }
 
-        public async initAsync(): Promise<any> {
+        public async init(): Promise<any> {
         }
 
         public dispose() {
