@@ -40,7 +40,9 @@ class AtomPromise{
 
 
 var Atom = window["Atom"] || {};
-Atom.json = function(){
-    return new AtomPromise();
+Atom.json = function(url,options){
+    var pr = new AtomPromise();
+
+    return pr;
 };
 window["Atom"] = Atom;

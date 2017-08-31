@@ -130,10 +130,10 @@ namespace WebAtoms.Rest{
                     var v = pr.value();
 
                     // deep clone...
-                    var rv = new returns();
-                    reject("Clone pending");
+                    //var rv = new returns();
+                    //reject("Clone pending");
 
-                    //resolve(v);
+                    resolve(v);
                 });
                 pr.failed( e=>{
                     reject(e);

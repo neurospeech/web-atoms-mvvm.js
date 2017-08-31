@@ -447,9 +447,9 @@ var WebAtoms;
                                 pr.then(function () {
                                     var v = pr.value();
                                     // deep clone...
-                                    var rv = new returns();
-                                    reject("Clone pending");
-                                    //resolve(v);
+                                    //var rv = new returns();
+                                    //reject("Clone pending");
+                                    resolve(v);
                                 });
                                 pr.failed(function (e) {
                                     reject(e);
