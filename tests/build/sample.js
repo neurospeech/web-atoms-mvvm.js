@@ -81,9 +81,12 @@ var ServiceTest = /** @class */ (function (_super) {
         __param(0, Body("")),
         __param(1, Path("a"))
     ], ServiceTest.prototype, "postData", null);
+    ServiceTest = __decorate([
+        DIGlobal
+    ], ServiceTest);
     return ServiceTest;
 }(WebAtoms.Rest.BaseService));
-var test = new ServiceTest();
+var test = WebAtoms.DI.resolve(ServiceTest);
 test.postData({}, 2).then(function (v) {
     console.log("Done");
 });

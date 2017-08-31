@@ -6,6 +6,7 @@ Web Atoms MVVM Pattern Library
 * Support for Commands
 * Support for Message Broadcast/Subscriptions for communication between ViewModels
 * Support for REST Service similar to Retro Fit
+* Simple and Small Dependency Injection
 
 # Installation
 
@@ -18,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.16/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.17/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -32,11 +33,12 @@ Please add following Web Atoms to your Html page or Project.
 
     var BaseService = WebAtoms.BaseService;
 
+    @DIGlobal
     class BackendService extends BaseService{
 
         @Get("/tasks")
         getTasks(
-            @Query("deleted") deleted: boolean ):Promise<Task[]>{
+            @Query("deleted") deleted: boolean ):Promise<Array<Task>>{
             return null;
         }
 
@@ -75,12 +77,8 @@ Please add following Web Atoms to your Html page or Project.
     
 
     class Task{
-        @bindableProperty;
         id: number;
-
-        @bindableProperty
         label:String;
-
     }
 
     class TaskViewModel extends AtomViewModel{
@@ -103,7 +101,8 @@ Please add following Web Atoms to your Html page or Project.
             this.removeCommand = new AtomCommand(task => 
                 onRemoveCommand(task);)
 
-            this.backendService = new BackendService();
+            // simple dependency injection !!!
+            this.backendService = WebAtoms.DI.resolve(BackendService);
         }
 
         async init():Promise<any>{

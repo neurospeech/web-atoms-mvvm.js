@@ -326,13 +326,66 @@ var WebAtoms;
  */
 var WebAtoms;
 (function (WebAtoms) {
+    var DIFactory = /** @class */ (function () {
+        function DIFactory(key, factory) {
+            this.factory = factory;
+            this.key = key;
+        }
+        return DIFactory;
+    }());
     var DI = /** @class */ (function () {
         function DI() {
         }
+        DI.register = function (key, factory) {
+            for (var _i = 0, _a = DI.factory; _i < _a.length; _i++) {
+                var fx = _a[_i];
+                if (fx.key === key)
+                    return;
+            }
+            DI.factory.push(new DIFactory(key, factory));
+            console.log("Factory registered for " + key);
+        };
+        DI.resolve = function (c) {
+            var f = DI.factory.find(function (v) { return v.key === c; });
+            if (!f) {
+                throw new Error("No factory registered for " + c);
+            }
+            return f.factory();
+        };
+        DI.factory = [];
+        DI.instances = {};
         return DI;
     }());
     WebAtoms.DI = DI;
+    function DIGlobal() {
+        return function (c) {
+            DI.register(c, function () {
+                var dr = DI.instances = DI.instances || {};
+                var r = dr[c];
+                if (r)
+                    return r;
+                var cx = c;
+                var r = new cx();
+                dr[c] = r;
+                return r;
+            });
+            return c;
+        };
+    }
+    WebAtoms.DIGlobal = DIGlobal;
+    function DIAlwaysNew() {
+        return function (c) {
+            DI.register(c, function () {
+                var r = new c();
+                return r;
+            });
+            return c;
+        };
+    }
+    WebAtoms.DIAlwaysNew = DIAlwaysNew;
 })(WebAtoms || (WebAtoms = {}));
+var DIGlobal = WebAtoms.DIGlobal();
+var DIAlwaysNew = WebAtoms.DIAlwaysNew();
 function methodBuilder(method) {
     return function (url) {
         return function (target, propertyKey, descriptor) {

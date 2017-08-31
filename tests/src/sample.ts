@@ -7,6 +7,8 @@ class Task extends WebAtoms.AtomModel{
 
 }
 
+
+@DIGlobal
 class ServiceTest extends WebAtoms.Rest.BaseService {
 
     @Post("/post/data/{a}")
@@ -19,7 +21,7 @@ class ServiceTest extends WebAtoms.Rest.BaseService {
 
 }
 
-var test:ServiceTest = new ServiceTest();
+var test:ServiceTest = WebAtoms.DI.resolve(ServiceTest);
 test.postData({},2).then(v => {
     console.log("Done");
 });

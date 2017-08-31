@@ -59,8 +59,16 @@ declare namespace WebAtoms {
  */
 declare namespace WebAtoms {
     class DI {
+        private static factory;
+        static instances: any;
+        static register(key: any, factory: any): void;
+        static resolve(c: any): any;
     }
+    function DIGlobal(): (c: any) => any;
+    function DIAlwaysNew(): (c: any) => any;
 }
+declare var DIGlobal: (c: any) => any;
+declare var DIAlwaysNew: (c: any) => any;
 declare function methodBuilder(method: string): (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function Return(type: {
     new ();
