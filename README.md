@@ -293,11 +293,22 @@ And you have set `atom-view-model` to `NotificationServiceViewModel`
 # Reference
 
 ## AtomCommand
+
+Although you can directly call `viewModel` methods into binding expressions, 
+we recommend using `AtomCommand`, as command has busy property, which will be set
+to true when asynchronous Promise is still executing.
+
+You can set enabled to false to disable any UI associated with it, `AtomButton` automatically
+binds to `enabled` property.
+
 ```typescript
     class AtomCommand<T>{
 
         @bindableProperty
         enabled: boolean;
+
+        @bindableProperty
+        busy: boolean;
 
         constructor( action:(T) => any );
     }
