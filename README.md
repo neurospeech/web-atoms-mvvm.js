@@ -39,15 +39,16 @@ Please add following Web Atoms to your Html page or Project.
 
         @Get("/task/{taskId}")
         getTask(
-            @Path("taskId") taskId:number): Promise<Task>{
+            @Path("taskId") taskId:number
+        ): Promise<Task>{
             return null;
         }
 
         @Put("/task/{taskId}")
         saveTask(
             @Path("taskId") taskId: number, 
-            @Body("") task:Task):Promise<Task>
-        {
+            @Body("") task:Task
+        ):Promise<Task>{
             return null;
         }
 
@@ -63,8 +64,9 @@ Please add following Web Atoms to your Html page or Project.
         
         @Get("/tasks")
         getTasks(
-            @Query("deleted",
-            @Cancel cancel:CancelToken) deleted: boolean ):Promise<Array<Task>>{
+            @Query("deleted" deleted: boolean,
+            @Cancel cancel:CancelToken
+        ):Promise<Array<Task>>{
             return null;
         }
         
