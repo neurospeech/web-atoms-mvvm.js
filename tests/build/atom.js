@@ -2,6 +2,7 @@
 // Do not use in live
 var AtomPromise = /** @class */ (function () {
     function AtomPromise() {
+        this.aborted = false;
         this.success = [];
         this.fails = [];
     }
@@ -14,23 +15,32 @@ var AtomPromise = /** @class */ (function () {
     AtomPromise.prototype.value = function () {
         return this._value;
     };
+    AtomPromise.prototype.abort = function (throwIfResolved) {
+        this.aborted = true;
+        if (this.resolved) {
+            if (throwIfResolved) {
+                throw new Error("Abort cannot be called after promise was resolved");
+            }
+        }
+    };
     AtomPromise.prototype.invoke = function (r, f) {
         var _this = this;
         setTimeout(function () {
-            if (r) {
-                _this._value = r;
-                for (var _i = 0, _a = _this.success; _i < _a.length; _i++) {
-                    var fx = _a[_i];
-                    fx();
+            _this.resolved = true;
+            if (_this.aborted || f) {
+                for (var _i = 0, _a = _this.fails; _i < _a.length; _i++) {
+                    var fx1 = _a[_i];
+                    fx1(f || "cancelled");
                 }
             }
             else {
-                for (var _b = 0, _c = _this.fails; _b < _c.length; _b++) {
-                    var fx1 = _c[_b];
-                    fx1(f);
+                _this._value = r;
+                for (var _b = 0, _c = _this.success; _b < _c.length; _b++) {
+                    var fx = _c[_b];
+                    fx();
                 }
             }
-        }, 10);
+        }, 100);
     };
     return AtomPromise;
 }());

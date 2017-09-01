@@ -13,7 +13,7 @@ function methodBuilder(method:string){
             };
 
             //console.log("methodBuilder called");
-            console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
+            //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
         }
     }
 }
@@ -61,6 +61,20 @@ var Get = methodBuilder("Get");
 var Delete = methodBuilder("Delete");
 var Put = methodBuilder("Put");
 
+var Cancel = function(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number){
+    if(!target.methods){
+        target.methods = {};
+    }
+
+    var a = target.methods[propertyKey];
+    if(!a){
+        a = [];
+        target.methods[propertyKey] = a;
+    }
+    a[parameterIndex] = new WebAtoms.Rest.ServiceParameter("cancel","");
+};
+
+
 namespace WebAtoms.Rest{
 
 
@@ -80,6 +94,7 @@ namespace WebAtoms.Rest{
         public url:string;
         public data: any;
         public type: string;
+        public cancel: CancelToken;
     }
 
     export class BaseService{
@@ -95,7 +110,11 @@ namespace WebAtoms.Rest{
             return o;
         }
 
-        async invoke(url:string,method:string, bag:Array<ServiceParameter>,values:Array<any>, returns: {new ()}):Promise<any>{
+        async invoke(
+            url:string,
+            method:string, 
+            bag:Array<ServiceParameter>,
+            values:Array<any>, returns: {new ()}):Promise<any>{
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
@@ -116,11 +135,21 @@ namespace WebAtoms.Rest{
                         options.data = v;
                         options = this.encodeData(options);
                     break;
+                    case 'cancel':
+                        options.cancel = v as CancelToken;
+                    break;
                 }
             }
             options.url = url;            
 
             var pr = Atom.json(url,options);
+
+
+            if(options.cancel){
+                options.cancel.registerForCancel(()=>{
+                    pr.abort();
+                });
+            }
 
             pr.invoke("Ok");
 
@@ -132,6 +161,13 @@ namespace WebAtoms.Rest{
                     // deep clone...
                     //var rv = new returns();
                     //reject("Clone pending");
+
+                    if(options.cancel){
+                        if(options.cancel.cancelled){
+                            reject("cancelled");
+                            return;
+                        }
+                    }
 
                     resolve(v);
                 });

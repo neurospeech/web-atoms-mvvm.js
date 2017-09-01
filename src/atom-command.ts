@@ -39,6 +39,38 @@ namespace WebAtoms{
 
     var Atom = window["Atom"];
 
+    export class CancelToken{
+
+        listeners:Array<()=>void> = [];
+
+        private _cancelled:boolean;
+        get cancelled():boolean{
+            return this._cancelled;
+        }
+
+        cancel(){
+            this._cancelled = true;
+            for(var fx of this.listeners){
+                fx();
+            }
+        }
+
+        reset(){
+            this._cancelled = false;
+            this.listeners.length = 0;
+        }
+
+        registerForCancel(f:()=>void){
+            if(this._cancelled){
+                f();
+                this.cancel();
+                return;
+            }
+            this.listeners.push(f);
+        }
+
+    }
+
     export class AtomModel {
         public refresh(name: String): void {
             Atom.refresh(this, name);
@@ -85,9 +117,11 @@ namespace WebAtoms{
             if (result) {
                 if(result.catch){
                     result.catch((error) => {
-                        console.error(error);
-                        Atom.showError(error);
                         this.busy = false;
+                        if(error !== 'cancelled'){
+                            console.error(error);
+                            Atom.showError(error);
+                        }
                     });
                     return;
                 }
