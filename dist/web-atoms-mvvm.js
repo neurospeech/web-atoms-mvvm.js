@@ -39,6 +39,39 @@ function bindableProperty(target, key) {
 var WebAtoms;
 (function (WebAtoms) {
     var Atom = window["Atom"];
+    var CancelToken = /** @class */ (function () {
+        function CancelToken() {
+            this.listeners = [];
+        }
+        Object.defineProperty(CancelToken.prototype, "cancelled", {
+            get: function () {
+                return this._cancelled;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        CancelToken.prototype.cancel = function () {
+            this._cancelled = true;
+            for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
+                var fx = _a[_i];
+                fx();
+            }
+        };
+        CancelToken.prototype.reset = function () {
+            this._cancelled = false;
+            this.listeners.length = 0;
+        };
+        CancelToken.prototype.registerForCancel = function (f) {
+            if (this._cancelled) {
+                f();
+                this.cancel();
+                return;
+            }
+            this.listeners.push(f);
+        };
+        return CancelToken;
+    }());
+    WebAtoms.CancelToken = CancelToken;
     var AtomModel = /** @class */ (function () {
         function AtomModel() {
         }
@@ -95,9 +128,11 @@ var WebAtoms;
             if (result) {
                 if (result.catch) {
                     result.catch(function (error) {
-                        console.error(error);
-                        Atom.showError(error);
                         _this.busy = false;
+                        if (error !== 'cancelled') {
+                            console.error(error);
+                            Atom.showError(error);
+                        }
                     });
                     return;
                 }
@@ -343,7 +378,6 @@ var WebAtoms;
                     return;
             }
             DI.factory.push(new DIFactory(key, factory));
-            console.log("Factory registered for " + key);
         };
         DI.resolve = function (c) {
             var f = DI.factory.find(function (v) { return v.key === c; });
@@ -402,7 +436,7 @@ function methodBuilder(method) {
                 return r;
             };
             //console.log("methodBuilder called");
-            console.log({ url: url, propertyKey: propertyKey, descriptor: descriptor });
+            //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
         };
     };
 }
@@ -440,6 +474,17 @@ var Post = methodBuilder("Post");
 var Get = methodBuilder("Get");
 var Delete = methodBuilder("Delete");
 var Put = methodBuilder("Put");
+var Cancel = function (target, propertyKey, parameterIndex) {
+    if (!target.methods) {
+        target.methods = {};
+    }
+    var a = target.methods[propertyKey];
+    if (!a) {
+        a = [];
+        target.methods[propertyKey] = a;
+    }
+    a[parameterIndex] = new WebAtoms.Rest.ServiceParameter("cancel", "");
+};
 var WebAtoms;
 (function (WebAtoms) {
     var Rest;
@@ -491,10 +536,18 @@ var WebAtoms;
                                     options.data = v;
                                     options = this.encodeData(options);
                                     break;
+                                case 'cancel':
+                                    options.cancel = v;
+                                    break;
                             }
                         }
                         options.url = url;
                         pr = Atom.json(url, options);
+                        if (options.cancel) {
+                            options.cancel.registerForCancel(function () {
+                                pr.abort();
+                            });
+                        }
                         pr.invoke("Ok");
                         return [2 /*return*/, new Promise(function (resolve, reject) {
                                 pr.then(function () {
@@ -502,6 +555,12 @@ var WebAtoms;
                                     // deep clone...
                                     //var rv = new returns();
                                     //reject("Clone pending");
+                                    if (options.cancel) {
+                                        if (options.cancel.cancelled) {
+                                            reject("cancelled");
+                                            return;
+                                        }
+                                    }
                                     resolve(v);
                                 });
                                 pr.failed(function (e) {

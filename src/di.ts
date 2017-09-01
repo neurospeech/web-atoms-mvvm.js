@@ -32,8 +32,6 @@
             }
 
             DI.factory.push(new DIFactory(key,factory));
-
-            console.log(`Factory registered for ${key}`);
         }        
 
         static resolve(c:any):any{

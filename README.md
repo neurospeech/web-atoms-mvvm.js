@@ -19,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.17/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.18/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -36,11 +36,6 @@ Please add following Web Atoms to your Html page or Project.
     @DIGlobal
     class BackendService extends BaseService{
 
-        @Get("/tasks")
-        getTasks(
-            @Query("deleted") deleted: boolean ):Promise<Array<Task>>{
-            return null;
-        }
 
         @Get("/task/{taskId}")
         getTask(
@@ -62,6 +57,17 @@ Please add following Web Atoms to your Html page or Project.
         ):Promise<any>{
             return null;
         }
+
+
+        // support for CancelToken
+        
+        @Get("/tasks")
+        getTasks(
+            @Query("deleted",
+            @Cancel cancel:CancelToken) deleted: boolean ):Promise<Array<Task>>{
+            return null;
+        }
+        
 
     }
 

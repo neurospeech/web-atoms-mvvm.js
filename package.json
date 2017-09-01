@@ -1,12 +1,13 @@
 {
   "name": "web-atoms-mvvm",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "MVVM, REST Json Service, Message Subscriptions for Web Atoms",
   "main": "web-atoms-mvvm.js",
   "directories": {
     "test": "tests"
   },
   "dependencies": {
+    "manakin": "^0.5.1",
     "ts-promise": "^0.3.4",
     "typescript": "^2.4.2"
   },

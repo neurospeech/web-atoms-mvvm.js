@@ -3,6 +3,8 @@
 
 class AtomPromise{
 
+    aborted: boolean = false;
+
     success:Array<()=>void> = [];
 
     fails:Array<(f:any)=>void> = [];
@@ -20,21 +22,35 @@ class AtomPromise{
         return this._value;
     }
 
+    resolved: boolean;
+
+    abort(throwIfResolved: boolean){
+        this.aborted = true;
+        if(this.resolved){
+            if(throwIfResolved){
+                throw new Error("Abort cannot be called after promise was resolved")
+            }
+        }
+    }
+
     invoke(r:any, f:any):void{
 
         setTimeout(() => {
 
-            if(r){
+            this.resolved = true;
+            if(this.aborted || f){
+                for(var fx1 of this.fails){
+                    fx1(f || "cancelled");
+                }
+            }
+            else
+            {
                 this._value = r;
                 for(var fx of this.success){
                     fx();
                 }
-            }else{
-                for(var fx1 of this.fails){
-                    fx1(f);
-                }
             }
-        },10);
+        },100);
     }
 }
 

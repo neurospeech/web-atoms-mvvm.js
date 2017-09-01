@@ -1,5 +1,13 @@
 declare function bindableProperty(target: any, key: string): void;
 declare namespace WebAtoms {
+    class CancelToken {
+        listeners: Array<() => void>;
+        private _cancelled;
+        readonly cancelled: boolean;
+        cancel(): void;
+        reset(): void;
+        registerForCancel(f: () => void): void;
+    }
     class AtomModel {
         refresh(name: String): void;
     }
@@ -82,6 +90,7 @@ declare var Post: (url: string) => (target: WebAtoms.Rest.BaseService, propertyK
 declare var Get: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare var Delete: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare var Put: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
+declare var Cancel: (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
 declare namespace WebAtoms.Rest {
     class ServiceParameter {
         key: string;
@@ -93,6 +102,7 @@ declare namespace WebAtoms.Rest {
         url: string;
         data: any;
         type: string;
+        cancel: CancelToken;
     }
     class BaseService {
         methods: any;

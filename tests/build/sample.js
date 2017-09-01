@@ -1,4 +1,5 @@
 /// <reference path="./../../dist/web-atoms-mvvm.d.ts"/>
+/// <reference path="./../../tests/src/async-tests.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -53,6 +54,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var _this = this;
 var Task = /** @class */ (function (_super) {
     __extends(Task, _super);
     function Task() {
@@ -68,7 +70,7 @@ var ServiceTest = /** @class */ (function (_super) {
     function ServiceTest() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    ServiceTest.prototype.postData = function (data, a) {
+    ServiceTest.prototype.postData = function (data, a, cancel) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, null];
@@ -79,15 +81,48 @@ var ServiceTest = /** @class */ (function (_super) {
         Post("/post/data/{a}"),
         Return(Task),
         __param(0, Body("")),
-        __param(1, Path("a"))
+        __param(1, Path("a")),
+        __param(2, Cancel)
     ], ServiceTest.prototype, "postData", null);
     ServiceTest = __decorate([
         DIGlobal
     ], ServiceTest);
     return ServiceTest;
 }(WebAtoms.Rest.BaseService));
+var run = WebAtoms.Verify.run;
+var ct = new WebAtoms.CancelToken();
 var test = WebAtoms.DI.resolve(ServiceTest);
-test.postData({}, 2).then(function (v) {
-    console.log("Done");
-});
+run("Success test", function () { return __awaiter(_this, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, test.postData({}, 2, ct)];
+            case 1:
+                _a.sent();
+                ct.reset();
+                return [2 /*return*/];
+        }
+    });
+}); });
+run("Cancel test", function () { return __awaiter(_this, void 0, void 0, function () {
+    var p, e_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                p = test.postData({}, 2, ct);
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, p];
+            case 2:
+                _a.sent();
+                return [3 /*break*/, 4];
+            case 3:
+                e_1 = _a.sent();
+                if (e_1 === "cancelled")
+                    return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 4: throw new Error("Cancel was not called");
+        }
+    });
+}); });
 //# sourceMappingURL=sample.js.map

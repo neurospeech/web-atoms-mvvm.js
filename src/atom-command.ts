@@ -53,16 +53,17 @@ namespace WebAtoms{
             for(var fx of this.listeners){
                 fx();
             }
-            this.listeners.length = 0;
         }
 
         reset(){
             this._cancelled = false;
+            this.listeners.length = 0;
         }
 
         registerForCancel(f:()=>void){
             if(this._cancelled){
                 f();
+                this.cancel();
                 return;
             }
             this.listeners.push(f);
@@ -116,9 +117,11 @@ namespace WebAtoms{
             if (result) {
                 if(result.catch){
                     result.catch((error) => {
-                        console.error(error);
-                        Atom.showError(error);
                         this.busy = false;
+                        if(error !== 'cancelled'){
+                            console.error(error);
+                            Atom.showError(error);
+                        }
                     });
                     return;
                 }
