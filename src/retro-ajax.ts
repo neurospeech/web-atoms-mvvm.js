@@ -95,7 +95,11 @@ namespace WebAtoms.Rest{
             return o;
         }
 
-        async invoke(url:string,method:string, bag:Array<ServiceParameter>,values:Array<any>, returns: {new ()}):Promise<any>{
+        async invoke(
+            url:string,
+            method:string, 
+            bag:Array<ServiceParameter>,
+            values:Array<any>, returns: {new ()}):Promise<any>{
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
