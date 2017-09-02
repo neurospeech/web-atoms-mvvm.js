@@ -9,7 +9,8 @@
   "dependencies": {
     "manakin": "^0.5.1",
     "ts-promise": "^0.3.4",
-    "typescript": "^2.4.2"
+    "typescript": "^2.4.2",
+    "alsatian":"^2.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -29,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/neurospeech/web-atoms-mvvm.js/issues"
   },
-  "homepage": "https://github.com/neurospeech/web-atoms-mvvm.js#readme"
+  "homepage": "https://github.com/neurospeech/web-atoms-mvvm.js#readme",
+  "devDependencies": {
+    "alsatian": "^2.0.0"
+  }
 }

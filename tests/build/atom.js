@@ -44,10 +44,47 @@ var AtomPromise = /** @class */ (function () {
     };
     return AtomPromise;
 }());
-var Atom = window["Atom"] || {};
+var Atom = window["Atom"];
 Atom.json = function (url, options) {
     var pr = new AtomPromise();
     return pr;
+};
+Atom.refresh = function (item, property) {
+    var hs = item._$_handlers;
+    if (!hs)
+        return;
+    var hl = hs[property];
+    if (!hl)
+        return;
+    for (var _i = 0, hl_1 = hl; _i < hl_1.length; _i++) {
+        var f = hl_1[_i];
+        f();
+    }
+};
+Atom.watch = function (item, property, f) {
+    var hs = item._$_handlers || (item._$_handlers = {});
+    var hl = hs[property] || (hs[property] = []);
+    hl.push(f);
+    return f;
+};
+Atom.unwatch = function (item, property, f) {
+    var hs = item._$_handlers;
+    if (!hs)
+        return;
+    var hl = hs[property];
+    if (!hl)
+        return;
+    var fi = hl.indexOf(f);
+    if (fi == -1)
+        return;
+    hl.splice(fi, 1);
+};
+Atom.delay = function (n) {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            resolve();
+        }, n);
+    });
 };
 window["Atom"] = Atom;
 //# sourceMappingURL=atom.js.map

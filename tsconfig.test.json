@@ -5,15 +5,17 @@
         "experimentalDecorators": true,
         "module":"commonjs",
         "sourceMap": true,
-        "outDir": "build"
+        "declaration": true
     },
     "include": [
-        "src/**/*"
+        "app.ts"
     ],
     "files": [
-        "../node_modules/typescript/lib/lib.es6.d.ts",
-        "../dist/web-atoms-mvvm.d.ts"
+        "node_modules/typescript/lib/lib.es6.d.ts"
     ],
     "exclude": [
+        "node_modules",
+        "tests",
+        "dist"
     ]
 }

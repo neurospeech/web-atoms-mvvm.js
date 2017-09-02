@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -13,9 +14,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -52,38 +50,59 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var Task = /** @class */ (function (_super) {
-    __extends(Task, _super);
-    function Task() {
+Object.defineProperty(exports, "__esModule", { value: true });
+var alsatian_1 = require("alsatian");
+var initCalled = false;
+var SampleViewModel = /** @class */ (function (_super) {
+    __extends(SampleViewModel, _super);
+    function SampleViewModel() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
-        bindableProperty
-    ], Task.prototype, "label", void 0);
-    return Task;
-}(WebAtoms.AtomModel));
-var ServiceTest = /** @class */ (function (_super) {
-    __extends(ServiceTest, _super);
-    function ServiceTest() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    ServiceTest.prototype.postData = function (data, a, cancel) {
+    SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                return [2 /*return*/, null];
+                initCalled = true;
+                return [2 /*return*/];
             });
         });
     };
     __decorate([
-        Post("/post/data/{a}"),
-        Return(Task),
-        __param(0, Body("")),
-        __param(1, Path("a")),
-        __param(2, Cancel)
-    ], ServiceTest.prototype, "postData", null);
-    ServiceTest = __decorate([
-        DIGlobal
-    ], ServiceTest);
-    return ServiceTest;
-}(WebAtoms.Rest.BaseService));
-//# sourceMappingURL=sample.js.map
+        bindableProperty
+    ], SampleViewModel.prototype, "name", void 0);
+    return SampleViewModel;
+}(WebAtoms.AtomViewModel));
+var AtomViewModelTest = /** @class */ (function () {
+    function AtomViewModelTest() {
+    }
+    AtomViewModelTest.prototype.run = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var nameUpated, vm, fx;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        vm = new SampleViewModel();
+                        fx = Atom.watch(vm, "name", function () {
+                            nameUpated = true;
+                        });
+                        return [4 /*yield*/, Atom.delay(100)];
+                    case 1:
+                        _a.sent();
+                        //vm.name = "changed";
+                        if (nameUpated) {
+                            console.log("name updated");
+                        }
+                        else {
+                            console.error("failed");
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    __decorate([
+        alsatian_1.AsyncTest("Atom-View-Model")
+    ], AtomViewModelTest.prototype, "run", null);
+    return AtomViewModelTest;
+}());
+exports.AtomViewModelTest = AtomViewModelTest;
+//# sourceMappingURL=atom-view-model-test.js.map
