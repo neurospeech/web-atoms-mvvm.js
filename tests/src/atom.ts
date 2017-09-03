@@ -93,12 +93,4 @@ Atom.unwatch = function(item:any, property: string, f:()=>void){
     hl.splice(fi,1);
 };
 
-Atom.delay = function(n:number):Promise<any>{
-    return new Promise((resolve,reject)=>{
-        setTimeout(()=>{
-            resolve();
-        },n);
-    });
-};
-
 window["Atom"] = Atom;

@@ -3,16 +3,17 @@
         "target": "es5",
         "watch": true,
         "experimentalDecorators": true,
-        "module":"commonjs",
+        "module":"none",
         "sourceMap": true,
-        "outDir": "build"
+        "outFile": "build/all-tests.js"
     },
     "include": [
         "src/**/*"
     ],
     "files": [
         "../node_modules/typescript/lib/lib.es6.d.ts",
-        "../dist/web-atoms-mvvm.d.ts"
+        "../dist/web-atoms-mvvm.d.ts",
+        "../node_modules/web-atoms-unit/index.d.ts"
     ],
     "exclude": [
     ]

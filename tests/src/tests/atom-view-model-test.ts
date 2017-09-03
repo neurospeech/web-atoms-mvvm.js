@@ -1,21 +1,27 @@
-import { Expect, AsyncTest, TestFixture } from "alsatian";
+var AtomViewModel = WebAtoms.AtomViewModel;
+var Category = WebAtoms.Unit.Category;
+var Test = WebAtoms.Unit.Test;
+var TestItem = WebAtoms.Unit.TestItem;
+var Assert = WebAtoms.Unit.Assert;
 
 var initCalled = false;
 
-class SampleViewModel extends WebAtoms.AtomViewModel{
+class SampleViewModel extends AtomViewModel{
 
     @bindableProperty
     public name:string;
 
     async init(){
         initCalled = true;
+
+        this.broadcast("ui-alert","Model is ready");
     }
 }
 
-@TestFixture("Async Test")
-export class AtomViewModelTest{
+@Category("AtomViewModel")
+class AtomViewModelTest extends TestItem{
      
-    @AsyncTest("Atom-View-Model")
+    @Test("bindableProperty")
     public async run(){
 
         var nameUpated:boolean;
@@ -26,11 +32,29 @@ export class AtomViewModelTest{
             nameUpated = true;
         });
 
-        await Atom.delay(100);
+        await this.delay(100);
 
         vm.name = "changed";
 
-        Expect(nameUpated)
-            .toBe(false);
+        Assert.isTrue(nameUpated);
+    }
+
+    @Test("broadcast")
+    public async broadcast(){
+
+        var msg:any = {};
+
+        WebAtoms.AtomDevice.instance.subscribe("ui-alert",(a,g)=>{
+            msg.message = a;
+            msg.data = g;
+        });
+
+        var vm:SampleViewModel = new SampleViewModel();
+
+        await this.delay(1000);
+
+        Assert.equals(msg.message, "ui-alert");
+        Assert.equals(msg.data,"Model is ready");
+        
     }
 }
