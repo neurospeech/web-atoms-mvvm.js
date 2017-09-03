@@ -19,11 +19,16 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.18/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.19/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
     npm install web-atoms-mvvm
+
+## Unit testing
+
+For unit testing, please see     
+<a href="//github.com/neurospeech/web-atoms-unit">`Web Atoms Unit`</a>
 
 ## All Samples are in TypeScript
 

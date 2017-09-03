@@ -55,10 +55,42 @@ class AtomPromise{
 }
 
 
-var Atom = window["Atom"] || {};
+var Atom = window["Atom"];
 Atom.json = function(url,options){
     var pr = new AtomPromise();
 
     return pr;
 };
+Atom.refresh = function(item:any, property:string){
+    var hs = item._$_handlers;
+    if(!hs)
+        return;
+    var hl = hs[property];
+    if(!hl)
+        return;
+    for(var f of hl){
+        f();
+    }    
+};
+
+Atom.watch = function(item:any, property:string,f:()=>void): ()=>void {
+    var hs = item._$_handlers || (item._$_handlers = {});
+    var hl = hs[property] || (hs[property] = []);
+    hl.push(f);
+    return f;
+};
+
+Atom.unwatch = function(item:any, property: string, f:()=>void){
+    var hs = item._$_handlers;
+    if(!hs)
+        return;
+    var hl = hs[property] as Array<()=>void>;
+    if(!hl)
+        return;
+    var fi = hl.indexOf(f);
+    if(fi==-1)
+        return;
+    hl.splice(fi,1);
+};
+
 window["Atom"] = Atom;
