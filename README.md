@@ -19,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.19/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.21/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -304,6 +304,23 @@ And you have set `atom-view-model` to `NotificationServiceViewModel`
 
 # Reference
 
+## Atom
+
+```typescript
+
+    class Atom{
+
+        // watch for change in property in target object
+        static watch(target:any, property:string, f:()=>void) : ()=> void;
+
+        // unwatch for change in property in target object 
+        static unwatch(target:any, property:string, f:()=>void);
+
+        static async delay(n:number, ct?:CancelToken):Promise<any>;
+    }
+
+```
+
 ## AtomCommand
 
 Although you can directly call `viewModel` methods into binding expressions, 
@@ -384,6 +401,12 @@ binds to `enabled` property.
         
         // refreshes binding
         refresh();        
+
+        // watch for changes in events..
+        // type: (add/remove)
+        watch(f:(type:string, index:number)=>void): (type:string, index:number) => void;
+
+        unwatch(f:(type:string, index:number)=>void);
     }
 
 ```

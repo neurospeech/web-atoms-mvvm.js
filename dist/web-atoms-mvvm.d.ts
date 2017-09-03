@@ -24,6 +24,9 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
+    interface AtomDisposable {
+        dispose(): any;
+    }
     type AtomAction = (msg: string, data: any) => void;
     class AtomMessageAction {
         message: string;
@@ -50,12 +53,16 @@ declare namespace WebAtoms {
         remove(item: T): void;
         clear(): void;
         refresh(): void;
+        watch(f: () => void): () => void;
+        unwatch(f: () => void): void;
     }
 }
 declare namespace WebAtoms {
     class AtomViewModel extends AtomModel {
         private subscriptions;
+        private disposables;
         constructor();
+        protected registerDisposable(d: AtomDisposable): void;
         protected onMessage<T>(msg: string, a: (data: T) => void): void;
         broadcast(msg: string, data: any): void;
         init(): Promise<any>;

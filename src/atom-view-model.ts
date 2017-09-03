@@ -5,11 +5,17 @@ namespace WebAtoms{
     export class AtomViewModel extends AtomModel {
         
         private subscriptions: Array<AtomMessageAction>;
+        private disposables: Array<AtomDisposable>;
 
         constructor() {
             super();
 
             AtomDevice.instance.runAsync(this.init());
+        }
+
+        protected registerDisposable(d:AtomDisposable){
+            this.disposables = this.disposables || [];
+            this.disposables.push(d);
         }
 
         protected onMessage<T>(msg: string, a: (data: T) => void) {
@@ -33,6 +39,11 @@ namespace WebAtoms{
             if (this.subscriptions) {
                 for (let entry of this.subscriptions) {
                     AtomDevice.instance.unsubscribe(entry.message, entry.action);
+                }
+            }
+            if(this.disposables){
+                for(let d of this.disposables){
+                    d.dispose();
                 }
             }
         }

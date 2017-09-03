@@ -10,6 +10,9 @@ function loadScript(file){
 global.window = {
     Atom: {
 
+    },
+    AtomBinder:{
+        
     }
 };
 

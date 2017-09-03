@@ -4,6 +4,55 @@ namespace WebAtoms{
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
 
+    Atom.using = function(d:AtomDisposable, f:()=>{}){
+        try{
+            f();
+        }finally{
+            d.dispose();
+        }
+    };
+
+    Atom.usingAsync = async function(d:AtomDisposable, f:()=>Promise<any>){
+        try{
+            await f();
+        }finally{
+            d.dispose();
+        }
+    };
+
+    // watch for changes...
+    Atom.watch = function(item:any, property:string, f: ()=>void):()=>void{
+        AtomBinder.add_WatchHandler(item,property,f);
+        return f;
+    };
+
+    Atom.unwatch = function(item:any, property:string, f: ()=>void){
+        AtomBinder.remove_WatchHandler(item,property,f);
+    };
+
+    Atom.delay = function(n:number, ct?:CancelToken):Promise<any>{
+        return new Promise((resolve,reject)=>{
+            var n = setTimeout(function() {
+                resolve();
+            }, (n));
+
+            if(ct){
+                ct.registerForCancel(()=>{
+                    clearTimeout(n);
+                    reject("cancelled");
+                });
+            }
+
+        });
+    };
+
+    export interface AtomDisposable{
+
+        dispose();
+
+
+    }
+
         
     export type AtomAction = (msg: string, data: any) => void;
     
