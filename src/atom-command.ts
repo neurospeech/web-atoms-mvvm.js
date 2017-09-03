@@ -20,6 +20,10 @@ function bindableProperty(target: any, key: string) {
             //console.log(`Set: ${key} => ${newVal}`);
             this[keyName] = newVal;
             Atom.refresh(this, key);
+
+            if(this.onPropertyChanged){
+                this.onPropertyChanged(keyName);
+            }
         };
     
         // Delete property.

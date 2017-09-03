@@ -24,6 +24,9 @@ function bindableProperty(target, key) {
         //console.log(`Set: ${key} => ${newVal}`);
         this[keyName] = newVal;
         Atom.refresh(this, key);
+        if (this.onPropertyChanged) {
+            this.onPropertyChanged(keyName);
+        }
     };
     // Delete property.
     if (delete this[key]) {
@@ -189,6 +192,62 @@ var WebAtoms;
     var Atom = window["Atom"];
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
+    var DisposableAction = /** @class */ (function () {
+        function DisposableAction(f) {
+            this.f = f;
+        }
+        DisposableAction.prototype.dispose = function () {
+            this.f();
+        };
+        return DisposableAction;
+    }());
+    WebAtoms.DisposableAction = DisposableAction;
+    Atom.using = function (d, f) {
+        try {
+            f();
+        }
+        finally {
+            d.dispose();
+        }
+    };
+    Atom.usingAsync = function (d, f) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, , 2, 3]);
+                        return [4 /*yield*/, f()];
+                    case 1:
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        d.dispose();
+                        return [7 /*endfinally*/];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    // watch for changes...
+    Atom.watch = function (item, property, f) {
+        AtomBinder.add_WatchHandler(item, property, f);
+        return new DisposableAction(function () {
+            AtomBinder.remove_WatchHandler(item, property, f);
+        });
+    };
+    Atom.delay = function (n, ct) {
+        return new Promise(function (resolve, reject) {
+            var n = setTimeout(function () {
+                resolve();
+            }, (n));
+            if (ct) {
+                ct.registerForCancel(function () {
+                    clearTimeout(n);
+                    reject("cancelled");
+                });
+            }
+        });
+    };
     var AtomHandler = /** @class */ (function () {
         function AtomHandler(message) {
             this.message = message;
@@ -239,20 +298,19 @@ var WebAtoms;
             }
         };
         AtomDevice.prototype.subscribe = function (msg, action) {
+            var _this = this;
             var ary = this.bag[msg];
             if (!ary) {
                 ary = new AtomHandler(msg);
                 this.bag[msg] = ary;
             }
             ary.list.push(action);
-            return action;
-        };
-        AtomDevice.prototype.unsubscribe = function (msg, action) {
-            var ary = this.bag[msg];
-            if (!ary) {
-                return;
-            }
-            ary.list = ary.list.filter(function (a) { return a !== action; });
+            return new DisposableAction(function () {
+                ary.list = ary.list.filter(function (a) { return a !== action; });
+                if (!ary.list.length) {
+                    _this.bag[msg] = null;
+                }
+            });
         };
         AtomDevice.instance = new AtomDevice();
         return AtomDevice;
@@ -311,6 +369,13 @@ var WebAtoms;
             AtomBinder.invokeItemsEvent(this, "refresh", -1, null);
             Atom.refresh(this, "length");
         };
+        AtomList.prototype.watch = function (f) {
+            var _this = this;
+            AtomBinder.add_CollectionChanged(this, f);
+            return new WebAtoms.DisposableAction(function () {
+                AtomBinder.remove_CollectionChanged(_this, f);
+            });
+        };
         return AtomList;
     }(Array));
     WebAtoms.AtomList = AtomList;
@@ -326,6 +391,15 @@ var WebAtoms;
             WebAtoms.AtomDevice.instance.runAsync(_this.init());
             return _this;
         }
+        AtomViewModel.prototype.watch = function (item, property, f) {
+            this.registerDisposable(Atom.watch(item, property, f));
+        };
+        AtomViewModel.prototype.registerDisposable = function (d) {
+            this.disposables = this.disposables || [];
+            this.disposables.push(d);
+        };
+        AtomViewModel.prototype.onPropertyChanged = function (name) {
+        };
         AtomViewModel.prototype.onMessage = function (msg, a) {
             var action = function (m, d) {
                 a(d);
@@ -349,6 +423,12 @@ var WebAtoms;
                 for (var _i = 0, _a = this.subscriptions; _i < _a.length; _i++) {
                     var entry = _a[_i];
                     WebAtoms.AtomDevice.instance.unsubscribe(entry.message, entry.action);
+                }
+            }
+            if (this.disposables) {
+                for (var _b = 0, _c = this.disposables; _b < _c.length; _b++) {
+                    var d = _c[_b];
+                    d.dispose();
                 }
             }
         };

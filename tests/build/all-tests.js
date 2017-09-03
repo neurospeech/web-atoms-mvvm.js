@@ -49,6 +49,24 @@ Atom.json = function (url, options) {
     var pr = new AtomPromise();
     return pr;
 };
+var AtomDate = window["AtomDate"];
+var AtomEnumerator = /** @class */ (function () {
+    function AtomEnumerator(a) {
+        this.a = a;
+        this.i = -1;
+    }
+    AtomEnumerator.prototype.next = function () {
+        this.i++;
+        return this.i < this.a.length;
+    };
+    AtomEnumerator.prototype.current = function () {
+        return this.a[this.i];
+    };
+    AtomEnumerator.prototype.currentIndex = function () {
+        return this.i;
+    };
+    return AtomEnumerator;
+}());
 Atom.refresh = function (item, property) {
     var hs = item._$_handlers;
     if (!hs)
@@ -61,25 +79,209 @@ Atom.refresh = function (item, property) {
         f();
     }
 };
-Atom.watch = function (item, property, f) {
-    var hs = item._$_handlers || (item._$_handlers = {});
-    var hl = hs[property] || (hs[property] = []);
-    hl.push(f);
-    return f;
-};
-Atom.unwatch = function (item, property, f) {
-    var hs = item._$_handlers;
-    if (!hs)
-        return;
-    var hl = hs[property];
-    if (!hl)
-        return;
-    var fi = hl.indexOf(f);
-    if (fi == -1)
-        return;
-    hl.splice(fi, 1);
-};
 window["Atom"] = Atom;
+var AtomBinder = {
+    getClone: function (dupeObj) {
+        var retObj = {};
+        if (typeof (dupeObj) == 'object') {
+            if (typeof (dupeObj.length) != 'undefined')
+                retObj = new Array();
+            for (var objInd in dupeObj) {
+                var val = dupeObj[objInd];
+                if (val === undefined)
+                    continue;
+                if (val === null) {
+                    retObj[objInd] = null;
+                    continue;
+                }
+                if (/^\_\$\_/gi.test(objInd))
+                    continue;
+                var type = typeof (val);
+                if (type == 'object') {
+                    if (val.constructor == Date) {
+                        retObj[objInd] = "/DateISO(" + AtomDate.toLocalTime(val) + ")/";
+                    }
+                    else {
+                        retObj[objInd] = AtomBinder.getClone(val);
+                    }
+                }
+                else if (type == 'string') {
+                    retObj[objInd] = val;
+                }
+                else if (type == 'number') {
+                    retObj[objInd] = val;
+                }
+                else if (type == 'boolean') {
+                    ((val == true) ? retObj[objInd] = true : retObj[objInd] = false);
+                }
+                // else if (type == 'date') {
+                //     retObj[objInd] = val.getTime();
+                // }
+            }
+        }
+        return retObj;
+    },
+    setValue: function (target, key, value) {
+        if (!target && value === undefined)
+            return;
+        var oldValue = AtomBinder.getValue(target, key);
+        if (oldValue === value)
+            return;
+        var f = target["set_" + key];
+        if (f) {
+            f.apply(target, [value]);
+        }
+        else {
+            target[key] = value;
+        }
+        AtomBinder.refreshValue(target, key, oldValue, value);
+    },
+    refreshValue: function (target, key, oldValue, value) {
+        var handlers = AtomBinder.get_WatchHandler(target, key);
+        if (handlers == undefined || handlers == null)
+            return;
+        var ae = new AtomEnumerator(handlers);
+        while (ae.next()) {
+            var item = ae.current();
+            item(target, key, oldValue, value);
+        }
+        if (target._$_watcher) {
+            target._$_watcher._onRefreshValue(target, key);
+        }
+    },
+    getValue: function (target, key) {
+        if (target == null)
+            return null;
+        var f = target["get_" + key];
+        if (f) {
+            return f.apply(target);
+        }
+        return target[key];
+    },
+    add_WatchHandler: function (target, key, handler) {
+        if (target == null)
+            return;
+        var handlers = AtomBinder.get_WatchHandler(target, key);
+        handlers.push(handler);
+    },
+    get_WatchHandler: function (target, key) {
+        if (target == null)
+            return null;
+        var handlers = target._$_handlers;
+        if (!handlers) {
+            handlers = {};
+            target._$_handlers = handlers;
+        }
+        var handlersForKey = handlers[key];
+        if (handlersForKey == undefined || handlersForKey == null) {
+            handlersForKey = [];
+            handlers[key] = handlersForKey;
+        }
+        return handlersForKey;
+    },
+    remove_WatchHandler: function (target, key, handler) {
+        if (target == null)
+            return;
+        if (target._$_handlers === undefined || target._$_handlers === null)
+            return;
+        var handlersForKey = target._$_handlers[key];
+        if (handlersForKey == undefined || handlersForKey == null)
+            return;
+        var ae = new AtomEnumerator(handlersForKey);
+        while (ae.next()) {
+            if (ae.current() == handler) {
+                handlersForKey.splice(ae.currentIndex(), 1);
+                return;
+            }
+        }
+    },
+    invokeItemsEvent: function (target, mode, index, item) {
+        var key = "_items";
+        var handlers = AtomBinder.get_WatchHandler(target, key);
+        if (!handlers)
+            return;
+        var ae = new AtomEnumerator(handlers);
+        while (ae.next()) {
+            var obj = ae.current();
+            obj(mode, index, item);
+        }
+        if (target._$_watcher) {
+            target._$_watcher._onRefreshItems(target, mode, index, item);
+        }
+        AtomBinder.refreshValue(target, "length", undefined, undefined);
+    },
+    clear: function (ary) {
+        ary.length = 0;
+        AtomBinder.invokeItemsEvent(ary, "refresh", 0, null);
+    },
+    addItem: function (ary, item) {
+        var l = ary.length;
+        ary.push(item);
+        AtomBinder.invokeItemsEvent(ary, "add", l, item);
+    },
+    insertItem: function (ary, index, item) {
+        ary.splice(index, 0, item);
+        AtomBinder.invokeItemsEvent(ary, "add", index, item);
+    },
+    addItems: function (ary, items) {
+        var ae = new AtomEnumerator(items);
+        while (ae.next()) {
+            AtomBinder.addItem(ary, ae.current());
+        }
+    },
+    removeItem: function (ary, item) {
+        var i = ary.indexOf(item);
+        if (i == -1)
+            return;
+        ary.splice(i, 1);
+        AtomBinder.invokeItemsEvent(ary, "remove", i, item);
+    },
+    removeAtIndex: function (ary, i) {
+        if (i == -1)
+            return;
+        var item = ary[i];
+        ary.splice(i, 1);
+        AtomBinder.invokeItemsEvent(ary, "remove", i, item);
+    },
+    refreshItems: function (ary) {
+        AtomBinder.invokeItemsEvent(ary, "refresh", -1, null);
+    },
+    add_CollectionChanged: function (target, handler) {
+        if (target == null)
+            return;
+        var key = "_items";
+        var handlers = AtomBinder.get_WatchHandler(target, key);
+        handlers.push(handler);
+    },
+    remove_CollectionChanged: function (target, handler) {
+        if (target == null)
+            return;
+        if (!target._$_handlers)
+            return;
+        var key = "_items";
+        var handlersForKey = target._$_handlers[key];
+        if (handlersForKey == undefined || handlersForKey == null)
+            return;
+        var ae = new AtomEnumerator(handlersForKey);
+        while (ae.next()) {
+            if (ae.current() == handler) {
+                handlersForKey.splice(ae.currentIndex(), 1);
+                return;
+            }
+        }
+    },
+    setError: function (target, key, message) {
+        var errors = AtomBinder.getValue(target, "__errors");
+        if (!errors) {
+            AtomBinder.setValue(target, "__errors", {});
+        }
+        AtomBinder.setValue(errors, key, message);
+    }
+};
+//window["AtomBinder"] = AtomBinder;
+for (var item in AtomBinder) {
+    window["AtomBinder"][item] = AtomBinder[item];
+}
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -173,24 +375,39 @@ var Category = WebAtoms.Unit.Category;
 var Test = WebAtoms.Unit.Test;
 var TestItem = WebAtoms.Unit.TestItem;
 var Assert = WebAtoms.Unit.Assert;
+var AtomList = WebAtoms.AtomList;
 var initCalled = false;
 var SampleViewModel = /** @class */ (function (_super) {
     __extends(SampleViewModel, _super);
     function SampleViewModel() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.list = new WebAtoms.AtomList();
+        return _this;
     }
     SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                initCalled = true;
-                this.broadcast("ui-alert", "Model is ready");
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        initCalled = true;
+                        this.broadcast("ui-alert", "Model is ready");
+                        return [4 /*yield*/, Atom.delay(100)];
+                    case 1:
+                        _a.sent();
+                        this.list.add({
+                            name: "Sample"
+                        });
+                        return [2 /*return*/];
+                }
             });
         });
     };
     __decorate([
         bindableProperty
     ], SampleViewModel.prototype, "name", void 0);
+    __decorate([
+        bindableProperty
+    ], SampleViewModel.prototype, "list", void 0);
     return SampleViewModel;
 }(AtomViewModel));
 var AtomViewModelTest = /** @class */ (function (_super) {
@@ -200,12 +417,12 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     }
     AtomViewModelTest.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var nameUpated, vm, fx;
+            var nameUpated, vm, subscription;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         vm = new SampleViewModel();
-                        fx = Atom.watch(vm, "name", function () {
+                        subscription = Atom.watch(vm, "name", function () {
                             nameUpated = true;
                         });
                         return [4 /*yield*/, this.delay(100)];
@@ -213,6 +430,10 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         _a.sent();
                         vm.name = "changed";
                         Assert.isTrue(nameUpated);
+                        subscription.dispose();
+                        nameUpated = false;
+                        vm.name = "c";
+                        Assert.isFalse(nameUpated);
                         return [2 /*return*/];
                 }
             });
@@ -220,12 +441,12 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     };
     AtomViewModelTest.prototype.broadcast = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var msg, vm;
+            var msg, subscription, vm;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         msg = {};
-                        WebAtoms.AtomDevice.instance.subscribe("ui-alert", function (a, g) {
+                        subscription = WebAtoms.AtomDevice.instance.subscribe("ui-alert", function (a, g) {
                             msg.message = a;
                             msg.data = g;
                         });
@@ -235,6 +456,31 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         _a.sent();
                         Assert.equals(msg.message, "ui-alert");
                         Assert.equals(msg.data, "Model is ready");
+                        subscription.dispose();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    AtomViewModelTest.prototype.list = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var vm, eventCalled, subscription;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        vm = new SampleViewModel();
+                        eventCalled = false;
+                        subscription = vm.list.watch(function () {
+                            eventCalled = true;
+                        });
+                        return [4 /*yield*/, this.delay(1000)];
+                    case 1:
+                        _a.sent();
+                        Assert.isTrue(eventCalled);
+                        subscription.dispose();
+                        eventCalled = false;
+                        vm.list.add({});
+                        Assert.isFalse(eventCalled);
                         return [2 /*return*/];
                 }
             });
@@ -246,6 +492,9 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     __decorate([
         Test("broadcast")
     ], AtomViewModelTest.prototype, "broadcast", null);
+    __decorate([
+        Test("Atom List")
+    ], AtomViewModelTest.prototype, "list", null);
     AtomViewModelTest = __decorate([
         Category("AtomViewModel")
     ], AtomViewModelTest);

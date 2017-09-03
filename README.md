@@ -19,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.19/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.22/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -102,6 +102,9 @@ For unit testing, please see
         @bindableProperty
         newItem:Task;
 
+        @bindableProperty
+        selectedItem: Task;
+
         addCommand: AtomCommand<any>;
         removeCommand: AtomCommand<Task>
 
@@ -121,6 +124,11 @@ For unit testing, please see
         async init():Promise<any>{
             var results = await this.backendService.getTasks(false);
             this.list.addAll(results);
+        }
+
+        onPropertyChanged(name:string){
+            // called when any property of this viewmodel
+            // is modified anywhere
         }
 
         async addCommand():Promise<any>{
@@ -304,6 +312,34 @@ And you have set `atom-view-model` to `NotificationServiceViewModel`
 
 # Reference
 
+## AtomDisposable
+
+```typescript
+    interface AtomDisposable{
+        dispose();
+    }
+
+    class DisposableAction{
+        constructor(f:()=>void);
+    }
+```
+
+## Atom
+
+```typescript
+
+    class Atom{
+
+        // watch for change in property in target object
+        // method will return subscription, you can call dispose to 
+        // remove subscription to avoid memory leak
+        static watch(target:any, property:string, f:()=>void) : AtomDisposable;
+
+        static async delay(n:number, ct?:CancelToken):Promise<any>;
+    }
+
+```
+
 ## AtomCommand
 
 Although you can directly call `viewModel` methods into binding expressions, 
@@ -346,6 +382,19 @@ binds to `enabled` property.
         onMessage<T>(message:string,action:(msg:string,T)=>any);
 
         broadcast(message:string,data:any);
+
+        // registers watch for item
+        // and it will automatically call dispose on subscription
+        // when View Model will be disposed
+        watch(item:any, property:string, f:()=>void);
+
+        // you can register a disposable which will
+        // be disposed when View Model will be disposed by the UI service
+        registerDisposable(d:AtomDisposable);
+
+        // called when any property of view model
+        // is changed
+        onPropertyChanged(name:string);
     }
 ```
 
@@ -362,8 +411,9 @@ binds to `enabled` property.
 
         broadcast(message:string, data:any);
 
-        subscribe(message:string, action:AtomAction ): AtomAction;
-        unsubscribe(message:string, action:AtomAction);
+        // method will return subscription
+        // you must call subscription.dispose() to avoid memory leak
+        subscribe(message:string, action:AtomAction ): AtomDisposable;
 
         // takes care of errors
         runAsync<T>(task:Promise<T>):Promise<any>;
@@ -384,6 +434,14 @@ binds to `enabled` property.
         
         // refreshes binding
         refresh();        
+
+        // watch for changes in events..
+        // type: (add/remove)
+        // returns AtomDisposable
+        // you must call dispose on AtomDisposable to avoid
+        // memory leak
+        watch(f:(type:string, index:number)=>void): AtomDisposable;
+
     }
 
 ```
