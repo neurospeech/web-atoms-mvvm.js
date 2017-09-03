@@ -4,6 +4,20 @@ namespace WebAtoms{
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
 
+    export class DisposableAction implements AtomDisposable{
+
+        f:()=>void;
+
+        constructor(f:()=>void){
+            this.f = f;
+        }
+
+        dispose(){
+            this.f();
+        }
+
+    }
+
     Atom.using = function(d:AtomDisposable, f:()=>{}){
         try{
             f();
@@ -21,13 +35,11 @@ namespace WebAtoms{
     };
 
     // watch for changes...
-    Atom.watch = function(item:any, property:string, f: ()=>void):()=>void{
+    Atom.watch = function(item:any, property:string, f: ()=>void):AtomDisposable{
         AtomBinder.add_WatchHandler(item,property,f);
-        return f;
-    };
-
-    Atom.unwatch = function(item:any, property:string, f: ()=>void){
-        AtomBinder.remove_WatchHandler(item,property,f);
+        return new DisposableAction(()=>{
+            AtomBinder.remove_WatchHandler(item,property,f);
+        });
     };
 
     Atom.delay = function(n:number, ct?:CancelToken):Promise<any>{
@@ -105,23 +117,19 @@ namespace WebAtoms{
                 }
             }
     
-            public subscribe(msg: string, action: AtomAction): AtomAction {
+            public subscribe(msg: string, action: AtomAction): AtomDisposable {
                 var ary = this.bag[msg] as AtomHandler;
                 if (!ary) {
                     ary = new AtomHandler(msg);
                     this.bag[msg] = ary;
                 }
                 ary.list.push(action);
-                return action;
-            }
-    
-            public unsubscribe(msg: string, action: AtomAction) {
-                var ary = this.bag[msg] as AtomHandler;
-                if (!ary) {
-                    return;
-                }
-    
-                ary.list = ary.list.filter((a) => a !== action);
+                return new DisposableAction(()=>{
+                    ary.list = ary.list.filter(a=> a !== action);
+                    if(!ary.list.length){
+                        this.bag[msg] = null;
+                    }
+                });
             }
         }
 }

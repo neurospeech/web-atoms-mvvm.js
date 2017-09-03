@@ -13,9 +13,17 @@ namespace WebAtoms{
             AtomDevice.instance.runAsync(this.init());
         }
 
+        protected watch(item:any, property:string, f:()=>void){
+            this.registerDisposable(Atom.watch(item,property,f));
+        }
+
         protected registerDisposable(d:AtomDisposable){
             this.disposables = this.disposables || [];
             this.disposables.push(d);
+        }
+
+        protected onPropertyChanged(name:string){
+            
         }
 
         protected onMessage<T>(msg: string, a: (data: T) => void) {

@@ -38,7 +38,7 @@ class AtomViewModelTest extends TestItem{
 
         var vm: SampleViewModel = new SampleViewModel();
 
-        var fx = Atom.watch(vm,"name",()=>{
+        var subscription = Atom.watch(vm,"name",()=>{
             nameUpated = true;
         });
 
@@ -48,7 +48,7 @@ class AtomViewModelTest extends TestItem{
 
         Assert.isTrue(nameUpated);
 
-        Atom.unwatch(vm,"name",fx);
+        subscription.dispose();
 
         nameUpated = false;
 
@@ -62,7 +62,7 @@ class AtomViewModelTest extends TestItem{
 
         var msg:any = {};
 
-        WebAtoms.AtomDevice.instance.subscribe("ui-alert",(a,g)=>{
+        var subscription = WebAtoms.AtomDevice.instance.subscribe("ui-alert",(a,g)=>{
             msg.message = a;
             msg.data = g;
         });
@@ -73,6 +73,8 @@ class AtomViewModelTest extends TestItem{
 
         Assert.equals(msg.message, "ui-alert");
         Assert.equals(msg.data,"Model is ready");
+
+        subscription.dispose();
         
     }
 
@@ -82,7 +84,7 @@ class AtomViewModelTest extends TestItem{
 
         var eventCalled:boolean = false;
 
-        var f = vm.list.watch(()=>{
+        var subscription = vm.list.watch(()=>{
             eventCalled = true;
         });
 
@@ -90,7 +92,7 @@ class AtomViewModelTest extends TestItem{
 
         Assert.isTrue(eventCalled);
 
-        vm.list.unwatch(f);
+        subscription.dispose();
 
         eventCalled = false;
 

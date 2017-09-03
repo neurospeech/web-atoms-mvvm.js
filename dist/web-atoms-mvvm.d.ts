@@ -24,6 +24,11 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
+    class DisposableAction implements AtomDisposable {
+        f: () => void;
+        constructor(f: () => void);
+        dispose(): void;
+    }
     interface AtomDisposable {
         dispose(): any;
     }
@@ -39,8 +44,7 @@ declare namespace WebAtoms {
         runAsync<T>(task: Promise<T>): Promise<any>;
         private bag;
         broadcast(msg: string, data: any): void;
-        subscribe(msg: string, action: AtomAction): AtomAction;
-        unsubscribe(msg: string, action: AtomAction): void;
+        subscribe(msg: string, action: AtomAction): AtomDisposable;
     }
 }
 declare namespace WebAtoms {
@@ -53,8 +57,7 @@ declare namespace WebAtoms {
         remove(item: T): void;
         clear(): void;
         refresh(): void;
-        watch(f: () => void): () => void;
-        unwatch(f: () => void): void;
+        watch(f: () => void): AtomDisposable;
     }
 }
 declare namespace WebAtoms {
@@ -62,7 +65,9 @@ declare namespace WebAtoms {
         private subscriptions;
         private disposables;
         constructor();
+        protected watch(item: any, property: string, f: () => void): void;
         protected registerDisposable(d: AtomDisposable): void;
+        protected onPropertyChanged(name: string): void;
         protected onMessage<T>(msg: string, a: (data: T) => void): void;
         broadcast(msg: string, data: any): void;
         init(): Promise<any>;

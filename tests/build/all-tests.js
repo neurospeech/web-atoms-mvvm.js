@@ -79,24 +79,6 @@ Atom.refresh = function (item, property) {
         f();
     }
 };
-Atom.watch = function (item, property, f) {
-    var hs = item._$_handlers || (item._$_handlers = {});
-    var hl = hs[property] || (hs[property] = []);
-    hl.push(f);
-    return f;
-};
-Atom.unwatch = function (item, property, f) {
-    var hs = item._$_handlers;
-    if (!hs)
-        return;
-    var hl = hs[property];
-    if (!hl)
-        return;
-    var fi = hl.indexOf(f);
-    if (fi == -1)
-        return;
-    hl.splice(fi, 1);
-};
 window["Atom"] = Atom;
 var AtomBinder = {
     getClone: function (dupeObj) {
@@ -435,12 +417,12 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     }
     AtomViewModelTest.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var nameUpated, vm, fx;
+            var nameUpated, vm, subscription;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         vm = new SampleViewModel();
-                        fx = Atom.watch(vm, "name", function () {
+                        subscription = Atom.watch(vm, "name", function () {
                             nameUpated = true;
                         });
                         return [4 /*yield*/, this.delay(100)];
@@ -448,7 +430,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         _a.sent();
                         vm.name = "changed";
                         Assert.isTrue(nameUpated);
-                        Atom.unwatch(vm, "name", fx);
+                        subscription.dispose();
                         nameUpated = false;
                         vm.name = "c";
                         Assert.isFalse(nameUpated);
@@ -459,12 +441,12 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     };
     AtomViewModelTest.prototype.broadcast = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var msg, vm;
+            var msg, subscription, vm;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         msg = {};
-                        WebAtoms.AtomDevice.instance.subscribe("ui-alert", function (a, g) {
+                        subscription = WebAtoms.AtomDevice.instance.subscribe("ui-alert", function (a, g) {
                             msg.message = a;
                             msg.data = g;
                         });
@@ -474,6 +456,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         _a.sent();
                         Assert.equals(msg.message, "ui-alert");
                         Assert.equals(msg.data, "Model is ready");
+                        subscription.dispose();
                         return [2 /*return*/];
                 }
             });
@@ -481,20 +464,20 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     };
     AtomViewModelTest.prototype.list = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var vm, eventCalled, f;
+            var vm, eventCalled, subscription;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         vm = new SampleViewModel();
                         eventCalled = false;
-                        f = vm.list.watch(function () {
+                        subscription = vm.list.watch(function () {
                             eventCalled = true;
                         });
                         return [4 /*yield*/, this.delay(1000)];
                     case 1:
                         _a.sent();
                         Assert.isTrue(eventCalled);
-                        vm.list.unwatch(f);
+                        subscription.dispose();
                         eventCalled = false;
                         vm.list.add({});
                         Assert.isFalse(eventCalled);

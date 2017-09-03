@@ -24,6 +24,9 @@ function bindableProperty(target, key) {
         //console.log(`Set: ${key} => ${newVal}`);
         this[keyName] = newVal;
         Atom.refresh(this, key);
+        if (this.onPropertyChanged) {
+            this.onPropertyChanged(keyName);
+        }
     };
     // Delete property.
     if (delete this[key]) {
@@ -189,6 +192,16 @@ var WebAtoms;
     var Atom = window["Atom"];
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
+    var DisposableAction = /** @class */ (function () {
+        function DisposableAction(f) {
+            this.f = f;
+        }
+        DisposableAction.prototype.dispose = function () {
+            this.f();
+        };
+        return DisposableAction;
+    }());
+    WebAtoms.DisposableAction = DisposableAction;
     Atom.using = function (d, f) {
         try {
             f();
@@ -218,10 +231,9 @@ var WebAtoms;
     // watch for changes...
     Atom.watch = function (item, property, f) {
         AtomBinder.add_WatchHandler(item, property, f);
-        return f;
-    };
-    Atom.unwatch = function (item, property, f) {
-        AtomBinder.remove_WatchHandler(item, property, f);
+        return new DisposableAction(function () {
+            AtomBinder.remove_WatchHandler(item, property, f);
+        });
     };
     Atom.delay = function (n, ct) {
         return new Promise(function (resolve, reject) {
@@ -286,20 +298,19 @@ var WebAtoms;
             }
         };
         AtomDevice.prototype.subscribe = function (msg, action) {
+            var _this = this;
             var ary = this.bag[msg];
             if (!ary) {
                 ary = new AtomHandler(msg);
                 this.bag[msg] = ary;
             }
             ary.list.push(action);
-            return action;
-        };
-        AtomDevice.prototype.unsubscribe = function (msg, action) {
-            var ary = this.bag[msg];
-            if (!ary) {
-                return;
-            }
-            ary.list = ary.list.filter(function (a) { return a !== action; });
+            return new DisposableAction(function () {
+                ary.list = ary.list.filter(function (a) { return a !== action; });
+                if (!ary.list.length) {
+                    _this.bag[msg] = null;
+                }
+            });
         };
         AtomDevice.instance = new AtomDevice();
         return AtomDevice;
@@ -359,11 +370,11 @@ var WebAtoms;
             Atom.refresh(this, "length");
         };
         AtomList.prototype.watch = function (f) {
+            var _this = this;
             AtomBinder.add_CollectionChanged(this, f);
-            return f;
-        };
-        AtomList.prototype.unwatch = function (f) {
-            AtomBinder.remove_CollectionChanged(this, f);
+            return new WebAtoms.DisposableAction(function () {
+                AtomBinder.remove_CollectionChanged(_this, f);
+            });
         };
         return AtomList;
     }(Array));
@@ -380,9 +391,14 @@ var WebAtoms;
             WebAtoms.AtomDevice.instance.runAsync(_this.init());
             return _this;
         }
+        AtomViewModel.prototype.watch = function (item, property, f) {
+            this.registerDisposable(Atom.watch(item, property, f));
+        };
         AtomViewModel.prototype.registerDisposable = function (d) {
             this.disposables = this.disposables || [];
             this.disposables.push(d);
+        };
+        AtomViewModel.prototype.onPropertyChanged = function (name) {
         };
         AtomViewModel.prototype.onMessage = function (msg, a) {
             var action = function (m, d) {

@@ -59,13 +59,11 @@ namespace WebAtoms{
             Atom.refresh(this, "length");
         }
 
-        watch(f:()=>void): ()=>void {
+        watch(f:()=>void): AtomDisposable {
             AtomBinder.add_CollectionChanged(this,f);
-            return f;
-        }
-
-        unwatch(f:()=>void){
-            AtomBinder.remove_CollectionChanged(this,f);
+            return new DisposableAction(()=>{
+                AtomBinder.remove_CollectionChanged(this,f);    
+            });
         }
 
     }
