@@ -87,13 +87,9 @@ var AtomViewModelTest = /** @class */ (function () {
                         return [4 /*yield*/, Atom.delay(100)];
                     case 1:
                         _a.sent();
-                        //vm.name = "changed";
-                        if (nameUpated) {
-                            console.log("name updated");
-                        }
-                        else {
-                            console.error("failed");
-                        }
+                        vm.name = "changed";
+                        alsatian_1.Expect(nameUpated)
+                            .toBe(false);
                         return [2 /*return*/];
                 }
             });
@@ -102,6 +98,9 @@ var AtomViewModelTest = /** @class */ (function () {
     __decorate([
         alsatian_1.AsyncTest("Atom-View-Model")
     ], AtomViewModelTest.prototype, "run", null);
+    AtomViewModelTest = __decorate([
+        alsatian_1.TestFixture("Async Test")
+    ], AtomViewModelTest);
     return AtomViewModelTest;
 }());
 exports.AtomViewModelTest = AtomViewModelTest;

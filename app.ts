@@ -31,7 +31,6 @@ mvvm.runInThisContext();
 
 testSet.addTestsFromFiles("./tests/build/**/*.js");
 
-
 // create a test runner
 const testRunner = new TestRunner();
 

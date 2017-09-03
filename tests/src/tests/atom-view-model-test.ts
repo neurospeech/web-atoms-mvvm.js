@@ -1,4 +1,4 @@
-import { Expect, AsyncTest } from "alsatian";
+import { Expect, AsyncTest, TestFixture } from "alsatian";
 
 var initCalled = false;
 
@@ -12,6 +12,7 @@ class SampleViewModel extends WebAtoms.AtomViewModel{
     }
 }
 
+@TestFixture("Async Test")
 export class AtomViewModelTest{
      
     @AsyncTest("Atom-View-Model")
@@ -27,11 +28,9 @@ export class AtomViewModelTest{
 
         await Atom.delay(100);
 
-        //vm.name = "changed";
-        if(nameUpated){
-            console.log("name updated");
-        }else{
-            console.error("failed");
-        }
+        vm.name = "changed";
+
+        Expect(nameUpated)
+            .toBe(false);
     }
 }
