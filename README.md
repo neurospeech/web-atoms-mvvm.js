@@ -319,7 +319,8 @@ And you have set `atom-view-model` to `NotificationServiceViewModel`
         dispose();
     }
 
-    class DisposableAction{
+    // action f will be called on dispose
+    class DisposableAction implements AtomDisposable{
         constructor(f:()=>void);
     }
 ```
