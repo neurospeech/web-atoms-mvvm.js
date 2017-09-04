@@ -4,7 +4,6 @@
 namespace WebAtoms{
     export class AtomViewModel extends AtomModel {
         
-        private subscriptions: Array<AtomMessageAction>;
         private disposables: Array<AtomDisposable>;
 
         constructor() {
@@ -31,9 +30,8 @@ namespace WebAtoms{
             var action: AtomAction = (m, d) => {
                 a(d as T);
             };
-            AtomDevice.instance.subscribe(msg, action);
-            this.subscriptions = this.subscriptions || new Array<AtomMessageAction>();
-            this.subscriptions.push(new AtomMessageAction(msg, action));
+            var sub = AtomDevice.instance.subscribe(msg, action);
+            this.registerDisposable(sub);
         }
 
         public broadcast(msg: string, data: any) {
@@ -44,11 +42,6 @@ namespace WebAtoms{
         }
 
         public dispose() {
-            if (this.subscriptions) {
-                for (let entry of this.subscriptions) {
-                    AtomDevice.instance.unsubscribe(entry.message, entry.action);
-                }
-            }
             if(this.disposables){
                 for(let d of this.disposables){
                     d.dispose();

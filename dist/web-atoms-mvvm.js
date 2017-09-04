@@ -404,9 +404,8 @@ var WebAtoms;
             var action = function (m, d) {
                 a(d);
             };
-            WebAtoms.AtomDevice.instance.subscribe(msg, action);
-            this.subscriptions = this.subscriptions || new Array();
-            this.subscriptions.push(new WebAtoms.AtomMessageAction(msg, action));
+            var sub = WebAtoms.AtomDevice.instance.subscribe(msg, action);
+            this.registerDisposable(sub);
         };
         AtomViewModel.prototype.broadcast = function (msg, data) {
             WebAtoms.AtomDevice.instance.broadcast(msg, data);
@@ -419,15 +418,9 @@ var WebAtoms;
             });
         };
         AtomViewModel.prototype.dispose = function () {
-            if (this.subscriptions) {
-                for (var _i = 0, _a = this.subscriptions; _i < _a.length; _i++) {
-                    var entry = _a[_i];
-                    WebAtoms.AtomDevice.instance.unsubscribe(entry.message, entry.action);
-                }
-            }
             if (this.disposables) {
-                for (var _b = 0, _c = this.disposables; _b < _c.length; _b++) {
-                    var d = _c[_b];
+                for (var _i = 0, _a = this.disposables; _i < _a.length; _i++) {
+                    var d = _a[_i];
                     d.dispose();
                 }
             }
@@ -549,7 +542,7 @@ function parameterBuilder(paramName) {
 }
 var Path = parameterBuilder("Path");
 var Query = parameterBuilder("Query");
-var Body = parameterBuilder("Body");
+var Body = parameterBuilder("Body")("");
 var Post = methodBuilder("Post");
 var Get = methodBuilder("Get");
 var Delete = methodBuilder("Delete");

@@ -361,7 +361,7 @@ var ServiceTest = /** @class */ (function (_super) {
     __decorate([
         Post("/post/data/{a}"),
         Return(Task),
-        __param(0, Body("")),
+        __param(0, Body),
         __param(1, Path("a")),
         __param(2, Cancel)
     ], ServiceTest.prototype, "postData", null);
