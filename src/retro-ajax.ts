@@ -54,7 +54,7 @@ declare var Atom:any;
 
 var Path = parameterBuilder("Path");
 var Query = parameterBuilder("Query");
-var Body = parameterBuilder("Body");
+var Body = parameterBuilder("Body")("");
 
 var Post = methodBuilder("Post");
 var Get = methodBuilder("Get");
