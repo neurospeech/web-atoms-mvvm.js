@@ -19,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.22/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.23/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -52,7 +52,7 @@ For unit testing, please see
         @Put("/task/{taskId}")
         saveTask(
             @Path("taskId") taskId: number, 
-            @Body("") task:Task
+            @Body task:Task
         ):Promise<Task>{
             return null;
         }

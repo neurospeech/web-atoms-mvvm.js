@@ -1,6 +1,6 @@
 {
   "name": "web-atoms-mvvm",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "MVVM, REST Json Service, Message Subscriptions for Web Atoms",
   "main": "web-atoms-mvvm.js",
   "directories": {
@@ -31,7 +31,5 @@
     "url": "https://github.com/neurospeech/web-atoms-mvvm.js/issues"
   },
   "homepage": "https://github.com/neurospeech/web-atoms-mvvm.js#readme",
-  "devDependencies": {
-    "alsatian": "^2.0.0"
-  }
+  "devDependencies": {}
 }
