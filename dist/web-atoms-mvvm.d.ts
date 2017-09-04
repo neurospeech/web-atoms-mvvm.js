@@ -62,7 +62,6 @@ declare namespace WebAtoms {
 }
 declare namespace WebAtoms {
     class AtomViewModel extends AtomModel {
-        private subscriptions;
         private disposables;
         constructor();
         protected watch(item: any, property: string, f: () => void): void;
@@ -97,7 +96,7 @@ declare function parameterBuilder(paramName: string): (key: string) => (target: 
 declare var Atom: any;
 declare var Path: (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
 declare var Query: (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
-declare var Body: (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
+declare var Body: (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
 declare var Post: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare var Get: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare var Delete: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
