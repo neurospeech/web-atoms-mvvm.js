@@ -459,6 +459,9 @@ var WebAtoms;
             }
             return f.factory();
         };
+        DI.put = function (key, instance) {
+            DI.instances[key] = instance;
+        };
         DI.factory = [];
         DI.instances = {};
         return DI;

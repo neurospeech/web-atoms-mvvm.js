@@ -447,4 +447,41 @@ binds to `enabled` property.
 
 ```
 
+## DI
+```typescript
+
+    class DI{
+
+        // this will resolve instance
+        // by providing type
+        // example,
+        //
+        //      @DIGlobal
+        //      class BackendService{
+        //          ....            
+        //      }
+        //
+        //      var servie = WebAtoms.DI.resolve(BackendService);
+        static resolve(c:{new ()}):any;
+
+
+        // register a type in code instead of @DIGlobal
+        // example,
+        //
+        //      WebAtoms.DI.register(BackendService, () => new BackendService()  );
+        static register(c:{new ()}, factory: ()=> any);
+
+
+        // manually override global instance, if you want to override factory, you can
+        // call register method
+        // example,
+        //
+        //      WebAtoms.DI.override(BackendService, new MockBackendService());
+        // 
+        static override(c:{new ()}, instance:any);
+
+    }
+
+```
+
 

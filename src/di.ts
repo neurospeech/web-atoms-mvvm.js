@@ -42,6 +42,11 @@
             }
             return f.factory();
         }
+
+        
+        static put(key:any, instance:any){
+            DI.instances[key] = instance;
+        }
     }
 
     export function DIGlobal(){

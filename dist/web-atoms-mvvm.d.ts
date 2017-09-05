@@ -82,6 +82,7 @@ declare namespace WebAtoms {
         static instances: any;
         static register(key: any, factory: any): void;
         static resolve(c: any): any;
+        static put(key: any, instance: any): void;
     }
     function DIGlobal(): (c: any) => any;
     function DIAlwaysNew(): (c: any) => any;
