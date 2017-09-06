@@ -194,7 +194,7 @@ var ComponentGenerator;
             }
             var tags = new TagInitializerList(name);
             result = "[" + HtmlContent.mapNode(node, tags).map(function (n) { return JSON.stringify(n, undefined, 2); }).join(",\r\n") + "]";
-            return "(function(window,baseType){\n\n                window.jsonML[\"WebAtoms." + name + ".template\"] = " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(){\n\n                    }\n                })\n            })(window, WebAtoms.AtomControl.prototype)";
+            return "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(){},\n                    methods:{},\n                    properties:{}\n                })\n            })(window, WebAtoms.AtomControl.prototype)";
         };
         HtmlContent.parse = function (input) {
             var handler = new htmlparser2_1.DomHandler(function (error, dom) {

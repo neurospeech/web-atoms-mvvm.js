@@ -258,9 +258,10 @@ namespace ComponentGenerator{
             result = "[" + HtmlContent.mapNode(node, tags).map(n=> JSON.stringify(n, undefined,2)).join(",\r\n") + "]";
 
 
-            return `(function(window,baseType){
+            return `window.${name} = (function(window,baseType){
 
-                window.jsonML["WebAtoms.${name}.template"] = ${result};
+                window.Templates.jsonML["${name}.template"] = 
+                    ${result};
 
                 (function(window,WebAtoms){
                     ${tags.toScript()}
@@ -269,9 +270,9 @@ namespace ComponentGenerator{
                 return classCreatorEx({
                     name: "${name}",
                     base: baseType,
-                    start: function(){
-
-                    }
+                    start: function(){},
+                    methods:{},
+                    properties:{}
                 })
             })(window, WebAtoms.AtomControl.prototype)`;
 
