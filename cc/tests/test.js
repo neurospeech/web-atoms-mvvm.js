@@ -31,12 +31,15 @@ global.window = {
     }
 };
 
-loadScript("bin/html-compiler.js");
+loadScript("bin/component-generator.js");
 
 
 var text = 
-`<div atom-component='TaskList' atom-view-model='{ new TaskListViewModel() }'> 
-    <table atom-type="AtomItemsControl" atom-items="[$viewModel.items]">
+`<div atom-component='TaskList' style-display="{ $scope.items ? '' : 'none' }" atom-view-model='{ new TaskListViewModel() }'> 
+    <table 
+        atom-type="AtomItemsControl" 
+        atom-selected-item="$[viewModel.selectedItem]"
+        atom-items="[$viewModel.items]">
         <tbody>
             <tr>
                 <span>Test</span>

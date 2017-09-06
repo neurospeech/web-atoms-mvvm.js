@@ -1,7 +1,81 @@
 import {DefaultHandler,Parser} from "htmlparser";
 import * as fs from "fs";
 
-namespace HtmlCompiler{
+namespace ComponentGenerator{
+
+    var AtomEvaluator = {
+        
+            ecache: {},
+        
+            becache: {},
+        
+            parse: function (txt) {
+        
+                // http://jsfiddle.net/A3vg6/44/ (recommended)
+                // http://jsfiddle.net/A3vg6/45/ (working)
+                // http://jsfiddle.net/A3vg6/51/ (including $ sign)
+        
+                var be = this.becache[txt];
+                if (be)
+                    return be;
+        
+                var regex = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*/gi;
+        
+                var keywords = /(window|viewModel|appScope|scope|data|owner|localScope)/gi;
+        
+                var path = [];
+                var vars = [];
+        
+                var found = {};
+        
+                var ms = txt.replace(regex,
+                    function (match) {
+                        var nv = "v" + (path.length + 1);
+                        if (match.indexOf("$owner.") == 0) {
+                            match = match.substr(7);
+                        } else
+                        {
+                            if (match.indexOf("owner.") == 0) {
+                                match = match.substr(6);
+                            } else {
+                                match = match.substr(1);
+                            }
+                        }
+                        path.push(match.split('.'));
+                        vars.push(nv);
+                        return nv;
+                    }
+                    );
+        
+        
+                var method = "return " + ms + ";";
+                var methodString = method;
+                try {
+                    method = AtomEvaluator.compile(vars, method);
+                } catch (e) {
+                    throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                }
+        
+                be = { length: vars.length, method: method, path: path, original: ms };
+                this.becache[txt] = be;
+                return be;
+            },
+            compile: function (vars, method) {
+                var k = vars.join("-") + ":" + method;
+                var e = this.ecache[k];
+                if (e)
+                    return e;
+        
+                vars.push("Atom");
+                vars.push("AtomPromise");
+                vars.push("$x");
+        
+                e = new Function(vars,method);
+                this.ecache[k] = e;
+                return e;
+            }
+        };
+        
 
     class TagInitializerList{
         component:string;
@@ -9,6 +83,14 @@ namespace HtmlCompiler{
 
         constructor(name){
             this.component = name;
+        }
+
+        toScript():string{
+            return this.tags.map((tag,i) => {
+                return `this.${this.component}_t${i} = function(e) { 
+                        ${tag.toScript()}
+                    };`;
+            }).join("\r\n\t\t");
         }
     }
 
@@ -18,17 +100,58 @@ namespace HtmlCompiler{
         constructor(inits:Array<string>){
             this.inits = inits;
         }
+
+        toScript():string{
+            return this.inits.join("\r\n\t\t\t");
+        }
     }
 
     export class HtmlContent{
+        static processTwoWayBinding(v: string): string {
+            v = v.substr(2,v.length-3);
+
+            if(v.startsWith("$")){
+                v = v.substr(1);
+            }
+            
+            var plist = v.split(".");
+
+            v = ` ${JSON.stringify(plist)}, 1 `;
+
+            return v;
+        }
+        static processOneWayBinding(v: string): string {
+            v = v.substr(1,v.length-2);
+            
+            var vx = AtomEvaluator.parse(v);
+
+            v = "";
+
+            var plist = vx.path.map((p,i)=> `v${i+1}` ).join(",");
+
+            v += ` ${JSON.stringify(vx.path)}, 0, function(${plist}) { return ${vx.original}; }`;
+
+            return v;
+        }
         static processOneTimeBinding(v: string): string {
             v = v.substr(1,v.length-2);
+
+            var vx = AtomEvaluator.parse(v);
+
+            v = vx.original;
+
+            for(var i=0; i<vx.path.length;i++){
+                var p = vx.path[i];
+                var start = "this";
+                v = v.replace(`v${i+1}`, `Atom.get(this,"${p.join(".")}"`  );
+            }
+
             return v;
         }
 
         static camelCase(text:string){
             if(text.startsWith("atom-")){
-                text = text.substr(0,5);
+                text = text.substr(5);
             }
 
             return text.split('-').map((v,i)=>{
@@ -68,21 +191,28 @@ namespace HtmlCompiler{
 
                     if(v.startsWith("[") && v.endsWith("]")){
                         // one way binding...
+                        inits.push(`this.bind(e,'${ckey}',${HtmlContent.processOneWayBinding(v)});`)
                         continue;
                     }
                     if(v.startsWith("$[") && v.endsWith("]")){
                         // two way binding...
+                        inits.push(`this.bind(e,'${ckey}',${HtmlContent.processTwoWayBinding(v)});`)
                         continue;
                     }
                     ca[key] = aa[key];
                 }
 
                 if(inits.length){
-                    ca["data-atom-init"] = `${tags.component}.t${tags.tags.length}`;
+                    ca["data-atom-init"] = `${tags.component}_t${tags.tags.length}`;
                     tags.tags.push(new TagInitializer(inits));
                 }
 
                 r.push(ca);
+            }
+
+            var text = a.children.filter(f=>f.type == 'text' && f.data.trim() ).map(f=>f.data).join("");
+            if(text){
+                ca["text"] = text;
             }
 
 
@@ -110,6 +240,10 @@ namespace HtmlCompiler{
             return `(function(window,baseType){
 
                 window.jsonML["WebAtoms.${name}.template"] = ${result};
+
+                (function(window,WebAtoms){
+                    ${tags.toScript()}
+                }).call(WebAtoms.PageSetup,window,WebAtoms);
 
                 return classCreatorEx({
                     name: ${name},
@@ -174,7 +308,7 @@ namespace HtmlCompiler{
     }
 
 
-    export class HtmlCompiler{
+    export class ComponentGenerator{
         outFolder: string;
         outFile: string;
 
@@ -230,16 +364,17 @@ namespace HtmlCompiler{
                 clearTimeout(this.last);
             }
             this.last = setTimeout(()=>{
+                this.last = 0;
                 this.compile();
             },100);
         }
     }
 
     if(process && process.argv && process.argv[2] && process.argv[3]){
-        var cc = new HtmlCompiler(process.argv[2], process.argv[3] );
+        var cc = new ComponentGenerator(process.argv[2], process.argv[3] );
     }
 
-    global["HtmlContent"] = HtmlContent;
-    global["HtmlCompiler"] = HtmlCompiler;
+    //global["HtmlContent"] = HtmlContent;
+    //global["HtmlCompiler"] = ComponentGenerator;
 
 }
