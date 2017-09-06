@@ -3,11 +3,12 @@
         "target": "es5",
         "watch": true,
         "experimentalDecorators": true,
-        "module":"system",
+        "module":"commonjs",
         "sourceMap": true,
-        "outFile": "../dist/cc.js",
         "declaration": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "diagnostics": true,
+        "outDir": "../bin"
     },
     "include": [
         "src/**/*"

@@ -7,8 +7,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceRoot}/app.js"
+            "name": "Launch Test",
+            "program": "${workspaceRoot}/cc/tests/test.js"
         }
     ]
 }
