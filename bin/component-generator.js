@@ -223,7 +223,7 @@ var ComponentGenerator;
         }
         Object.defineProperty(HtmlFile.prototype, "currentTime", {
             get: function () {
-                return fs.statSync(this.file).ctimeMs;
+                return fs.statSync(this.file).mtimeMs;
             },
             enumerable: true,
             configurable: true
@@ -244,6 +244,7 @@ var ComponentGenerator;
             this.loadFiles(folder);
             this.watch();
             this.compile();
+            console.log("Watching for changes in " + folder);
         }
         ComponentGenerator.prototype.loadFiles = function (folder) {
             // scan all html files...
@@ -255,7 +256,7 @@ var ComponentGenerator;
                     this.loadFiles(fullName);
                 }
                 else {
-                    console.log("compiling " + fullName);
+                    console.log("Generating " + fullName);
                     this.files.push(new HtmlFile(fullName));
                 }
             }
@@ -275,7 +276,6 @@ var ComponentGenerator;
         ComponentGenerator.prototype.watch = function () {
             var _this = this;
             fs.watch(this.folder, { recursive: true }, function (event, file) {
-                console.log("File - " + event + " - " + file);
                 _this.postCompile();
             });
         };

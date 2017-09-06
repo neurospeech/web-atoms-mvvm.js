@@ -308,7 +308,7 @@ namespace ComponentGenerator{
         compiled:string;
 
         get currentTime(){
-            return fs.statSync(this.file).ctimeMs;
+            return fs.statSync(this.file).mtimeMs;
         }
 
 
@@ -341,7 +341,7 @@ namespace ComponentGenerator{
                 if(s.isDirectory()){
                     this.loadFiles(fullName)
                 }else{
-                    console.log(`compiling ${fullName}`);
+                    console.log(`Generating ${fullName}`);
                     this.files.push( new HtmlFile(fullName));
                 }
             }
@@ -369,6 +369,8 @@ namespace ComponentGenerator{
             this.watch();
             this.compile();
 
+            console.log(`Watching for changes in ${folder}`);
+            
         }
 
 
@@ -389,7 +391,6 @@ namespace ComponentGenerator{
 
         watch():void{
             fs.watch(this.folder,{ recursive: true}, (event,file)=>{
-                console.log(`File - ${event} - ${file}`);
                 this.postCompile();
             });
         }
