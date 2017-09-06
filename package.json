@@ -31,5 +31,9 @@
     "url": "https://github.com/neurospeech/web-atoms-mvvm.js/issues"
   },
   "homepage": "https://github.com/neurospeech/web-atoms-mvvm.js#readme",
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/node": "^8.0.26",
+    "htmlparser": "^1.7.7",
+    "systemjs": "^0.20.18"
+  }
 }

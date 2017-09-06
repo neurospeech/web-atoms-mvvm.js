@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "watch": true,
+        "experimentalDecorators": true,
+        "module":"system",
+        "sourceMap": true,
+        "outFile": "../dist/cc.js",
+        "declaration": true,
+        "moduleResolution": "node"
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "files": [
+        "../node_modules/typescript/lib/lib.es6.d.ts"
+    ],
+    "exclude": [
+    ]
+}
