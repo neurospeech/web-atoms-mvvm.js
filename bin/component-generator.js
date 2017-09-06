@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var htmlparser_1 = require("htmlparser");
+var htmlparser2_1 = require("htmlparser2");
 var fs = require("fs");
+debugger;
 var ComponentGenerator;
 (function (ComponentGenerator_1) {
     var AtomEvaluator = {
@@ -95,8 +96,18 @@ var ComponentGenerator;
             v = " " + JSON.stringify(plist) + ", 1 ";
             return v;
         };
+        HtmlContent.escapeLambda = function (v) {
+            v = v.trim();
+            if (v.startsWith("()=>") || v.startsWith("() =>")) {
+                v = v.replace("()=>", "");
+                v = v.replace("() =>", "");
+                return "function(){ return " + v + "; }";
+            }
+            return v;
+        };
         HtmlContent.processOneWayBinding = function (v) {
             v = v.substr(1, v.length - 2);
+            v = HtmlContent.escapeLambda(v);
             var vx = AtomEvaluator.parse(v);
             v = "";
             var plist = vx.path.map(function (p, i) { return "v" + (i + 1); }).join(",");
@@ -105,12 +116,13 @@ var ComponentGenerator;
         };
         HtmlContent.processOneTimeBinding = function (v) {
             v = v.substr(1, v.length - 2);
+            v = HtmlContent.escapeLambda(v);
             var vx = AtomEvaluator.parse(v);
             v = vx.original;
             for (var i = 0; i < vx.path.length; i++) {
                 var p = vx.path[i];
                 var start = "this";
-                v = v.replace("v" + (i + 1), "Atom.get(this,\"" + p.join(".") + "\"");
+                v = v.replace("v" + (i + 1), "Atom.get(this,\"" + p.join(".") + "\")");
             }
             return v;
         };
@@ -182,16 +194,17 @@ var ComponentGenerator;
             }
             var tags = new TagInitializerList(name);
             result = "[" + HtmlContent.mapNode(node, tags).map(function (n) { return JSON.stringify(n, undefined, 2); }).join(",\r\n") + "]";
-            return "(function(window,baseType){\n\n                window.jsonML[\"WebAtoms." + name + ".template\"] = " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: " + name + ",\n                    base: baseType,\n                    start: function(){\n\n                    }\n                })\n            })(window, WebAtoms.AtomControl.prototype)";
+            return "(function(window,baseType){\n\n                window.jsonML[\"WebAtoms." + name + ".template\"] = " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(){\n\n                    }\n                })\n            })(window, WebAtoms.AtomControl.prototype)";
         };
         HtmlContent.parse = function (input) {
-            var handler = new htmlparser_1.DefaultHandler(function (error, dom) {
+            var handler = new htmlparser2_1.DomHandler(function (error, dom) {
                 if (error) {
                     console.error(error);
                 }
             });
-            var parser = new htmlparser_1.Parser(handler);
-            parser.parseComplete(input);
+            var parser = new htmlparser2_1.Parser(handler);
+            parser.write(input);
+            parser.end();
             var result = "";
             for (var _i = 0, _a = handler.dom; _i < _a.length; _i++) {
                 var node = _a[_i];
@@ -228,14 +241,25 @@ var ComponentGenerator;
             this.outFile = outFile;
             this.outFolder = outFolder;
             this.files = [];
-            // scan all html files...
-            for (var _i = 0, _a = fs.readdirSync(folder); _i < _a.length; _i++) {
-                var file = _a[_i];
-                this.files.push(new HtmlFile(file));
-            }
+            this.loadFiles(folder);
             this.watch();
             this.compile();
         }
+        ComponentGenerator.prototype.loadFiles = function (folder) {
+            // scan all html files...
+            for (var _i = 0, _a = fs.readdirSync(folder); _i < _a.length; _i++) {
+                var file = _a[_i];
+                var fullName = folder + "/" + file;
+                var s = fs.statSync(fullName);
+                if (s.isDirectory()) {
+                    this.loadFiles(fullName);
+                }
+                else {
+                    console.log("compiling " + fullName);
+                    this.files.push(new HtmlFile(fullName));
+                }
+            }
+        };
         ComponentGenerator.prototype.compile = function () {
             var result = "";
             for (var _i = 0, _a = this.files; _i < _a.length; _i++) {
@@ -251,6 +275,7 @@ var ComponentGenerator;
         ComponentGenerator.prototype.watch = function () {
             var _this = this;
             fs.watch(this.folder, { recursive: true }, function (event, file) {
+                console.log("File - " + event + " - " + file);
                 _this.postCompile();
             });
         };
@@ -270,7 +295,7 @@ var ComponentGenerator;
     if (process && process.argv && process.argv[2] && process.argv[3]) {
         var cc = new ComponentGenerator(process.argv[2], process.argv[3]);
     }
-    //global["HtmlContent"] = HtmlContent;
-    //global["HtmlCompiler"] = ComponentGenerator;
+    global["HtmlContent"] = HtmlContent;
+    global["ComponentGenerator"] = ComponentGenerator;
 })(ComponentGenerator || (ComponentGenerator = {}));
 //# sourceMappingURL=component-generator.js.map

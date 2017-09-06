@@ -1,5 +1,7 @@
-import {DefaultHandler,Parser} from "htmlparser";
+import {DomHandler,Parser} from "htmlparser2";
 import * as fs from "fs";
+
+debugger;
 
 namespace ComponentGenerator{
 
@@ -120,8 +122,24 @@ namespace ComponentGenerator{
 
             return v;
         }
+
+        static escapeLambda(v:string):string{
+
+            v = v.trim();
+
+            if(v.startsWith("()=>") || v.startsWith("() =>")){
+                v = v.replace("()=>","");
+                v = v.replace("() =>","");
+                return `function(){ return ${v}; }`;
+            }
+
+            return v;
+        }
+
         static processOneWayBinding(v: string): string {
             v = v.substr(1,v.length-2);
+
+            v = HtmlContent.escapeLambda(v);
             
             var vx = AtomEvaluator.parse(v);
 
@@ -133,8 +151,11 @@ namespace ComponentGenerator{
 
             return v;
         }
+
         static processOneTimeBinding(v: string): string {
             v = v.substr(1,v.length-2);
+
+            v = HtmlContent.escapeLambda(v);
 
             var vx = AtomEvaluator.parse(v);
 
@@ -143,7 +164,7 @@ namespace ComponentGenerator{
             for(var i=0; i<vx.path.length;i++){
                 var p = vx.path[i];
                 var start = "this";
-                v = v.replace(`v${i+1}`, `Atom.get(this,"${p.join(".")}"`  );
+                v = v.replace(`v${i+1}`, `Atom.get(this,"${p.join(".")}")`  );
             }
 
             return v;
@@ -246,7 +267,7 @@ namespace ComponentGenerator{
                 }).call(WebAtoms.PageSetup,window,WebAtoms);
 
                 return classCreatorEx({
-                    name: ${name},
+                    name: "${name}",
                     base: baseType,
                     start: function(){
 
@@ -258,14 +279,15 @@ namespace ComponentGenerator{
 
         static parse(input:string):string{
 
-            var handler = new DefaultHandler(function (error, dom) {
+            var handler = new DomHandler(function (error, dom) {
                 if (error)
                 {
                     console.error(error);
                 }
             });
             var parser = new Parser(handler);
-            parser.parseComplete(input);    
+            parser.write(input);    
+            parser.end();
 
             var result = "";
 
@@ -309,6 +331,22 @@ namespace ComponentGenerator{
 
 
     export class ComponentGenerator{
+
+        loadFiles(folder: string){
+            // scan all html files...
+            for(var file of fs.readdirSync(folder)){
+                
+                var fullName = folder + "/" + file;
+                var s = fs.statSync(fullName);
+                if(s.isDirectory()){
+                    this.loadFiles(fullName)
+                }else{
+                    console.log(`compiling ${fullName}`);
+                    this.files.push( new HtmlFile(fullName));
+                }
+            }
+        }
+
         outFolder: string;
         outFile: string;
 
@@ -325,10 +363,8 @@ namespace ComponentGenerator{
 
             this.files = [];
 
-            // scan all html files...
-            for(var file of fs.readdirSync(folder)){
-                this.files.push( new HtmlFile(file));
-            }
+            this.loadFiles(folder);
+
 
             this.watch();
             this.compile();
@@ -353,6 +389,7 @@ namespace ComponentGenerator{
 
         watch():void{
             fs.watch(this.folder,{ recursive: true}, (event,file)=>{
+                console.log(`File - ${event} - ${file}`);
                 this.postCompile();
             });
         }
@@ -374,7 +411,7 @@ namespace ComponentGenerator{
         var cc = new ComponentGenerator(process.argv[2], process.argv[3] );
     }
 
-    //global["HtmlContent"] = HtmlContent;
-    //global["HtmlCompiler"] = ComponentGenerator;
+    global["HtmlContent"] = HtmlContent;
+    global["ComponentGenerator"] = ComponentGenerator;
 
 }
