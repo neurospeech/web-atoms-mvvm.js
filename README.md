@@ -19,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.51/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.59/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -462,14 +462,14 @@ binds to `enabled` property.
         //      }
         //
         //      var servie = WebAtoms.DI.resolve(BackendService);
-        static resolve(c:{new ()}):any;
+        static resolve<T>(c:new () => T):T;
 
 
         // register a type in code instead of @DIGlobal
         // example,
         //
         //      WebAtoms.DI.register(BackendService, () => new BackendService()  );
-        static register(c:{new ()}, factory: ()=> any);
+        static register<T>(c:new ()=>T, factory: ()=> T);
 
 
         // manually override global instance, if you want to override factory, you can
@@ -478,7 +478,24 @@ binds to `enabled` property.
         //
         //      WebAtoms.DI.override(BackendService, new MockBackendService());
         // 
-        static override(c:{new ()}, instance:any);
+        static override<T>(c:new () => T, instance:T);
+
+    }
+
+```
+
+## Window Service
+
+```typescript
+
+    @DIGlobal
+    class WindowService{
+
+        async confirm(msg:string, title?:string):Promise<boolean>
+
+        async alert(msg:string, title?:string): Promise<boolean>
+
+        async openWindow<T>( windowType: (string | new() => AtomWindow), viewModel?: AtomViewModel ): Promise<T>
 
     }
 

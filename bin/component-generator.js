@@ -186,7 +186,7 @@ var ComponentGenerator;
             }
             var text = a.children.filter(function (f) { return f.type == 'text' && f.data.trim(); }).map(function (f) { return f.data; }).join("");
             if (text) {
-                ca["atom-text"] = text;
+                ca["atom-text"] = text.trim();
             }
             var processedChildren = a.children.filter(function (f) { return f.type == 'tag'; }).map(function (n) { return HtmlContent.mapNode(n, tags); });
             if (children) {
@@ -207,9 +207,17 @@ var ComponentGenerator;
             if (node.type != 'tag')
                 return "";
             var result = "";
+            var type = "WebAtoms.AtomControl";
             if (node.attribs) {
                 name = node.attribs["atom-component"];
                 delete node.attribs["atom-component"];
+                if (node.attribs["atom-type"]) {
+                    type = node.attribs["atom-type"];
+                    delete node.attribs["atom-type"];
+                    if (type.startsWith("Atom")) {
+                        type = "WebAtoms." + type;
+                    }
+                }
             }
             var tags = new TagInitializerList(name);
             var rootChildren = [];
@@ -219,10 +227,10 @@ var ComponentGenerator;
                 if (!rootNode.hasOwnProperty(key))
                     continue;
                 var value = rootNode[key];
-                startScript += "AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
+                startScript += " if(!AtomUI.attr(e,'" + key + "')) AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
             }
             result = JSON.stringify(rootChildren, undefined, 2);
-            return "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{}\n                })\n            })(window, WebAtoms.AtomControl.prototype)";
+            return "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{}\n                })\n            })(window, " + type + ".prototype)";
         };
         HtmlContent.parse = function (input) {
             var handler = new htmlparser2_1.DomHandler(function (error, dom) {
@@ -302,7 +310,8 @@ var ComponentGenerator;
                 result += file.compiled;
             }
             fs.writeFileSync(this.outFile, result);
-            console.log("File generated " + this.outFile);
+            var now = new Date();
+            console.log(now.toLocaleTimeString() + " - File generated " + this.outFile);
         };
         ComponentGenerator.prototype.watch = function () {
             var _this = this;

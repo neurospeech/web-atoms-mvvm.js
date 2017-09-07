@@ -247,7 +247,7 @@ namespace ComponentGenerator{
 
             var text = a.children.filter(f=>f.type == 'text' && f.data.trim() ).map(f=>f.data).join("");
             if(text){
-                ca["atom-text"] = text;
+                ca["atom-text"] = text.trim();
             }
 
             var processedChildren = a.children.filter(f=>f.type == 'tag').map((n)=> HtmlContent.mapNode(n,tags));
@@ -269,9 +269,20 @@ namespace ComponentGenerator{
                 return "";
             var result = "";
 
+            var type = "WebAtoms.AtomControl";
+
             if(node.attribs){
                 name = node.attribs["atom-component"];
                 delete node.attribs["atom-component"];
+
+                if(node.attribs["atom-type"]){
+                    type = node.attribs["atom-type"]
+                    delete node.attribs["atom-type"];
+
+                    if(type.startsWith("Atom")){
+                        type = "WebAtoms." + type;
+                    }
+                }
             }
 
             var tags:TagInitializerList = new TagInitializerList(name);
@@ -284,7 +295,7 @@ namespace ComponentGenerator{
             for(var key in rootNode){
                 if(!rootNode.hasOwnProperty(key)) continue;
                 var value = rootNode[key];
-                startScript += `AtomUI.attr(e, '${key}', '${value}' );\r\n\t\t`;
+                startScript += ` if(!AtomUI.attr(e,'${key}')) AtomUI.attr(e, '${key}', '${value}' );\r\n\t\t`;
             }
 
             result = JSON.stringify( rootChildren, undefined,2);
@@ -308,7 +319,7 @@ namespace ComponentGenerator{
                     methods:{},
                     properties:{}
                 })
-            })(window, WebAtoms.AtomControl.prototype)`;
+            })(window, ${type}.prototype)`;
 
         }
 
@@ -424,7 +435,9 @@ namespace ComponentGenerator{
             }
 
             fs.writeFileSync(this.outFile,result);
-            console.log(`File generated ${this.outFile}`);
+            var now = new Date();
+            
+            console.log(`${now.toLocaleTimeString()} - File generated ${this.outFile}`);
         }
 
         watch():void{
