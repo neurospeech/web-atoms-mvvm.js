@@ -237,12 +237,12 @@ var WebAtoms;
     };
     Atom.delay = function (n, ct) {
         return new Promise(function (resolve, reject) {
-            var n = setTimeout(function () {
+            var t = setTimeout(function () {
                 resolve();
             }, (n));
             if (ct) {
                 ct.registerForCancel(function () {
-                    clearTimeout(n);
+                    clearTimeout(t);
                     reject("cancelled");
                 });
             }

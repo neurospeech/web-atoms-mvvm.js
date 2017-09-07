@@ -44,13 +44,13 @@ namespace WebAtoms{
 
     Atom.delay = function(n:number, ct?:CancelToken):Promise<any>{
         return new Promise((resolve,reject)=>{
-            var n = setTimeout(function() {
+            var t = setTimeout(function() {
                 resolve();
             }, (n));
 
             if(ct){
                 ct.registerForCancel(()=>{
-                    clearTimeout(n);
+                    clearTimeout(t);
                     reject("cancelled");
                 });
             }
