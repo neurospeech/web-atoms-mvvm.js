@@ -532,6 +532,9 @@ folders for better management and component generator will generate single JavaS
 # Component Generator
 
 ```node
+    node node_modules/web-atoms-mvvm/bin/component-generator.js <source-folder> <output-file>
+
+    Example,
     node node_modules/web-atoms-mvvm/bin/component-generator.js app/src app/build/components.js
 ```    
 
