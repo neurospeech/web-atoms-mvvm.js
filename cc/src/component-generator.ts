@@ -127,9 +127,10 @@ namespace ComponentGenerator{
 
             v = v.trim();
 
-            if(v.startsWith("()=>") || v.startsWith("() =>")){
+            if(v.startsWith("()=>") || v.startsWith("() =>") || v.startsWith("=>")){
                 v = v.replace("()=>","");
                 v = v.replace("() =>","");
+                v = v.replace("=>","");
                 return `function(){ return ${v}; }`;
             }
 
@@ -183,7 +184,7 @@ namespace ComponentGenerator{
             }).join("");
         }
 
-        static mapNode(a,tags:TagInitializerList){
+        static mapNode(a,tags:TagInitializerList, children?:Array<any>){
             var r = [a.name];
 
             var ca = {};
@@ -233,12 +234,19 @@ namespace ComponentGenerator{
 
             var text = a.children.filter(f=>f.type == 'text' && f.data.trim() ).map(f=>f.data).join("");
             if(text){
-                ca["text"] = text;
+                ca["atom-text"] = text;
             }
 
+            var processedChildren = a.children.filter(f=>f.type == 'tag').map((n)=> HtmlContent.mapNode(n,tags));
 
-            for(var child of  a.children.filter(f=>f.type == 'tag').map((n)=> HtmlContent.mapNode(n,tags)) ){
-                r.push(child);
+            if(children){
+                for(var child of processedChildren){
+                    children.push(child);
+                }
+            }else{
+                for(var child of processedChildren){
+                    r.push(child);
+                }
             }
             return r;            
         }
@@ -255,7 +263,18 @@ namespace ComponentGenerator{
 
             var tags:TagInitializerList = new TagInitializerList(name);
 
-            result = "[" + HtmlContent.mapNode(node, tags).map(n=> JSON.stringify(n, undefined,2)).join(",\r\n") + "]";
+            var rootChildren = [];
+            var rootNode = HtmlContent.mapNode(node,tags, rootChildren)[1];
+
+            var startScript = "";
+
+            for(var key in rootNode){
+                if(!rootNode.hasOwnProperty(key)) continue;
+                var value = rootNode[key];
+                startScript += `AtomUI.attr(e, '${key}', '${value}' );\r\n\t\t`;
+            }
+
+            result = JSON.stringify( rootChildren, undefined,2);
 
 
             return `window.${name} = (function(window,baseType){
@@ -270,7 +289,9 @@ namespace ComponentGenerator{
                 return classCreatorEx({
                     name: "${name}",
                     base: baseType,
-                    start: function(){},
+                    start: function(e){
+                        ${startScript}
+                    },
                     methods:{},
                     properties:{}
                 })
@@ -342,8 +363,9 @@ namespace ComponentGenerator{
                 if(s.isDirectory()){
                     this.loadFiles(fullName)
                 }else{
-                    console.log(`Generating ${fullName}`);
-                    this.files.push( new HtmlFile(fullName));
+                    if( /\.html$/i.test(fullName)){
+                         this.files.push( new HtmlFile(fullName));
+                    }
                 }
             }
         }
@@ -381,6 +403,7 @@ namespace ComponentGenerator{
 
             for(var file of this.files){
                 if(file.currentTime != file.lastTime){
+                    console.log(`Generating ${file.file}`);
                     file.compile();
                 }
                 result += "\r\n";

@@ -98,9 +98,10 @@ var ComponentGenerator;
         };
         HtmlContent.escapeLambda = function (v) {
             v = v.trim();
-            if (v.startsWith("()=>") || v.startsWith("() =>")) {
+            if (v.startsWith("()=>") || v.startsWith("() =>") || v.startsWith("=>")) {
                 v = v.replace("()=>", "");
                 v = v.replace("() =>", "");
+                v = v.replace("=>", "");
                 return "function(){ return " + v + "; }";
             }
             return v;
@@ -137,7 +138,7 @@ var ComponentGenerator;
                 return v;
             }).join("");
         };
-        HtmlContent.mapNode = function (a, tags) {
+        HtmlContent.mapNode = function (a, tags, children) {
             var r = [a.name];
             var ca = {};
             //debugger;
@@ -176,11 +177,20 @@ var ComponentGenerator;
             }
             var text = a.children.filter(function (f) { return f.type == 'text' && f.data.trim(); }).map(function (f) { return f.data; }).join("");
             if (text) {
-                ca["text"] = text;
+                ca["atom-text"] = text;
             }
-            for (var _i = 0, _a = a.children.filter(function (f) { return f.type == 'tag'; }).map(function (n) { return HtmlContent.mapNode(n, tags); }); _i < _a.length; _i++) {
-                var child = _a[_i];
-                r.push(child);
+            var processedChildren = a.children.filter(function (f) { return f.type == 'tag'; }).map(function (n) { return HtmlContent.mapNode(n, tags); });
+            if (children) {
+                for (var _i = 0, processedChildren_1 = processedChildren; _i < processedChildren_1.length; _i++) {
+                    var child = processedChildren_1[_i];
+                    children.push(child);
+                }
+            }
+            else {
+                for (var _a = 0, processedChildren_2 = processedChildren; _a < processedChildren_2.length; _a++) {
+                    var child = processedChildren_2[_a];
+                    r.push(child);
+                }
             }
             return r;
         };
@@ -193,8 +203,17 @@ var ComponentGenerator;
                 delete node.attribs["atom-component"];
             }
             var tags = new TagInitializerList(name);
-            result = "[" + HtmlContent.mapNode(node, tags).map(function (n) { return JSON.stringify(n, undefined, 2); }).join(",\r\n") + "]";
-            return "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(){},\n                    methods:{},\n                    properties:{}\n                })\n            })(window, WebAtoms.AtomControl.prototype)";
+            var rootChildren = [];
+            var rootNode = HtmlContent.mapNode(node, tags, rootChildren)[1];
+            var startScript = "";
+            for (var key in rootNode) {
+                if (!rootNode.hasOwnProperty(key))
+                    continue;
+                var value = rootNode[key];
+                startScript += "AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
+            }
+            result = JSON.stringify(rootChildren, undefined, 2);
+            return "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{}\n                })\n            })(window, WebAtoms.AtomControl.prototype)";
         };
         HtmlContent.parse = function (input) {
             var handler = new htmlparser2_1.DomHandler(function (error, dom) {
@@ -256,8 +275,9 @@ var ComponentGenerator;
                     this.loadFiles(fullName);
                 }
                 else {
-                    console.log("Generating " + fullName);
-                    this.files.push(new HtmlFile(fullName));
+                    if (/\.html$/i.test(fullName)) {
+                        this.files.push(new HtmlFile(fullName));
+                    }
                 }
             }
         };
@@ -266,6 +286,7 @@ var ComponentGenerator;
             for (var _i = 0, _a = this.files; _i < _a.length; _i++) {
                 var file = _a[_i];
                 if (file.currentTime != file.lastTime) {
+                    console.log("Generating " + file.file);
                     file.compile();
                 }
                 result += "\r\n";
