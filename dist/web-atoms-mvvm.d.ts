@@ -120,6 +120,7 @@ declare namespace WebAtoms.Rest {
         methods: any;
         methodReturns: any;
         encodeData(o: AjaxOptions): AjaxOptions;
+        sendResult(result: any, error?: any): Promise<any>;
         invoke(url: string, method: string, bag: Array<ServiceParameter>, values: Array<any>, returns: {
             new ();
         }): Promise<any>;

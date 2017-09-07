@@ -500,10 +500,15 @@ function methodBuilder(method) {
     return function (url) {
         return function (target, propertyKey, descriptor) {
             var a = target.methods[propertyKey];
+            var oldFunction = descriptor.value;
             descriptor.value = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
+                }
+                var ro = oldFunction.apply(this, args);
+                if (ro) {
+                    return ro;
                 }
                 //console.log("methodBuilder executed");
                 var rn = target.methodReturns[propertyKey];
@@ -588,6 +593,23 @@ var WebAtoms;
             BaseService.prototype.encodeData = function (o) {
                 o.type = "JSON";
                 return o;
+            };
+            BaseService.prototype.sendResult = function (result, error) {
+                return __awaiter(this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        return [2 /*return*/, new Promise(function (resolve, reject) {
+                                if (error) {
+                                    setTimeout(function () {
+                                        reject(error);
+                                    }, 1);
+                                    return;
+                                }
+                                setTimeout(function () {
+                                    resolve(result);
+                                }, 1);
+                            })];
+                    });
+                });
             };
             BaseService.prototype.invoke = function (url, method, bag, values, returns) {
                 return __awaiter(this, void 0, void 0, function () {

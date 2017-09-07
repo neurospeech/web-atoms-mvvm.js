@@ -4,7 +4,15 @@ function methodBuilder(method:string){
 
             var a = target.methods[propertyKey] as Array<WebAtoms.Rest.ServiceParameter>;
 
+            var oldFunction = descriptor.value;
+
             descriptor.value = function(... args:any[]){
+
+                var ro = oldFunction.apply(this, args);
+                if(ro){
+                    return ro;
+                }
+
                 //console.log("methodBuilder executed");
                 var rn = target.methodReturns[propertyKey];
                 var r = target.invoke(url, method ,a, args,rn);
@@ -108,6 +116,20 @@ namespace WebAtoms.Rest{
         public encodeData(o:AjaxOptions):AjaxOptions{
             o.type = "JSON";
             return o;
+        }
+
+        async sendResult(result:any,error?:any):Promise<any>{
+            return new Promise((resolve,reject)=>{
+                if(error){
+                    setTimeout(()=>{
+                        reject(error);
+                    },1);
+                    return;
+                }
+                setTimeout(()=>{
+                    resolve(result);
+                },1);
+            });
         }
 
         async invoke(
