@@ -19,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.24/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.49/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -484,4 +484,52 @@ binds to `enabled` property.
 
 ```
 
+## Web Atoms Custom Controls (Custom Components)
 
+You can create sample component as shown below and it will generate JavaScript which you can use as custom control. 
+As dividing html into smaller fragments is pain, instead, small individual components can be scattered around in
+folders for better management and component generator will generate single JavaScript which can be reused on pages.
+
+```html
+
+    <!-- declaration of custom control -->
+
+    <div 
+        atom-component="TaskList"
+        atom-view-model="{ new TaskListViewModel() }">
+        <div>
+            <input atom-text="$[viewModel.newItem.label]">
+            <button atom-event-click="{ => $viewModel.addTask() }"></button>
+        </div>
+        <div atom-type="AtomItemsControl" atom-items="[$viewModel.items]">
+            <div>
+                <span atom-text="{$data.label}"></span>
+                <button 
+                    atom-type="AtomDeleteButton"
+                    atom-next="{ => $viewModel.deleteTask($data) }"></button>
+            </div>
+        </div>
+    </div>
+```
+
+# Component Generator
+
+```node
+    node node_modules/web-atoms-mvvm/bin/component-generator.js app/src app/build/components.js
+```    
+
+This will generate component.js for all html files app folder.
+
+# Usage
+
+Once component is generated, you can include generated javascript file and create control in your main page as shown below.
+
+```html
+
+    <!-- You can now create instance of TaskList on the main page -->
+    <!-- as shown below -->
+
+    <div atom-type="TaskList">
+    </div>
+
+```
