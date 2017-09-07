@@ -35,7 +35,7 @@ loadScript("bin/component-generator.js");
 
 
 var text = 
-`<div atom-component='TaskList' style-display="{ $scope.items ? '' : 'none' }" atom-view-model='{ new TaskListViewModel() }'> 
+`<div atom-component='TaskList' atom-type='AtomWindow' style-display="{ $scope.items ? '' : 'none' }" atom-view-model='{ new TaskListViewModel() }'> 
     <table 
         atom-type="AtomItemsControl" 
         atom-selected-item="$[viewModel.selectedItem]"

@@ -34,7 +34,7 @@
             DI.factory.push(new DIFactory(key,factory));
         }        
 
-        static resolve(c:any):any{
+        static resolve<T>(c: new () => T ):T{
 
             var f = DI.factory.find( v => v.key === c );
             if(!f){

@@ -50,4 +50,21 @@ namespace WebAtoms{
         }
 
     }
+
+
+    
+    export class AtomWindowViewModel extends AtomViewModel {
+
+        windowName: string;
+        
+        close(result?:any):void{
+            this.broadcast(`atom-window-close:${this.windowName}`,result);
+        }
+
+        cancel():void{
+            this.broadcast(`atom-window-cancel:${this.windowName}`,null);
+        }
+
+    }
+
 }

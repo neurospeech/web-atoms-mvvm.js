@@ -72,6 +72,11 @@ declare namespace WebAtoms {
         init(): Promise<any>;
         dispose(): void;
     }
+    class AtomWindowViewModel extends AtomViewModel {
+        windowName: string;
+        close(result?: any): void;
+        cancel(): void;
+    }
 }
 /**
  * Easy and Simple Dependency Injection
@@ -81,7 +86,7 @@ declare namespace WebAtoms {
         private static factory;
         static instances: any;
         static register(key: any, factory: any): void;
-        static resolve(c: any): any;
+        static resolve<T>(c: new () => T): T;
         static put(key: any, instance: any): void;
     }
     function DIGlobal(): (c: any) => any;
@@ -120,8 +125,18 @@ declare namespace WebAtoms.Rest {
         methods: any;
         methodReturns: any;
         encodeData(o: AjaxOptions): AjaxOptions;
+        sendResult(result: any, error?: any): Promise<any>;
         invoke(url: string, method: string, bag: Array<ServiceParameter>, values: Array<any>, returns: {
             new ();
         }): Promise<any>;
     }
+}
+declare class WindowService {
+    private lastWindowID;
+    alert(msg: string, title?: string): Promise<any>;
+    confirm(msg: string, title?: string): Promise<boolean>;
+    private showAlert(msg, title, confirm);
+    openWindow<T>(windowType: string | {
+        new (e);
+    }, viewModel?: any): Promise<T>;
 }
