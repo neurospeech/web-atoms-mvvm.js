@@ -21,7 +21,7 @@ namespace ComponentGenerator{
                 if (be)
                     return be;
         
-                var regex = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*/gi;
+                var regex = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*(\()?)*/gi;
         
                 var keywords = /(window|viewModel|appScope|scope|data|owner|localScope)/gi;
         
@@ -43,9 +43,22 @@ namespace ComponentGenerator{
                                 match = match.substr(1);
                             }
                         }
-                        path.push(match.split('.'));
+
+                        match = match.split(".");
+
+                        var trail = "";
+
+                        match = match.filter(m => {
+                            if(!m.endsWith("(")){
+                                return true;
+                            }
+                            trail = "." + m;
+                            return false;
+                        });
+
+                        path.push(match);
                         vars.push(nv);
-                        return nv;
+                        return "(" + nv + ")" + trail;
                     }
                     );
         
@@ -330,7 +343,7 @@ namespace ComponentGenerator{
         compiled:string;
 
         get currentTime(){
-            return fs.statSync(this.file).mtimeMs;
+            return fs.statSync(this.file).mtime.getTime();
         }
 
 
@@ -411,6 +424,7 @@ namespace ComponentGenerator{
             }
 
             fs.writeFileSync(this.outFile,result);
+            console.log(`File generated ${this.outFile}`);
         }
 
         watch():void{

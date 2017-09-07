@@ -15,7 +15,7 @@ var ComponentGenerator;
             var be = this.becache[txt];
             if (be)
                 return be;
-            var regex = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*/gi;
+            var regex = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*(\()?)*/gi;
             var keywords = /(window|viewModel|appScope|scope|data|owner|localScope)/gi;
             var path = [];
             var vars = [];
@@ -33,9 +33,18 @@ var ComponentGenerator;
                         match = match.substr(1);
                     }
                 }
-                path.push(match.split('.'));
+                match = match.split(".");
+                var trail = "";
+                match = match.filter(function (m) {
+                    if (!m.endsWith("(")) {
+                        return true;
+                    }
+                    trail = "." + m;
+                    return false;
+                });
+                path.push(match);
                 vars.push(nv);
-                return nv;
+                return "(" + nv + ")" + trail;
             });
             var method = "return " + ms + ";";
             var methodString = method;
@@ -242,7 +251,7 @@ var ComponentGenerator;
         }
         Object.defineProperty(HtmlFile.prototype, "currentTime", {
             get: function () {
-                return fs.statSync(this.file).mtimeMs;
+                return fs.statSync(this.file).mtime.getTime();
             },
             enumerable: true,
             configurable: true
@@ -293,6 +302,7 @@ var ComponentGenerator;
                 result += file.compiled;
             }
             fs.writeFileSync(this.outFile, result);
+            console.log("File generated " + this.outFile);
         };
         ComponentGenerator.prototype.watch = function () {
             var _this = this;

@@ -45,7 +45,7 @@ var text =
                 <span>Test</span>
             </tr>
             <tr>
-                <td atom-event-click="{ ()=> ($viewModel).onClick() }" ></td>
+                <td atom-event-click="[ ()=> $viewModel.onClick($data) ]" ></td>
             </tr>
         </tbody>
     </table>
