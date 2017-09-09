@@ -19,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.63/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.64/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -532,11 +532,25 @@ folders for better management and component generator will generate single JavaS
 # Component Generator
 
 ```node
-    node node_modules/web-atoms-mvvm/bin/component-generator.js <source-folder> <output-file>
+    node node_modules/web-atoms-mvvm/bin/component-generator.js <source-folder>
 
     Example,
-    node node_modules/web-atoms-mvvm/bin/component-generator.js app/src app/build/components.js
+    node node_modules/web-atoms-mvvm/bin/component-generator.js app
 ```    
+
+# waconfig.json
+
+Component generator will lookup waconfig.json and will generate files accordingly. Sample waconfig.json
+
+```json
+
+    {
+        "srcFolder": "src/views",
+        "outFile": "build/views.js",
+        "namespace": ".. (namespace is optional) .."
+    }
+
+```
 
 This will generate component.js for all html files app folder.
 

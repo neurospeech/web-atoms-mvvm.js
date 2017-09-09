@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var htmlparser2_1 = require("htmlparser2");
 var fs = require("fs");
-debugger;
+var path = require("path");
 var ComponentGenerator;
 (function (ComponentGenerator_1) {
     var AtomEvaluator = {
@@ -203,7 +203,19 @@ var ComponentGenerator;
             }
             return r;
         };
-        HtmlContent.parseNode = function (node, name) {
+        return HtmlContent;
+    }());
+    ComponentGenerator_1.HtmlContent = HtmlContent;
+    var HtmlComponent = /** @class */ (function () {
+        function HtmlComponent(node, nsNamespace, name) {
+            this.baseType = null;
+            this.name = null;
+            this.nsNamespace = null;
+            this.generated = null;
+            this.nsNamespace = nsNamespace;
+            this.parseNode(node, name);
+        }
+        HtmlComponent.prototype.parseNode = function (node, name) {
             if (node.type != 'tag')
                 return "";
             var result = "";
@@ -219,6 +231,12 @@ var ComponentGenerator;
                     }
                 }
             }
+            else {
+                if (!name) {
+                    return;
+                }
+            }
+            this.baseType = type;
             var tags = new TagInitializerList(name);
             var rootChildren = [];
             var rootNode = HtmlContent.mapNode(node, tags, rootChildren)[1];
@@ -230,31 +248,44 @@ var ComponentGenerator;
                 startScript += " if(!AtomUI.attr(e,'" + key + "')) AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
             }
             result = JSON.stringify(rootChildren, undefined, 2);
-            return "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{}\n                })\n            })(window, " + type + ".prototype)";
+            name = "" + (this.nsNamespace + "." || "") + name;
+            this.generated = "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{}\n                })\n            })(window, " + type + ".prototype);\r\n";
         };
-        HtmlContent.parse = function (input) {
+        return HtmlComponent;
+    }());
+    ComponentGenerator_1.HtmlComponent = HtmlComponent;
+    var HtmlFragment = /** @class */ (function () {
+        function HtmlFragment(html, nsNamespace) {
+            this.baseType = null;
+            this.nodes = [];
+            this.html = html;
+            this.nsNamesapce = nsNamespace;
+        }
+        HtmlFragment.prototype.compile = function () {
+            this.nodes = [];
             var handler = new htmlparser2_1.DomHandler(function (error, dom) {
                 if (error) {
                     console.error(error);
                 }
             });
             var parser = new htmlparser2_1.Parser(handler);
-            parser.write(input);
+            parser.write(this.html);
             parser.end();
-            var result = "";
             for (var _i = 0, _a = handler.dom; _i < _a.length; _i++) {
                 var node = _a[_i];
-                result += "\r\n";
-                result += HtmlContent.parseNode(node);
+                var cn = new HtmlComponent(node, this.nsNamesapce);
+                if (cn.generated) {
+                    this.nodes.push(cn);
+                }
             }
-            return result;
         };
-        return HtmlContent;
+        return HtmlFragment;
     }());
-    ComponentGenerator_1.HtmlContent = HtmlContent;
+    ComponentGenerator_1.HtmlFragment = HtmlFragment;
     var HtmlFile = /** @class */ (function () {
-        function HtmlFile(file) {
+        function HtmlFile(file, nsNamespace) {
             this.file = file;
+            this.nsNamespace = nsNamespace;
             this.lastTime = 0;
         }
         Object.defineProperty(HtmlFile.prototype, "currentTime", {
@@ -265,19 +296,21 @@ var ComponentGenerator;
             configurable: true
         });
         HtmlFile.prototype.compile = function () {
-            this.compiled = HtmlContent.parse(fs.readFileSync(this.file, "utf8"));
+            var html = fs.readFileSync(this.file, 'utf8');
+            var node = new HtmlFragment(html, this.nsNamespace);
+            node.compile();
+            this.nodes = node.nodes;
             this.lastTime = this.currentTime;
         };
         return HtmlFile;
     }());
     ComponentGenerator_1.HtmlFile = HtmlFile;
     var ComponentGenerator = /** @class */ (function () {
-        function ComponentGenerator(folder, outFile, outFolder) {
+        function ComponentGenerator(folder, outFile, nsNamespace) {
             this.folder = folder;
             this.outFile = outFile;
-            this.outFolder = outFolder;
+            this.nsNamesapce = nsNamespace;
             this.files = [];
-            this.loadFiles(folder);
             this.watch();
             this.compile();
             console.log("Watching for changes in " + folder);
@@ -286,28 +319,62 @@ var ComponentGenerator;
             // scan all html files...
             for (var _i = 0, _a = fs.readdirSync(folder); _i < _a.length; _i++) {
                 var file = _a[_i];
-                var fullName = folder + "/" + file;
+                var fullName = path.join(folder, file);
                 var s = fs.statSync(fullName);
                 if (s.isDirectory()) {
                     this.loadFiles(fullName);
                 }
                 else {
                     if (/\.html$/i.test(fullName)) {
-                        this.files.push(new HtmlFile(fullName));
+                        if (this.files.findIndex(function (x) { return x.file == fullName; }) !== -1)
+                            continue;
+                        this.files.push(new HtmlFile(fullName, this.nsNamesapce));
                     }
                 }
             }
         };
         ComponentGenerator.prototype.compile = function () {
-            var result = "";
+            this.loadFiles(this.folder);
+            var deletedFiles = [];
+            var nodes = [];
             for (var _i = 0, _a = this.files; _i < _a.length; _i++) {
                 var file = _a[_i];
                 if (file.currentTime != file.lastTime) {
+                    if (!fs.existsSync(file.file)) {
+                        deletedFiles.push(file);
+                    }
                     console.log("Generating " + file.file);
                     file.compile();
                 }
+                for (var _b = 0, _c = file.nodes; _b < _c.length; _b++) {
+                    var n = _c[_b];
+                    nodes.push(n);
+                }
+            }
+            // sort by baseType...
+            nodes = nodes.sort(function (a, b) {
+                if (a.baseType == b.name) {
+                    return -1;
+                }
+                return 0;
+            });
+            for (var _d = 0, deletedFiles_1 = deletedFiles; _d < deletedFiles_1.length; _d++) {
+                var file = deletedFiles_1[_d];
+                this.files = this.files.filter(function (x) { return x.file == file.file; });
+            }
+            var result = "";
+            for (var _e = 0, nodes_1 = nodes; _e < nodes_1.length; _e++) {
+                var node = nodes_1[_e];
+                if (node.nsNamespace) {
+                    var nsStart = "window";
+                    for (var _f = 0, _g = node.nsNamespace.split('.'); _f < _g.length; _f++) {
+                        var ns = _g[_f];
+                        result += "if(!" + nsStart + "['" + ns + "']){\n                            " + nsStart + "['" + ns + "'] = {};\n                        }";
+                        nsStart += "." + ns;
+                    }
+                }
                 result += "\r\n";
-                result += file.compiled;
+                result += node.generated;
             }
             fs.writeFileSync(this.outFile, result);
             var now = new Date();
@@ -332,8 +399,39 @@ var ComponentGenerator;
         return ComponentGenerator;
     }());
     ComponentGenerator_1.ComponentGenerator = ComponentGenerator;
-    if (process && process.argv && process.argv[2] && process.argv[3]) {
-        var cc = new ComponentGenerator(process.argv[2], process.argv[3]);
+    function parseFolder(folder) {
+        var dirs = [];
+        for (var _i = 0, _a = fs.readdirSync(folder); _i < _a.length; _i++) {
+            var file = _a[_i];
+            var fullName = path.join(folder, file);
+            var stat = fs.statSync(fullName);
+            if (stat.isDirectory()) {
+                dirs.push(fullName);
+            }
+            else {
+                if (/^waconfig\.json$/i.test(file)) {
+                    var config = JSON.parse(fs.readFileSync(fullName, 'utf8'));
+                    config.srcFolder = path.join(folder, config.srcFolder);
+                    config.outFile = path.join(folder, config.outFile);
+                    var cc = new ComponentGenerator(config.srcFolder, config.outFile, config.namespace || "");
+                    return;
+                }
+            }
+        }
+        for (var _b = 0, dirs_1 = dirs; _b < dirs_1.length; _b++) {
+            var dir = dirs_1[_b];
+            parseFolder(dir);
+        }
+    }
+    if (process && process.argv) {
+        if (process.argv[2]) {
+            if (process.argv[3]) {
+                var cc = new ComponentGenerator(process.argv[2], process.argv[3]);
+            }
+            else {
+                parseFolder(process.argv[2]);
+            }
+        }
     }
     global["HtmlContent"] = HtmlContent;
     global["ComponentGenerator"] = ComponentGenerator;

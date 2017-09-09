@@ -122,6 +122,9 @@ declare namespace WebAtoms.Rest {
         cancel: CancelToken;
     }
     class BaseService {
+        testMode: boolean;
+        showProgress: boolean;
+        showError: boolean;
         methods: any;
         methodReturns: any;
         encodeData(o: AjaxOptions): AjaxOptions;
