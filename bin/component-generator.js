@@ -364,6 +364,14 @@ var ComponentGenerator;
             var result = "";
             for (var _e = 0, nodes_1 = nodes; _e < nodes_1.length; _e++) {
                 var node = nodes_1[_e];
+                if (node.nsNamespace) {
+                    var nsStart = "window";
+                    for (var _f = 0, _g = node.nsNamespace.split('.'); _f < _g.length; _f++) {
+                        var ns = _g[_f];
+                        result += "if(!" + nsStart + "['" + ns + "']){\n                            " + nsStart + "['" + ns + "'] = {};\n                        }";
+                        nsStart += "." + ns;
+                    }
+                }
                 result += "\r\n";
                 result += node.generated;
             }

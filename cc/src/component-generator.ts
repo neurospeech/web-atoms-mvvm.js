@@ -513,6 +513,17 @@ namespace ComponentGenerator{
 
             var result = "";
             for(var node of nodes){
+
+                if(node.nsNamespace){
+                    var nsStart = "window";
+                    for(var ns of node.nsNamespace.split('.')){
+                        result += `if(!${nsStart}['${ns}']){
+                            ${nsStart}['${ns}'] = {};
+                        }`;
+                        nsStart += "." + ns;
+                    }
+                }
+
                 result += "\r\n";
                 result += node.generated;
             }

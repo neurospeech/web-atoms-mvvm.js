@@ -1,5 +1,5 @@
 {
     "srcFolder":"src",
     "outFile": "build/views.js",
-    "namespace":"tests"
+    "namespace":"Test.Namespace"
 }
