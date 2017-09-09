@@ -264,14 +264,33 @@ namespace ComponentGenerator{
             return r;            
         }
 
-        static parseNode(node, name?){
+
+
+    }
+
+    export class HtmlComponent{
+
+        baseType:string = null;
+        name:string = null;
+        nsNamespace:string = null;
+        generated:string = null;
+
+        constructor(node,nsNamespace,name?){
+            this.nsNamespace = nsNamespace;
+            this.parseNode(node,name);
+        }
+
+        parseNode(node, name?){
             if(node.type != 'tag')
                 return "";
             var result = "";
 
             var type = "WebAtoms.AtomControl";
 
+
+
             if(node.attribs){
+
                 name = node.attribs["atom-component"];
                 delete node.attribs["atom-component"];
 
@@ -283,7 +302,13 @@ namespace ComponentGenerator{
                         type = "WebAtoms." + type;
                     }
                 }
+            }else{
+                if(!name){
+                    return;
+                }
             }
+
+            this.baseType = type;
 
             var tags:TagInitializerList = new TagInitializerList(name);
 
@@ -300,8 +325,9 @@ namespace ComponentGenerator{
 
             result = JSON.stringify( rootChildren, undefined,2);
 
+            name = `${this.nsNamespace + "." || ""}${name}`;
 
-            return `window.${name} = (function(window,baseType){
+            this.generated = `window.${name} = (function(window,baseType){
 
                 window.Templates.jsonML["${name}.template"] = 
                     ${result};
@@ -323,7 +349,17 @@ namespace ComponentGenerator{
 
         }
 
-        static parse(input:string):string{
+    }
+
+    export class HtmlFragment{
+
+        baseType:string = null;
+
+        nodes:Array<HtmlComponent> = [];
+
+        compile() {
+
+            this.nodes = [];
 
             var handler = new DomHandler(function (error, dom) {
                 if (error)
@@ -332,34 +368,44 @@ namespace ComponentGenerator{
                 }
             });
             var parser = new Parser(handler);
-            parser.write(input);    
+            parser.write(this.html);    
             parser.end();
 
-            var result = "";
-
             for(var node of handler.dom){
-                result += "\r\n";
-                result += HtmlContent.parseNode(node);
+                var cn = new HtmlComponent(node,this.nsNamesapce);
+                if(cn.generated){
+                    this.nodes.push(cn);
+                }
             }
 
-            return result;
+        }
+
+        nsNamesapce: string;
+        html: string;
+        
+
+        constructor(html: string, nsNamespace: string) {
+            this.html = html;
+            this.nsNamesapce = nsNamespace;
         }
     }
 
     export class HtmlFile{
+        nsNamespace: string;
 
         file: string;
         lastTime: number;
 
-        compiled:string;
+        nodes:Array<HtmlComponent>;
 
         get currentTime(){
             return fs.statSync(this.file).mtime.getTime();
         }
 
 
-        constructor(file:string){
+        constructor(file:string,nsNamespace:string){
             this.file = file;
+            this.nsNamespace = nsNamespace;
 
             this.lastTime = 0;
 
@@ -367,7 +413,11 @@ namespace ComponentGenerator{
 
         compile(){
 
-            this.compiled = HtmlContent.parse(fs.readFileSync(this.file,"utf8"));
+            var html = fs.readFileSync(this.file,'utf8');
+
+            var node = new HtmlFragment(html,this.nsNamespace);
+
+            this.nodes = node.nodes;
             this.lastTime = this.currentTime;
         }
 
@@ -377,6 +427,8 @@ namespace ComponentGenerator{
 
 
     export class ComponentGenerator{
+        
+        nsNamesapce: string;
 
         loadFiles(folder: string){
             // scan all html files...
@@ -392,13 +444,12 @@ namespace ComponentGenerator{
                         if(this.files.findIndex( x => x.file == fullName)  !== -1)
                             continue;
 
-                         this.files.push( new HtmlFile(fullName));
+                         this.files.push( new HtmlFile(fullName, this.nsNamesapce));
                     }
                 }
             }
         }
 
-        outFolder: string;
         outFile: string;
 
         folder: string;
@@ -407,10 +458,10 @@ namespace ComponentGenerator{
 
         
 
-        constructor(folder: string, outFile?:string, outFolder?:string) {
+        constructor(folder: string, outFile?:string, nsNamespace?:string) {
             this.folder = folder;
             this.outFile = outFile;
-            this.outFolder = outFolder;
+            this.nsNamesapce = nsNamespace;
 
             this.files = [];
 
@@ -427,9 +478,10 @@ namespace ComponentGenerator{
 
             this.loadFiles(this.folder);
 
-            var result = "";
 
             var deletedFiles:Array<HtmlFile> = [];
+
+            var nodes:Array<HtmlComponent> = [];
 
             for(var file of this.files){
                 if(file.currentTime != file.lastTime){
@@ -441,12 +493,28 @@ namespace ComponentGenerator{
                     console.log(`Generating ${file.file}`);
                     file.compile();
                 }
-                result += "\r\n";
-                result += file.compiled;
+                for(var n of file.nodes){
+                    nodes.push(n);
+                }
             }
+
+
+            // sort by baseType...
+            nodes = nodes.sort( (a,b) => {
+                if(a.baseType == b.name){
+                    return -1;
+                }
+                return 0;
+            });
 
             for(var file of deletedFiles){
                 this.files = this.files.filter( x => x.file == file.file );
+            }
+
+            var result = "";
+            for(var node of nodes){
+                result += "\r\n";
+                result += node.generated;
             }
 
             fs.writeFileSync(this.outFile,result);
@@ -492,7 +560,7 @@ namespace ComponentGenerator{
                     config.srcFolder = path.join(folder,config.srcFolder);
                     config.outFile = path.join(folder,config.outFile);
 
-                    var cc = new ComponentGenerator(config.srcFolder, config.outFile);
+                    var cc = new ComponentGenerator(config.srcFolder, config.outFile, config.namespace || "");
                     return;
                 }
             }

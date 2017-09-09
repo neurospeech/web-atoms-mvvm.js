@@ -1,4 +1,5 @@
 {
     "srcFolder":"src",
-    "outFile": "build/views.js"
+    "outFile": "build/views.js",
+    "namespace":"tests"
 }

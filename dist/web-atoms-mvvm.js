@@ -202,6 +202,18 @@ var WebAtoms;
         return DisposableAction;
     }());
     WebAtoms.DisposableAction = DisposableAction;
+    var oldCreateControl = Atom.createControl;
+    Atom.createControl = function (element, type, data, newScope) {
+        if (type) {
+            if (type.constructor === String || (typeof type) === 'string') {
+                var t = WebAtoms[type] || Atom.get(window, type);
+                if (t) {
+                    type = t;
+                }
+            }
+        }
+        return oldCreateControl.call(Atom, element, type, data, newScope);
+    };
     Atom.using = function (d, f) {
         try {
             f();
