@@ -345,7 +345,7 @@ namespace ComponentGenerator{
                     methods:{},
                     properties:{}
                 })
-            })(window, ${type}.prototype)`;
+            })(window, ${type}.prototype);\r\n`;
 
         }
 
@@ -416,7 +416,7 @@ namespace ComponentGenerator{
             var html = fs.readFileSync(this.file,'utf8');
 
             var node = new HtmlFragment(html,this.nsNamespace);
-
+            node.compile();
             this.nodes = node.nodes;
             this.lastTime = this.currentTime;
         }
@@ -431,6 +431,7 @@ namespace ComponentGenerator{
         nsNamesapce: string;
 
         loadFiles(folder: string){
+
             // scan all html files...
             for(var file of fs.readdirSync(folder)){
                 

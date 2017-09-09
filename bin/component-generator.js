@@ -249,7 +249,7 @@ var ComponentGenerator;
             }
             result = JSON.stringify(rootChildren, undefined, 2);
             name = "" + (this.nsNamespace + "." || "") + name;
-            this.generated = "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{}\n                })\n            })(window, " + type + ".prototype)";
+            this.generated = "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{}\n                })\n            })(window, " + type + ".prototype);\r\n";
         };
         return HtmlComponent;
     }());
@@ -298,6 +298,7 @@ var ComponentGenerator;
         HtmlFile.prototype.compile = function () {
             var html = fs.readFileSync(this.file, 'utf8');
             var node = new HtmlFragment(html, this.nsNamespace);
+            node.compile();
             this.nodes = node.nodes;
             this.lastTime = this.currentTime;
         };

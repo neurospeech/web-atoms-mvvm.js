@@ -8,15 +8,21 @@ function methodBuilder(method:string){
 
             descriptor.value = function(... args:any[]){
 
-                var ro = oldFunction.apply(this, args);
-                if(ro){
-                    return ro;
+                if(this.testMode){
+
+                    console.log(`Test Mode: ${url}`);
+
+                    var ro = oldFunction.apply(this, args);
+                    if(ro){
+                        return ro;
+                    }
                 }
 
-                //console.log("methodBuilder executed");
-                var rn = target.methodReturns[propertyKey];
-                var r = target.invoke(url, method ,a, args,rn);
-                //console.log(r);
+                var rn = null;
+                if(target.methodReturns){
+                    rn = target.methodReturns[propertyKey];
+                }                
+                var r = this.invoke(url, method ,a, args,rn);
                 return r;
             };
 
@@ -105,7 +111,16 @@ namespace WebAtoms.Rest{
         public cancel: CancelToken;
     }
 
+    var AtomPromise = window["AtomPromise"];
+
     export class BaseService{
+
+
+        public testMode: boolean  = false;
+
+        public showProgress: boolean = true;
+        
+        public showError: boolean = true;
 
         //bs
 
@@ -164,7 +179,7 @@ namespace WebAtoms.Rest{
             }
             options.url = url;            
 
-            var pr = Atom.json(url,options);
+            var pr = AtomPromise.json(url,null,options);
 
 
             if(options.cancel){
@@ -172,8 +187,6 @@ namespace WebAtoms.Rest{
                     pr.abort();
                 });
             }
-
-            pr.invoke("Ok");
 
             return new Promise((resolve: (v?: any | PromiseLike<any>) => void, reject: (reason?:any) => void)=>{
 
@@ -193,9 +206,14 @@ namespace WebAtoms.Rest{
 
                     resolve(v);
                 });
-                pr.failed( e=>{
-                    reject(e);
+                pr.failed( () =>{
+                    reject(pr.error.msg);
                 });
+
+                
+                pr.showError(this.showError);
+                pr.showProgress(this.showProgress);
+                pr.invoke("Ok");                 
             });
         }
 

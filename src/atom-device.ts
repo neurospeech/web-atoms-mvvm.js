@@ -18,8 +18,10 @@ namespace WebAtoms{
 
     }
 
-    var oldCreateControl = Atom.createControl;
-    Atom.createControl = function(element,type,data,newScope){
+    var AtomUI = window["AtomUI"];
+
+    var oldCreateControl = AtomUI.createControl;
+    AtomUI.createControl = function(element,type,data,newScope){
         
         if(type){
             if(type.constructor === String || (typeof type) === 'string'){

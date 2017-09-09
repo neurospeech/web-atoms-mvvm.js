@@ -202,8 +202,9 @@ var WebAtoms;
         return DisposableAction;
     }());
     WebAtoms.DisposableAction = DisposableAction;
-    var oldCreateControl = Atom.createControl;
-    Atom.createControl = function (element, type, data, newScope) {
+    var AtomUI = window["AtomUI"];
+    var oldCreateControl = AtomUI.createControl;
+    AtomUI.createControl = function (element, type, data, newScope) {
         if (type) {
             if (type.constructor === String || (typeof type) === 'string') {
                 var t = WebAtoms[type] || Atom.get(window, type);
@@ -532,14 +533,18 @@ function methodBuilder(method) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
                 }
-                var ro = oldFunction.apply(this, args);
-                if (ro) {
-                    return ro;
+                if (this.testMode) {
+                    console.log("Test Mode: " + url);
+                    var ro = oldFunction.apply(this, args);
+                    if (ro) {
+                        return ro;
+                    }
                 }
-                //console.log("methodBuilder executed");
-                var rn = target.methodReturns[propertyKey];
-                var r = target.invoke(url, method, a, args, rn);
-                //console.log(r);
+                var rn = null;
+                if (target.methodReturns) {
+                    rn = target.methodReturns[propertyKey];
+                }
+                var r = this.invoke(url, method, a, args, rn);
                 return r;
             };
             //console.log("methodBuilder called");
@@ -610,8 +615,12 @@ var WebAtoms;
             return AjaxOptions;
         }());
         Rest.AjaxOptions = AjaxOptions;
+        var AtomPromise = window["AtomPromise"];
         var BaseService = /** @class */ (function () {
             function BaseService() {
+                this.testMode = false;
+                this.showProgress = true;
+                this.showError = true;
                 //bs
                 this.methods = {};
                 this.methodReturns = {};
@@ -639,6 +648,7 @@ var WebAtoms;
             };
             BaseService.prototype.invoke = function (url, method, bag, values, returns) {
                 return __awaiter(this, void 0, void 0, function () {
+                    var _this = this;
                     var options, i, p, v, pr;
                     return __generator(this, function (_a) {
                         options = new AjaxOptions();
@@ -666,13 +676,12 @@ var WebAtoms;
                             }
                         }
                         options.url = url;
-                        pr = Atom.json(url, options);
+                        pr = AtomPromise.json(url, null, options);
                         if (options.cancel) {
                             options.cancel.registerForCancel(function () {
                                 pr.abort();
                             });
                         }
-                        pr.invoke("Ok");
                         return [2 /*return*/, new Promise(function (resolve, reject) {
                                 pr.then(function () {
                                     var v = pr.value();
@@ -687,9 +696,12 @@ var WebAtoms;
                                     }
                                     resolve(v);
                                 });
-                                pr.failed(function (e) {
-                                    reject(e);
+                                pr.failed(function () {
+                                    reject(pr.error.msg);
                                 });
+                                pr.showError(_this.showError);
+                                pr.showProgress(_this.showProgress);
+                                pr.invoke("Ok");
                             })];
                     });
                 });

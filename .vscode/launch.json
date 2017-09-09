@@ -4,11 +4,21 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Generator",
+            "program": "${workspaceRoot}/bin/component-generator.js",
+            "args": [
+                "tests"
+            ]
+        },
         {
             "type": "node",
             "request": "launch",
             "name": "Launch Test",
             "program": "${workspaceRoot}/cc/tests/test.js"
-        }
+        }    
     ]
 }

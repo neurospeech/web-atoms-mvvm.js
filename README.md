@@ -532,11 +532,25 @@ folders for better management and component generator will generate single JavaS
 # Component Generator
 
 ```node
-    node node_modules/web-atoms-mvvm/bin/component-generator.js <source-folder> <output-file>
+    node node_modules/web-atoms-mvvm/bin/component-generator.js <source-folder>
 
     Example,
-    node node_modules/web-atoms-mvvm/bin/component-generator.js app/src app/build/components.js
+    node node_modules/web-atoms-mvvm/bin/component-generator.js app
 ```    
+
+# waconfig.json
+
+Component generator will lookup waconfig.json and will generate files accordingly. Sample waconfig.json
+
+```json
+
+    {
+        "srcFolder": "src/views",
+        "outFile": "build/views.js",
+        "namespace": ".. (namespace is optional) .."
+    }
+
+```
 
 This will generate component.js for all html files app folder.
 
