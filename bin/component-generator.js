@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var htmlparser2_1 = require("htmlparser2");
 var fs = require("fs");
-debugger;
+var path = require("path");
 var ComponentGenerator;
 (function (ComponentGenerator_1) {
     var AtomEvaluator = {
@@ -277,7 +277,6 @@ var ComponentGenerator;
             this.outFile = outFile;
             this.outFolder = outFolder;
             this.files = [];
-            this.loadFiles(folder);
             this.watch();
             this.compile();
             console.log("Watching for changes in " + folder);
@@ -286,28 +285,39 @@ var ComponentGenerator;
             // scan all html files...
             for (var _i = 0, _a = fs.readdirSync(folder); _i < _a.length; _i++) {
                 var file = _a[_i];
-                var fullName = folder + "/" + file;
+                var fullName = path.join(folder, file);
                 var s = fs.statSync(fullName);
                 if (s.isDirectory()) {
                     this.loadFiles(fullName);
                 }
                 else {
                     if (/\.html$/i.test(fullName)) {
+                        if (this.files.findIndex(function (x) { return x.file == fullName; }) !== -1)
+                            continue;
                         this.files.push(new HtmlFile(fullName));
                     }
                 }
             }
         };
         ComponentGenerator.prototype.compile = function () {
+            this.loadFiles(this.folder);
             var result = "";
+            var deletedFiles = [];
             for (var _i = 0, _a = this.files; _i < _a.length; _i++) {
                 var file = _a[_i];
                 if (file.currentTime != file.lastTime) {
+                    if (!fs.existsSync(file.file)) {
+                        deletedFiles.push(file);
+                    }
                     console.log("Generating " + file.file);
                     file.compile();
                 }
                 result += "\r\n";
                 result += file.compiled;
+            }
+            for (var _b = 0, deletedFiles_1 = deletedFiles; _b < deletedFiles_1.length; _b++) {
+                var file = deletedFiles_1[_b];
+                this.files = this.files.filter(function (x) { return x.file == file.file; });
             }
             fs.writeFileSync(this.outFile, result);
             var now = new Date();
@@ -332,8 +342,39 @@ var ComponentGenerator;
         return ComponentGenerator;
     }());
     ComponentGenerator_1.ComponentGenerator = ComponentGenerator;
-    if (process && process.argv && process.argv[2] && process.argv[3]) {
-        var cc = new ComponentGenerator(process.argv[2], process.argv[3]);
+    function parseFolder(folder) {
+        var dirs = [];
+        for (var _i = 0, _a = fs.readdirSync(folder); _i < _a.length; _i++) {
+            var file = _a[_i];
+            var fullName = path.join(folder, file);
+            var stat = fs.statSync(fullName);
+            if (stat.isDirectory()) {
+                dirs.push(fullName);
+            }
+            else {
+                if (/^waconfig\.json$/i.test(file)) {
+                    var config = JSON.parse(fs.readFileSync(fullName, 'utf8'));
+                    config.srcFolder = path.join(folder, config.srcFolder);
+                    config.outFile = path.join(folder, config.outFile);
+                    var cc = new ComponentGenerator(config.srcFolder, config.outFile);
+                    return;
+                }
+            }
+        }
+        for (var _b = 0, dirs_1 = dirs; _b < dirs_1.length; _b++) {
+            var dir = dirs_1[_b];
+            parseFolder(dir);
+        }
+    }
+    if (process && process.argv) {
+        if (process.argv[2]) {
+            if (process.argv[3]) {
+                var cc = new ComponentGenerator(process.argv[2], process.argv[3]);
+            }
+            else {
+                parseFolder(process.argv[2]);
+            }
+        }
     }
     global["HtmlContent"] = HtmlContent;
     global["ComponentGenerator"] = ComponentGenerator;

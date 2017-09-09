@@ -1,7 +1,7 @@
 import {DomHandler,Parser} from "htmlparser2";
-import * as fs from "fs";
 
-debugger;
+import * as fs from "fs";
+import * as path from "path";
 
 namespace ComponentGenerator{
 
@@ -382,12 +382,16 @@ namespace ComponentGenerator{
             // scan all html files...
             for(var file of fs.readdirSync(folder)){
                 
-                var fullName = folder + "/" + file;
+                var fullName = path.join(folder,file);
                 var s = fs.statSync(fullName);
                 if(s.isDirectory()){
                     this.loadFiles(fullName)
                 }else{
                     if( /\.html$/i.test(fullName)){
+
+                        if(this.files.findIndex( x => x.file == fullName)  !== -1)
+                            continue;
+
                          this.files.push( new HtmlFile(fullName));
                     }
                 }
@@ -410,9 +414,7 @@ namespace ComponentGenerator{
 
             this.files = [];
 
-            this.loadFiles(folder);
-
-
+            
             this.watch();
             this.compile();
 
@@ -423,15 +425,28 @@ namespace ComponentGenerator{
 
         compile():void{
 
+            this.loadFiles(this.folder);
+
             var result = "";
+
+            var deletedFiles:Array<HtmlFile> = [];
 
             for(var file of this.files){
                 if(file.currentTime != file.lastTime){
+
+                    if(!fs.existsSync(file.file)){
+                        deletedFiles.push(file);
+                    }
+
                     console.log(`Generating ${file.file}`);
                     file.compile();
                 }
                 result += "\r\n";
                 result += file.compiled;
+            }
+
+            for(var file of deletedFiles){
+                this.files = this.files.filter( x => x.file == file.file );
             }
 
             fs.writeFileSync(this.outFile,result);
@@ -459,8 +474,46 @@ namespace ComponentGenerator{
         }
     }
 
-    if(process && process.argv && process.argv[2] && process.argv[3]){
-        var cc = new ComponentGenerator(process.argv[2], process.argv[3] );
+
+
+    function parseFolder (folder:string):void{
+
+        var dirs:Array<string> = [];
+
+        for(var file of fs.readdirSync(folder)){
+            var fullName = path.join(folder,file); 
+            var stat = fs.statSync(fullName);
+            if(stat.isDirectory()){
+                dirs.push(fullName);
+            }else{
+                if(/^waconfig\.json$/i.test(file)){
+                    var config = JSON.parse(fs.readFileSync(fullName, 'utf8'));
+
+                    config.srcFolder = path.join(folder,config.srcFolder);
+                    config.outFile = path.join(folder,config.outFile);
+
+                    var cc = new ComponentGenerator(config.srcFolder, config.outFile);
+                    return;
+                }
+            }
+        }
+
+        for(var dir of dirs){
+            parseFolder(dir);
+        }
+
+
+    }
+
+    if(process && process.argv){
+        if(process.argv[2]){
+            if(process.argv[3]){
+                var cc = new ComponentGenerator(process.argv[2], process.argv[3] );
+            }
+            else{
+                parseFolder(process.argv[2]);
+            }
+        }
     }
 
     global["HtmlContent"] = HtmlContent;
