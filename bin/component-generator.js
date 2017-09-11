@@ -111,7 +111,7 @@ var ComponentGenerator;
                 v = v.replace("()=>", "");
                 v = v.replace("() =>", "");
                 v = v.replace("=>", "");
-                return "function(){ return " + v + "; }";
+                return "function(){ \n                    return " + v + "; \n                }";
             }
             return v;
         };
@@ -174,6 +174,15 @@ var ComponentGenerator;
                     if (v.startsWith("$[") && v.endsWith("]")) {
                         // two way binding...
                         inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ");");
+                        continue;
+                    }
+                    if (v.startsWith("^[") && v.endsWith("]")) {
+                        // two way binding...
+                        inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ",null,\"keyup,keydown,keypress,blur,click\");");
+                        continue;
+                    }
+                    if (/autofocus/i.test(key)) {
+                        inits.push("window.WebAtoms.dispatcher.callLater( \n                            function() { \n                                e.focus(); \n                            });");
                         continue;
                     }
                     ca[key] = aa[key];
