@@ -17,8 +17,14 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Test",
+            "name": "Launch View Test",
             "program": "${workspaceRoot}/cc/tests/test.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Test",
+            "program": "${workspaceRoot}/test.js"
         }    
     ]
 }

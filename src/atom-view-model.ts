@@ -10,6 +10,27 @@ namespace WebAtoms{
             super();
 
             AtomDevice.instance.runAsync(this.init());
+
+            this.setupWatchers();
+        }
+
+        private setupWatchers(){
+            //debugger;
+            var vm = this.constructor.prototype as any;
+            if(!vm._watchMethods)
+                return;
+
+            var wm = vm._watchMethods;
+
+            for(var k in wm){
+                if(!vm.hasOwnProperty(k))
+                    continue;
+                var params = wm[k] as Array<string>;
+
+                var op = new WebAtoms.AtomWatcher(this, params, this[k]);
+
+                this.registerDisposable(op);
+            }
         }
 
         protected watch(item:any, property:string, f:()=>void){

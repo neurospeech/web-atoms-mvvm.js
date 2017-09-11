@@ -7,13 +7,38 @@ var AtomList = WebAtoms.AtomList;
 
 var initCalled = false;
 
+
+
 class SampleViewModel extends AtomViewModel{
+
+    @bindableProperty
+    data:any
+
+    @bindableProperty
+    errors:WebAtoms.AtomErrors = new WebAtoms.AtomErrors();
 
     @bindableProperty
     public name:string;
 
     @bindableProperty
     public list:WebAtoms.AtomList<any> = new WebAtoms.AtomList();
+ 
+    constructor(){
+        super();
+        this.data = {};
+        this.errors = new WebAtoms.AtomErrors();
+    }
+
+    validateObject(
+        @watch("data.firstName") firstName: string,
+        @watch("data.lastName") lastName: string
+    ){
+        debugger;
+        if(!this.errors)
+            return;
+        console.log("Changed");
+        this.errors.set("name", !(firstName || lastName) ? "Name cannot be empty" : "" );
+    }
 
     async init(){
         initCalled = true;
@@ -30,7 +55,29 @@ class SampleViewModel extends AtomViewModel{
 
 @Category("AtomViewModel")
 class AtomViewModelTest extends TestItem{
-     
+    
+    @Test("watch")
+    async watch (){
+        var sm: SampleViewModel = new SampleViewModel();
+
+        await this.delay(100);
+
+        debugger;
+
+        //Assert.equals("Name cannot be empty", sm.errors["name"]);
+
+        Atom.set(sm,"data.firstName","something");
+
+        console.log(`${sm.errors["name"]}`)
+
+        Assert.isFalse(sm.errors["name"]);
+
+        Atom.set(sm,"data.firstName","");
+        
+        Assert.isTrue(sm.errors["name"]);
+    }
+
+
     @Test("bindableProperty")
     public async run(){
 

@@ -402,8 +402,23 @@ var WebAtoms;
         function AtomViewModel() {
             var _this = _super.call(this) || this;
             WebAtoms.AtomDevice.instance.runAsync(_this.init());
+            _this.setupWatchers();
             return _this;
         }
+        AtomViewModel.prototype.setupWatchers = function () {
+            //debugger;
+            var vm = this.constructor.prototype;
+            if (!vm._watchMethods)
+                return;
+            var wm = vm._watchMethods;
+            for (var k in wm) {
+                if (!vm.hasOwnProperty(k))
+                    continue;
+                var params = wm[k];
+                var op = new WebAtoms.AtomWatcher(this, params, this[k]);
+                this.registerDisposable(op);
+            }
+        };
         AtomViewModel.prototype.watch = function (item, property, f) {
             this.registerDisposable(Atom.watch(item, property, f));
         };
@@ -455,6 +470,78 @@ var WebAtoms;
         return AtomWindowViewModel;
     }(AtomViewModel));
     WebAtoms.AtomWindowViewModel = AtomWindowViewModel;
+})(WebAtoms || (WebAtoms = {}));
+var WebAtoms;
+(function (WebAtoms) {
+    var AtomErrors = /** @class */ (function () {
+        function AtomErrors() {
+        }
+        AtomErrors.prototype.set = function (name, value) {
+            this[name] = value;
+            Atom.refresh(this, name);
+        };
+        AtomErrors.prototype.clear = function () {
+            for (var k in this) {
+                if (this.hasOwnProperty(k)) {
+                    this[k] = null;
+                    Atom.refresh(this, k);
+                }
+            }
+        };
+        return AtomErrors;
+    }());
+    WebAtoms.AtomErrors = AtomErrors;
+    var ObjectProperty = /** @class */ (function () {
+        function ObjectProperty(name) {
+            this.name = name;
+        }
+        return ObjectProperty;
+    }());
+    WebAtoms.ObjectProperty = ObjectProperty;
+    var AtomWatcher = /** @class */ (function () {
+        function AtomWatcher(target, path, f) {
+            this.target = target;
+            this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
+            this.func = f;
+            this.evaluate();
+        }
+        AtomWatcher.prototype.evaluate = function () {
+            var _this = this;
+            var values = this.path.map(function (p) {
+                var t = _this.target;
+                return p.map(function (op) {
+                    var tx = t;
+                    t = Atom.get(t, op.name);
+                    if (t !== op.target) {
+                        if (op.watcher) {
+                            op.watcher.dispose();
+                        }
+                        op.target = t;
+                        if (tx) {
+                            op.watcher = Atom.watch(tx, op.name, function () {
+                                _this.evaluate();
+                            });
+                        }
+                    }
+                    return t;
+                });
+            });
+            this.func.apply(this.target, values);
+        };
+        AtomWatcher.prototype.dispose = function () {
+            for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
+                var p = _a[_i];
+                for (var _b = 0, p_1 = p; _b < p_1.length; _b++) {
+                    var op = p_1[_b];
+                    if (op.watcher) {
+                        op.watcher.dispose();
+                    }
+                }
+            }
+        };
+        return AtomWatcher;
+    }());
+    WebAtoms.AtomWatcher = AtomWatcher;
 })(WebAtoms || (WebAtoms = {}));
 /**
  * Easy and Simple Dependency Injection
@@ -711,6 +798,18 @@ var WebAtoms;
         Rest.BaseService = BaseService;
     })(Rest = WebAtoms.Rest || (WebAtoms.Rest = {}));
 })(WebAtoms || (WebAtoms = {}));
+var watch = function (name) {
+    return function (target, propertyKey, i) {
+        //debugger;
+        var vm = target;
+        if (!vm._watchMethods) {
+            vm._watchMethods = {};
+        }
+        var a = vm._watchMethods[propertyKey]
+            || (vm._watchMethods[propertyKey] = []);
+        a[i] = name;
+    };
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
