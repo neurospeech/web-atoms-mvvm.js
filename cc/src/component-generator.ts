@@ -267,8 +267,8 @@ namespace ComponentGenerator{
                 if(aa["atom-type"]){
                     inits.push(`var oldInit = AtomUI.attr(e,'base-data-atom-init');
                         if(oldInit){
-                            var f = window.WebAtoms.PageSetup[oldInit];
-                            f.call(window.WebAtoms.PageSetup,e);
+                            var f = this[oldInit];
+                            f.call(this,e);
                         }
                     `);
                 }

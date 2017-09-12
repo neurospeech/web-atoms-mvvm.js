@@ -196,7 +196,7 @@ var ComponentGenerator;
                     ca[key] = aa[key];
                 }
                 if (aa["atom-type"]) {
-                    inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            var f = window.WebAtoms.PageSetup[oldInit];\n                            f.call(window.WebAtoms.PageSetup,e);\n                        }\n                    ");
+                    inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            var f = this[oldInit];\n                            f.call(this,e);\n                        }\n                    ");
                 }
                 if (inits.length) {
                     ca["data-atom-init"] = tags.component + "_t" + tags.tags.length;
