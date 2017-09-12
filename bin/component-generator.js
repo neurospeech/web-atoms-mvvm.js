@@ -243,10 +243,12 @@ var ComponentGenerator;
             var inits = [];
             if (aa) {
                 for (var key in aa) {
-                    if (!aa.hasOwnProperty(key))
-                        continue;
+                    //if(!aa.hasOwnProperty(key))
+                    //    continue;
                     var ckey = HtmlContent.camelCase(key);
                     var v = aa[key].trim();
+                    if (!v)
+                        continue;
                     if (key === "data-atom-init") {
                         inits.push("WebAtoms.PageSetup." + v + "(e);");
                         continue;
