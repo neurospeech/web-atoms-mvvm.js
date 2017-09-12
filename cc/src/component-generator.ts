@@ -253,7 +253,8 @@ namespace ComponentGenerator{
                         attribs:{
                             "atom-text": label,
                             "class":"atom-label"
-                        }
+                        },
+                        children:[]
                     },
                     {
                         name:"span",
@@ -261,13 +262,15 @@ namespace ComponentGenerator{
                         attribs:{
                             "class":"atom-required",
                             "atom-text": isRequired
-                        }
+                        },
+                        children:[]
                     },
                     c,
                     {
                         name: "div",
                         type:"tag",
-                        attribs:errorAttribs
+                        attribs:errorAttribs,
+                        children:[]
                     }
                 ];
 
@@ -300,6 +303,7 @@ namespace ComponentGenerator{
                 //console.log(`converting form layout with ${a.children.length} children`);
                 a = HtmlContent.formLayoutNode(a);
                 //console.log(`converting form layout to ${a.children.length} children`);
+                
             }            
 
             var r = [a.name];

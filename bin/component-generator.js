@@ -188,7 +188,8 @@ var ComponentGenerator;
                         attribs: {
                             "atom-text": label,
                             "class": "atom-label"
-                        }
+                        },
+                        children: []
                     },
                     {
                         name: "span",
@@ -196,13 +197,15 @@ var ComponentGenerator;
                         attribs: {
                             "class": "atom-required",
                             "atom-text": isRequired
-                        }
+                        },
+                        children: []
                     },
                     c,
                     {
                         name: "div",
                         type: "tag",
-                        attribs: errorAttribs
+                        attribs: errorAttribs,
+                        children: []
                     }
                 ];
                 return {
