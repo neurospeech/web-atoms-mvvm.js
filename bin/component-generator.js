@@ -148,7 +148,7 @@ var ComponentGenerator;
             }).join("");
         };
         HtmlContent.formLayoutNode = function (a) {
-            return a.map(function (c) {
+            return a.children.map(function (c) {
                 var aa = c.attribs || {};
                 var fieldAttribs = {};
                 var label = aa["atom-label"] || "";

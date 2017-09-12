@@ -200,7 +200,7 @@ namespace ComponentGenerator{
         }
 
         static formLayoutNode(a){
-            return a.map( c => {
+            return a.children.map( c => {
 
                 var aa = c.attribs || {};
 
