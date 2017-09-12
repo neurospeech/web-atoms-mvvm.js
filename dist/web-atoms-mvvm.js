@@ -438,7 +438,7 @@ var WindowService = /** @class */ (function () {
         });
     };
     WindowService = __decorate([
-        DIGlobal
+        WebAtoms.DIGlobal()
     ], WindowService);
     return WindowService;
 }());
@@ -729,7 +729,6 @@ var WebAtoms;
     WebAtoms.DI = DI;
     function DIGlobal() {
         return function (c) {
-            debugger;
             DI.register(c, function () {
                 var dr = DI.instances = DI.instances || {};
                 var r = dr[c];

@@ -52,8 +52,6 @@
     export function DIGlobal(){
         return function(c:any){
 
-            debugger;
-
            DI.register(c,()=>{
                var dr = DI.instances = DI.instances || {};
                var r = dr[c as any];
