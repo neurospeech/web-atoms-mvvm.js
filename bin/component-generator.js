@@ -219,6 +219,7 @@ var ComponentGenerator;
         };
         HtmlContent.mapNode = function (a, tags, children) {
             if (a.name == "form-layout") {
+                console.log("converting form layout");
                 a = HtmlContent.formLayoutNode(a);
             }
             var r = [a.name];

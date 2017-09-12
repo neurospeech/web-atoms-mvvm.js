@@ -287,6 +287,7 @@ namespace ComponentGenerator{
         static mapNode(a,tags:TagInitializerList, children?:Array<any>){
 
             if(a.name == "form-layout"){
+                console.log(`converting form layout`);
                 a = HtmlContent.formLayoutNode(a);
             }            
 
