@@ -216,12 +216,16 @@ namespace ComponentGenerator{
                     delete aa["atom-required"];
                 }
                 else{
-                    isRequired = "false";
+                    isRequired = "";
                 }
 
                 if(isRequired.endsWith("}") || isRequired.endsWith("]")){
                     var last = isRequired.substr(isRequired.length-1);
                     isRequired = isRequired.substr(0,isRequired.length-1) + " ? '*' : 'false'" + last;
+                }
+
+                if(/true/i.test(isRequired)){
+                    isRequired = "*";
                 }
 
                 var error = aa["atom-error"] || "";
