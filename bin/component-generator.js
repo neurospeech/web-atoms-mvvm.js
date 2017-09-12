@@ -165,7 +165,7 @@ var ComponentGenerator;
                         continue;
                     var ckey = HtmlContent.camelCase(key);
                     var v = aa[key].trim();
-                    if (key === "data-atom-init") {
+                    if (key === "atom-init") {
                         inits.push("WebAtoms.PageSetup." + v + "(e);");
                         continue;
                     }
@@ -196,10 +196,10 @@ var ComponentGenerator;
                     ca[key] = aa[key];
                 }
                 if (children) {
-                    inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            (window.WebAtoms.PageSetup[oldInit]).call(this,e);\n                        }\n                    ");
+                    inits.push("var oldInit = AtomUI.attr(e,'base-atom-init');\n                        if(oldInit){\n                            (window.WebAtoms.PageSetup[oldInit]).call(this,e);\n                        }\n                    ");
                 }
                 if (inits.length) {
-                    ca["data-atom-init"] = tags.component + "_t" + tags.tags.length;
+                    ca["atom-init"] = tags.component + "_t" + tags.tags.length;
                     tags.tags.push(new TagInitializer(inits));
                 }
                 r.push(ca);
@@ -270,8 +270,8 @@ var ComponentGenerator;
                 if (!rootNode.hasOwnProperty(key))
                     continue;
                 var value = rootNode[key];
-                if (key === "data-atom-init") {
-                    startScript += "\n                        var oldInit = AtomUI.attr(e,'data-atom-init');\n                        if(oldInit){\n                            AtomUI.attr(e, 'base-data-atom-init',oldInit);\n                        };\n                        AtomUI.attr(e, 'data-atom-init','" + value + "');\n                    ";
+                if (key === "atom-init") {
+                    startScript += "\n                        var oldInit = AtomUI.attr(e,'atom-init');\n                        if(oldInit){\n                            AtomUI.attr(e, 'base-atom-init',oldInit);\n                        };\n                        AtomUI.attr(e, 'atom-init','" + value + "');\n                    ";
                 }
                 else {
                     startScript += " if(!AtomUI.attr(e,'" + key + "')) AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
