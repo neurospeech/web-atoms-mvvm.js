@@ -264,15 +264,12 @@ namespace ComponentGenerator{
                     ca[key] = aa[key];
                 }
 
-                if(children === undefined){
+                if(inits.length){
                     inits.push(`var oldInit = AtomUI.attr(e,'base-data-atom-init');
                         if(oldInit){
-                            var f = this[oldInit];
-                            f.call(this,e);
+                            (this[oldInit]).call(this,e);
                         }
                     `);
-                }
-                if(inits.length){
                     ca["data-atom-init"] = `${tags.component}_t${tags.tags.length}`;
                     tags.tags.push(new TagInitializer(inits));
                 }
