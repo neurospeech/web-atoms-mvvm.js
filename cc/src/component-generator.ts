@@ -292,6 +292,7 @@ namespace ComponentGenerator{
             if(a.name == "form-layout"){
                 console.log(`converting form layout with ${a.children.length} children`);
                 a = HtmlContent.formLayoutNode(a);
+                console.log(`converting form layout to ${a.children.length} children`);
             }            
 
             var r = [a.name];
