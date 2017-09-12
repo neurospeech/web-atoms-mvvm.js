@@ -3,6 +3,34 @@
  */
 
 
+function DIGlobal (c:any){
+
+    var DI = WebAtoms.DI;
+    
+    DI.register(c,()=>{
+        var dr = DI.instances = DI.instances || {};
+        var r = dr[c as any];
+        if(r)
+            return r;
+        var cx = c as ({new ()});
+        var r = new cx();
+        dr[c as any] = r;
+        return r;
+    });
+    return c;
+};
+
+function DIAlwaysNew(c:any){
+    var DI = WebAtoms.DI;
+    DI.register(c,()=>{
+        
+        var r = new (c as {new ()} )();
+        return r;
+    });
+    return c;
+ };
+
+
  namespace WebAtoms{
 
     class DIFactory{
@@ -49,37 +77,8 @@
         }
     }
 
-    export function DIGlobal(){
-        return function(c:any){
-
-           DI.register(c,()=>{
-               var dr = DI.instances = DI.instances || {};
-               var r = dr[c as any];
-               if(r)
-                    return r;
-               var cx = c as ({new ()});
-               var r = new cx();
-               dr[c as any] = r;
-               return r;
-           });
-           return c;
-        };
-    }
-        
-    export function DIAlwaysNew(){
-        return function(c:any){
-           DI.register(c,()=>{
-               
-               var r = new (c as {new ()} )();
-               return r;
-           });
-           return c;
-        };
-    }
-
-
 }
 
-var DIGlobal = WebAtoms.DIGlobal();
-var DIAlwaysNew = WebAtoms.DIAlwaysNew();
+//var DIGlobal = WebAtoms.DIGlobal();
+//var DIAlwaysNew = WebAtoms.DIAlwaysNew();
 

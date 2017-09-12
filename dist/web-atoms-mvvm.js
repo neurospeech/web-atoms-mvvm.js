@@ -438,7 +438,7 @@ var WindowService = /** @class */ (function () {
         });
     };
     WindowService = __decorate([
-        WebAtoms.DIGlobal()
+        DIGlobal
     ], WindowService);
     return WindowService;
 }());
@@ -692,6 +692,30 @@ var WebAtoms;
 /**
  * Easy and Simple Dependency Injection
  */
+function DIGlobal(c) {
+    var DI = WebAtoms.DI;
+    DI.register(c, function () {
+        var dr = DI.instances = DI.instances || {};
+        var r = dr[c];
+        if (r)
+            return r;
+        var cx = c;
+        var r = new cx();
+        dr[c] = r;
+        return r;
+    });
+    return c;
+}
+;
+function DIAlwaysNew(c) {
+    var DI = WebAtoms.DI;
+    DI.register(c, function () {
+        var r = new c();
+        return r;
+    });
+    return c;
+}
+;
 var WebAtoms;
 (function (WebAtoms) {
     var DIFactory = /** @class */ (function () {
@@ -727,35 +751,9 @@ var WebAtoms;
         return DI;
     }());
     WebAtoms.DI = DI;
-    function DIGlobal() {
-        return function (c) {
-            DI.register(c, function () {
-                var dr = DI.instances = DI.instances || {};
-                var r = dr[c];
-                if (r)
-                    return r;
-                var cx = c;
-                var r = new cx();
-                dr[c] = r;
-                return r;
-            });
-            return c;
-        };
-    }
-    WebAtoms.DIGlobal = DIGlobal;
-    function DIAlwaysNew() {
-        return function (c) {
-            DI.register(c, function () {
-                var r = new c();
-                return r;
-            });
-            return c;
-        };
-    }
-    WebAtoms.DIAlwaysNew = DIAlwaysNew;
 })(WebAtoms || (WebAtoms = {}));
-var DIGlobal = WebAtoms.DIGlobal();
-var DIAlwaysNew = WebAtoms.DIAlwaysNew();
+//var DIGlobal = WebAtoms.DIGlobal();
+//var DIAlwaysNew = WebAtoms.DIAlwaysNew();
 function methodBuilder(method) {
     return function (url) {
         return function (target, propertyKey, descriptor) {

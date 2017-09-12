@@ -1,4 +1,4 @@
-@WebAtoms.DIGlobal()
+@DIGlobal
 class WindowService{
 
     private lastWindowID:number = 1;

@@ -111,6 +111,8 @@ declare namespace WebAtoms {
 /**
  * Easy and Simple Dependency Injection
  */
+declare function DIGlobal(c: any): any;
+declare function DIAlwaysNew(c: any): any;
 declare namespace WebAtoms {
     class DI {
         private static factory;
@@ -119,11 +121,7 @@ declare namespace WebAtoms {
         static resolve<T>(c: new () => T): T;
         static put(key: any, instance: any): void;
     }
-    function DIGlobal(): (c: any) => any;
-    function DIAlwaysNew(): (c: any) => any;
 }
-declare var DIGlobal: (c: any) => any;
-declare var DIAlwaysNew: (c: any) => any;
 declare function methodBuilder(method: string): (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function Return(type: {
     new ();
