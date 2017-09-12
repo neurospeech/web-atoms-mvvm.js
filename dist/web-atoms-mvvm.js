@@ -704,6 +704,32 @@ var Cancel = function (target, propertyKey, parameterIndex) {
     }
     a[parameterIndex] = new WebAtoms.Rest.ServiceParameter("cancel", "");
 };
+if (!window["__atomSetLocalValue"]) {
+    window["__atomSetLocalValue"] = function (bt) {
+        return function (k, v, e, r) {
+            var self = this;
+            if (v) {
+                if (v.then && v.catch) {
+                    e._promisesQueue = e._promisesQueue || {};
+                    var c = e._promisesQueue[k];
+                    if (c) {
+                        c.abort();
+                    }
+                    v.then(function (pr) {
+                        if (c && c.cancelled)
+                            return;
+                        e._promisesQueue[k] = null;
+                        bt.setLocalValue.call(self, k, pr, e, r);
+                    });
+                    v.catch(function (er) {
+                        e._promisesQueue[k] = null;
+                    });
+                }
+            }
+            bt.setLocalValue.call(this, k, v, e, r);
+        };
+    };
+}
 var WebAtoms;
 (function (WebAtoms) {
     var Rest;
@@ -723,6 +749,23 @@ var WebAtoms;
         }());
         Rest.AjaxOptions = AjaxOptions;
         var AtomPromise = window["AtomPromise"];
+        var CancellablePromise = /** @class */ (function () {
+            function CancellablePromise(p, onCancel) {
+                this.p = p;
+                this.onCancel = onCancel;
+            }
+            CancellablePromise.prototype.abort = function () {
+                this.onCancel();
+            };
+            CancellablePromise.prototype.then = function (onfulfilled, onrejected) {
+                return this.p.then(onfulfilled, onrejected);
+            };
+            CancellablePromise.prototype.catch = function (onrejected) {
+                return this.p.catch(onrejected);
+            };
+            return CancellablePromise;
+        }());
+        Rest.CancellablePromise = CancellablePromise;
         var BaseService = /** @class */ (function () {
             function BaseService() {
                 this.testMode = false;
@@ -756,7 +799,7 @@ var WebAtoms;
             BaseService.prototype.invoke = function (url, method, bag, values, returns) {
                 return __awaiter(this, void 0, void 0, function () {
                     var _this = this;
-                    var options, i, p, v, pr;
+                    var options, i, p, v, pr, rp;
                     return __generator(this, function (_a) {
                         options = new AjaxOptions();
                         options.method = method;
@@ -789,26 +832,29 @@ var WebAtoms;
                                 pr.abort();
                             });
                         }
-                        return [2 /*return*/, new Promise(function (resolve, reject) {
-                                pr.then(function () {
-                                    var v = pr.value();
-                                    // deep clone...
-                                    //var rv = new returns();
-                                    //reject("Clone pending");
-                                    if (options.cancel) {
-                                        if (options.cancel.cancelled) {
-                                            reject("cancelled");
-                                            return;
-                                        }
+                        rp = new Promise(function (resolve, reject) {
+                            pr.then(function () {
+                                var v = pr.value();
+                                // deep clone...
+                                //var rv = new returns();
+                                //reject("Clone pending");
+                                if (options.cancel) {
+                                    if (options.cancel.cancelled) {
+                                        reject("cancelled");
+                                        return;
                                     }
-                                    resolve(v);
-                                });
-                                pr.failed(function () {
-                                    reject(pr.error.msg);
-                                });
-                                pr.showError(_this.showError);
-                                pr.showProgress(_this.showProgress);
-                                pr.invoke("Ok");
+                                }
+                                resolve(v);
+                            });
+                            pr.failed(function () {
+                                reject(pr.error.msg);
+                            });
+                            pr.showError(_this.showError);
+                            pr.showProgress(_this.showProgress);
+                            pr.invoke("Ok");
+                        });
+                        return [2 /*return*/, new CancellablePromise(rp, function () {
+                                pr.abort();
                             })];
                     });
                 });

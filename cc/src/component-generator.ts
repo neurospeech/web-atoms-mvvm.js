@@ -394,7 +394,9 @@ namespace ComponentGenerator{
                     start: function(e){
                         ${startScript}
                     },
-                    methods:{},
+                    methods:{
+                        setLocalValue: window._atomSetLocalValue(baseType)
+                    },
                     properties:{
                         ${props}
                     }
