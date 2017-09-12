@@ -226,7 +226,7 @@ namespace ComponentGenerator{
                     var ckey = HtmlContent.camelCase(key);
                     
                     var v = (aa[key] as string).trim();
-                    if(key === "atom-init"){
+                    if(key === "data-atom-init"){
                         inits.push(`WebAtoms.PageSetup.${v}(e);`);
                         continue;
                     }
@@ -265,7 +265,7 @@ namespace ComponentGenerator{
                 }
 
                 if(children){
-                    inits.push(`var oldInit = AtomUI.attr(e,'base-atom-init');
+                    inits.push(`var oldInit = AtomUI.attr(e,'base-data-atom-init');
                         if(oldInit){
                             (window.WebAtoms.PageSetup[oldInit]).call(this,e);
                         }
@@ -273,7 +273,7 @@ namespace ComponentGenerator{
                 }
 
                 if(inits.length){
-                    ca["atom-init"] = `${tags.component}_t${tags.tags.length}`;
+                    ca["data-atom-init"] = `${tags.component}_t${tags.tags.length}`;
                     tags.tags.push(new TagInitializer(inits));
                 }
 
@@ -361,13 +361,13 @@ namespace ComponentGenerator{
                 if(!rootNode.hasOwnProperty(key)) continue;
                 var value = rootNode[key];
 
-                if(key === "atom-init"){
+                if(key === "data-atom-init"){
                     startScript += `
-                        var oldInit = AtomUI.attr(e,'atom-init');
+                        var oldInit = AtomUI.attr(e,'data-atom-init');
                         if(oldInit){
-                            AtomUI.attr(e, 'base-atom-init',oldInit);
+                            AtomUI.attr(e, 'base-data-atom-init',oldInit);
                         };
-                        AtomUI.attr(e, 'atom-init','${value}');
+                        AtomUI.attr(e, 'data-atom-init','${value}');
                     `;
                 }else{
                     startScript += ` if(!AtomUI.attr(e,'${key}')) AtomUI.attr(e, '${key}', '${value}' );\r\n\t\t`;
