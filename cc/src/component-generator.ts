@@ -303,7 +303,7 @@ namespace ComponentGenerator{
 
             var type = "WebAtoms.AtomControl";
 
-
+            var props = "";
 
             if(node.attribs){
 
@@ -317,6 +317,11 @@ namespace ComponentGenerator{
                     if(type.startsWith("Atom")){
                         type = "WebAtoms." + type;
                     }
+                }
+
+                if(node.attribs["atom-properties"]){
+                    props = node.attribs["atom-properties"];
+                    delete node.attribs["atom-properties"];
                 }
             }else{
                 if(!name){
@@ -359,7 +364,9 @@ namespace ComponentGenerator{
                         ${startScript}
                     },
                     methods:{},
-                    properties:{}
+                    properties:{
+                        ${props}
+                    }
                 })
             })(window, ${type}.prototype);\r\n`;
 
