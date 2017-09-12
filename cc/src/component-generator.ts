@@ -200,87 +200,88 @@ namespace ComponentGenerator{
         }
 
         static formLayoutNode(a){
-            return a.children.map( c => {
+            return { 
+                name:"div",
+                attribs:{
+                    "class":"atom-form"
+                },
+                children: a.children.map( c => {
 
-                var aa = c.attribs || {};
+                    var aa = c.attribs || {};
 
-                var fieldAttribs = {};
-
-                var label = aa["atom-label"] || "";
-                if(label){
-                    delete aa["atom-label"];
-                }
-
-                var isRequired = aa["atom-required"];
-
-                if(isRequired){
-                    delete aa["atom-required"];
-                }
-                else{
-                    isRequired = "false";
-                }
-
-                if(isRequired.endsWith("}") || isRequired.endsWith("]")){
-                    var last = isRequired.substr(isRequired.length-1);
-                    isRequired = isRequired.substr(0,isRequired.length-1) + " ? '*' : 'false'" + last;
-                }
-
-                var error = aa["atom-error"] || "";
-                if(error){
-                    delete aa["atom-error"];
-                }
-
-
-                var errorAttribs = {
-                    "class":"atom-error",
-                    "atom-text": error
-                };
-
-                var errorStyle = "";
-                if(error){
-                    if(error.endsWith("}") || error.endsWith("]")){
-                        var last = error.substr(error.length-1);
-                        errorStyle = error.substr(0,error.length-1) + " ? '' : 'none'" + last;
-                        errorAttribs["style-display"] = errorStyle;
+                    var label = aa["atom-label"] || "";
+                    if(label){
+                        delete aa["atom-label"];
                     }
-                }
 
+                    var isRequired = aa["atom-required"];
 
-
-                var children = [
-                    { 
-                        name: "label", 
-                        attribs:{
-                            "atom-text": label,
-                            "class":"atom-label"
-                        }
-                    },
-                    {
-                        name:"span",
-                        attribs:{
-                            "class":"atom-required",
-                            "atom-text": isRequired
-                        }
-                    },
-                    c,
-                    {
-                        name: "div",
-                        attribs:errorAttribs
+                    if(isRequired){
+                        delete aa["atom-required"];
                     }
-                ];
+                    else{
+                        isRequired = "false";
+                    }
 
-                
+                    if(isRequired.endsWith("}") || isRequired.endsWith("]")){
+                        var last = isRequired.substr(isRequired.length-1);
+                        isRequired = isRequired.substr(0,isRequired.length-1) + " ? '*' : 'false'" + last;
+                    }
+
+                    var error = aa["atom-error"] || "";
+                    if(error){
+                        delete aa["atom-error"];
+                    }
 
 
-                return {
-                    name: "div",
-                    attribs: {
-                        "class":"atom-field"
-                    },
-                    children: children
-                };
+                    var errorAttribs = {
+                        "class":"atom-error",
+                        "atom-text": error
+                    };
 
-            } );
+                    var errorStyle = "";
+                    if(error){
+                        if(error.endsWith("}") || error.endsWith("]")){
+                            var last = error.substr(error.length-1);
+                            errorStyle = error.substr(0,error.length-1) + " ? '' : 'none'" + last;
+                            errorAttribs["style-display"] = errorStyle;
+                        }
+                    }
+
+
+
+                    var children = [
+                        { 
+                            name: "label", 
+                            attribs:{
+                                "atom-text": label,
+                                "class":"atom-label"
+                            }
+                        },
+                        {
+                            name:"span",
+                            attribs:{
+                                "class":"atom-required",
+                                "atom-text": isRequired
+                            }
+                        },
+                        c,
+                        {
+                            name: "div",
+                            attribs:errorAttribs
+                        }
+                    ];
+
+                    return {
+                        name:"div",
+                        attribs:{
+                            "class":"atom-field"
+                        },
+                        children:children
+                    };
+
+                })
+            } ;
         }
 
         static mapNode(a,tags:TagInitializerList, children?:Array<any>){
