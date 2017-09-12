@@ -634,6 +634,7 @@ var DIAlwaysNew = WebAtoms.DIAlwaysNew();
 function methodBuilder(method) {
     return function (url) {
         return function (target, propertyKey, descriptor) {
+            target.methods = target.methods || {};
             var a = target.methods[propertyKey];
             var oldFunction = descriptor.value;
             descriptor.value = function () {
@@ -675,9 +676,7 @@ function parameterBuilder(paramName) {
         return function (target, propertyKey, parameterIndex) {
             //console.log("Instance");
             //console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
-            if (!target.methods) {
-                target.methods = {};
-            }
+            target.methods = target.methods || {};
             var a = target.methods[propertyKey];
             if (!a) {
                 a = [];
