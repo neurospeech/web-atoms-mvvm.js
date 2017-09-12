@@ -15,7 +15,8 @@ function loadScript(file){
         require: require,
         module: vmModule,
         process: process,
-        global: global
+        global: global,
+        console: console
     });
     var script = new vm.Script(code, { filename: file });
 
@@ -36,6 +37,11 @@ loadScript("bin/component-generator.js");
 
 var text = 
 `<div atom-component='TaskList' atom-type='AtomWindow' style-display="{ $scope.items ? '' : 'none' }" atom-view-model='{ new TaskListViewModel() }'> 
+
+    <form-layout>
+        <input atom-label="Sample" atom-value="$[data.text]"/>
+    </form-layout>
+
     <table 
         atom-type="AtomItemsControl" 
         atom-selected-item="$[viewModel.selectedItem]"
@@ -51,9 +57,10 @@ var text =
     </table>
 </div>`;
 
+var f = new HtmlFragment(text,"");
 
-
-console.log(HtmlContent.parse(text));
+f.compile();
+console.log(f.nodes);
 
 process.exit(0);
 

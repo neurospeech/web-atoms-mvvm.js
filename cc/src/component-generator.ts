@@ -201,7 +201,7 @@ namespace ComponentGenerator{
 
         static formLayoutNode(a){
 
-            var cl1 = a.children.map( c => {
+            var cl1 = a.children.filter(c=>c.type == "tag").map( c => {
                 
                 var aa = c.attribs || {};
 
@@ -249,6 +249,7 @@ namespace ComponentGenerator{
                 var cl = [
                     { 
                         name: "label", 
+                        type:"tag",
                         attribs:{
                             "atom-text": label,
                             "class":"atom-label"
@@ -256,6 +257,7 @@ namespace ComponentGenerator{
                     },
                     {
                         name:"span",
+                        type:"tag",
                         attribs:{
                             "class":"atom-required",
                             "atom-text": isRequired
@@ -264,12 +266,14 @@ namespace ComponentGenerator{
                     c,
                     {
                         name: "div",
+                        type:"tag",
                         attribs:errorAttribs
                     }
                 ];
 
                 return {
                     name:"div",
+                    type:"tag",
                     attribs:{
                         "class":"atom-field"
                     },
@@ -280,6 +284,7 @@ namespace ComponentGenerator{
 
             return { 
                 name:"div",
+                type:"tag",
                 attribs:{
                     "class":"atom-form"
                 },
@@ -289,10 +294,12 @@ namespace ComponentGenerator{
 
         static mapNode(a,tags:TagInitializerList, children?:Array<any>){
 
+            //debugger;
+
             if(a.name == "form-layout"){
-                console.log(`converting form layout with ${a.children.length} children`);
+                //console.log(`converting form layout with ${a.children.length} children`);
                 a = HtmlContent.formLayoutNode(a);
-                console.log(`converting form layout to ${a.children.length} children`);
+                //console.log(`converting form layout to ${a.children.length} children`);
             }            
 
             var r = [a.name];
@@ -749,5 +756,6 @@ namespace ComponentGenerator{
 
     global["HtmlContent"] = HtmlContent;
     global["ComponentGenerator"] = ComponentGenerator;
+    global["HtmlFragment"] = HtmlFragment;
 
 }

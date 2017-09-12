@@ -148,7 +148,7 @@ var ComponentGenerator;
             }).join("");
         };
         HtmlContent.formLayoutNode = function (a) {
-            var cl1 = a.children.map(function (c) {
+            var cl1 = a.children.filter(function (c) { return c.type == "tag"; }).map(function (c) {
                 var aa = c.attribs || {};
                 var label = aa["atom-label"] || "";
                 if (label) {
@@ -184,6 +184,7 @@ var ComponentGenerator;
                 var cl = [
                     {
                         name: "label",
+                        type: "tag",
                         attribs: {
                             "atom-text": label,
                             "class": "atom-label"
@@ -191,6 +192,7 @@ var ComponentGenerator;
                     },
                     {
                         name: "span",
+                        type: "tag",
                         attribs: {
                             "class": "atom-required",
                             "atom-text": isRequired
@@ -199,11 +201,13 @@ var ComponentGenerator;
                     c,
                     {
                         name: "div",
+                        type: "tag",
                         attribs: errorAttribs
                     }
                 ];
                 return {
                     name: "div",
+                    type: "tag",
                     attribs: {
                         "class": "atom-field"
                     },
@@ -212,6 +216,7 @@ var ComponentGenerator;
             });
             return {
                 name: "div",
+                type: "tag",
                 attribs: {
                     "class": "atom-form"
                 },
@@ -219,10 +224,11 @@ var ComponentGenerator;
             };
         };
         HtmlContent.mapNode = function (a, tags, children) {
+            //debugger;
             if (a.name == "form-layout") {
-                console.log("converting form layout with " + a.children.length + " children");
+                //console.log(`converting form layout with ${a.children.length} children`);
                 a = HtmlContent.formLayoutNode(a);
-                console.log("converting form layout to " + a.children.length + " children");
+                //console.log(`converting form layout to ${a.children.length} children`);
             }
             var r = [a.name];
             var ca = {};
@@ -541,5 +547,6 @@ var ComponentGenerator;
     }
     global["HtmlContent"] = HtmlContent;
     global["ComponentGenerator"] = ComponentGenerator;
+    global["HtmlFragment"] = HtmlFragment;
 })(ComponentGenerator || (ComponentGenerator = {}));
 //# sourceMappingURL=component-generator.js.map
