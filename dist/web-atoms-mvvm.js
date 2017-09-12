@@ -317,136 +317,6 @@ var WebAtoms;
     }());
     WebAtoms.AtomDevice = AtomDevice;
 })(WebAtoms || (WebAtoms = {}));
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var WebAtoms;
-(function (WebAtoms) {
-    var WindowService = /** @class */ (function () {
-        function WindowService() {
-            this.lastWindowID = 1;
-        }
-        WindowService.prototype.alert = function (msg, title) {
-            return this.showAlert(msg, title || "Message", false);
-        };
-        WindowService.prototype.confirm = function (msg, title) {
-            return this.showAlert(msg, title || "Confirm", true);
-        };
-        WindowService.prototype.showAlert = function (msg, title, confirm) {
-            return new Promise(function (resolve, reject) {
-                var AtomUI = window["AtomUI"];
-                var AtomWindow = window["WebAtoms"]["AtomWindow"];
-                var d = { Message: msg, ConfirmValue: false, Confirm: confirm };
-                var e = document.createElement("DIV");
-                document.body.appendChild(e);
-                var w = AtomUI.createControl(e, AtomWindow, d);
-                w.set_windowWidth(380);
-                w.set_windowHeight(120);
-                w.set_windowTemplate(w.getTemplate("alertTemplate"));
-                w.set_title(title);
-                w.set_next(function () {
-                    w.dispose();
-                    //$(e).remove();
-                    e.remove();
-                    if (d.ConfirmValue) {
-                        resolve(true);
-                    }
-                    else {
-                        resolve(false);
-                    }
-                });
-                w.set_cancelNext(function () {
-                    w.dispose();
-                    //$(e).remove();
-                    e.remove();
-                    resolve(false);
-                });
-                w.refresh();
-            });
-        };
-        WindowService.prototype.openWindow = function (windowType, viewModel) {
-            return __awaiter(this, void 0, void 0, function () {
-                var _this = this;
-                return __generator(this, function (_a) {
-                    return [2 /*return*/, new Promise(function (resolve, reject) {
-                            // if(modal === undefined){
-                            //     modal = true;
-                            // }
-                            var windowDiv = document.createElement("div");
-                            windowDiv.id = "atom_window_" + _this.lastWindowID++;
-                            var atomApplication = window["atomApplication"];
-                            var AtomUI = window["AtomUI"];
-                            atomApplication._element.appendChild(windowDiv);
-                            if (windowType instanceof String) {
-                                windowType = window[windowType];
-                            }
-                            var windowCtrl = AtomUI.createControl(windowDiv, windowType);
-                            var closeSubscription = WebAtoms.AtomDevice.instance.subscribe("atom-window-close:" + windowDiv.id, function (g, i) {
-                                if (i !== undefined) {
-                                    Atom.set(windowCtrl, "value", i);
-                                }
-                                windowCtrl.closeCommand();
-                            });
-                            var cancelSubscription = WebAtoms.AtomDevice.instance.subscribe("atom-window-cancel:" + windowDiv.id, function (g, i) {
-                                windowCtrl.cancelCommand();
-                            });
-                            windowDiv.setAttribute("atom-local-scope", "true");
-                            windowCtrl.init();
-                            var dispatcher = WebAtoms["dispatcher"];
-                            if (viewModel !== undefined) {
-                                Atom.set(windowCtrl, "viewModel", viewModel);
-                            }
-                            windowCtrl.set_next(function () {
-                                cancelSubscription.dispose();
-                                closeSubscription.dispose();
-                                try {
-                                    resolve(windowCtrl.get_value());
-                                }
-                                catch (e) {
-                                    console.error(e);
-                                }
-                                dispatcher.callLater(function () {
-                                    windowCtrl.dispose();
-                                    windowDiv.remove();
-                                });
-                            });
-                            windowCtrl.set_cancelNext(function () {
-                                cancelSubscription.dispose();
-                                closeSubscription.dispose();
-                                try {
-                                    reject("cancelled");
-                                }
-                                catch (e) {
-                                    console.error(e);
-                                }
-                                dispatcher.callLater(function () {
-                                    windowCtrl.dispose();
-                                    windowDiv.remove();
-                                });
-                            });
-                            dispatcher.callLater(function () {
-                                var scope = windowCtrl.get_scope();
-                                var vm = windowCtrl.get_viewModel();
-                                if (vm) {
-                                    vm.windowName = windowDiv.id;
-                                }
-                                windowCtrl.openWindow(scope, null);
-                            });
-                        })];
-                });
-            });
-        };
-        WindowService = __decorate([
-            DIGlobal
-        ], WindowService);
-        return WindowService;
-    }());
-    WebAtoms.WindowService = WindowService;
-})(WebAtoms || (WebAtoms = {}));
-var WindowService = WebAtoms.WindowService;
 var WebAtoms;
 (function (WebAtoms) {
     var AtomBinder = window["AtomBinder"];
@@ -697,30 +567,6 @@ var WebAtoms;
 /**
  * Easy and Simple Dependency Injection
  */
-function DIGlobal(c) {
-    var DI = WebAtoms.DI;
-    DI.register(c, function () {
-        var dr = DI.instances = DI.instances || {};
-        var r = dr[c];
-        if (r)
-            return r;
-        var cx = c;
-        var r = new cx();
-        dr[c] = r;
-        return r;
-    });
-    return c;
-}
-;
-function DIAlwaysNew(c) {
-    var DI = WebAtoms.DI;
-    DI.register(c, function () {
-        var r = new c();
-        return r;
-    });
-    return c;
-}
-;
 var WebAtoms;
 (function (WebAtoms) {
     var DIFactory = /** @class */ (function () {
@@ -756,9 +602,33 @@ var WebAtoms;
         return DI;
     }());
     WebAtoms.DI = DI;
+    function DIGlobal(c) {
+        DI.register(c, function () {
+            var dr = DI.instances = DI.instances || {};
+            var r = dr[c];
+            if (r)
+                return r;
+            var cx = c;
+            var r = new cx();
+            dr[c] = r;
+            return r;
+        });
+        return c;
+    }
+    WebAtoms.DIGlobal = DIGlobal;
+    ;
+    function DIAlwaysNew(c) {
+        DI.register(c, function () {
+            var r = new c();
+            return r;
+        });
+        return c;
+    }
+    WebAtoms.DIAlwaysNew = DIAlwaysNew;
+    ;
 })(WebAtoms || (WebAtoms = {}));
-//var DIGlobal = WebAtoms.DIGlobal();
-//var DIAlwaysNew = WebAtoms.DIAlwaysNew();
+var DIGlobal = WebAtoms.DIGlobal;
+var DIAlwaysNew = WebAtoms.DIAlwaysNew;
 function methodBuilder(method) {
     return function (url) {
         return function (target, propertyKey, descriptor) {
@@ -1033,4 +903,134 @@ var validate = function (error, func) {
         }
     };
 };
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var WebAtoms;
+(function (WebAtoms) {
+    var WindowService = /** @class */ (function () {
+        function WindowService() {
+            this.lastWindowID = 1;
+        }
+        WindowService.prototype.alert = function (msg, title) {
+            return this.showAlert(msg, title || "Message", false);
+        };
+        WindowService.prototype.confirm = function (msg, title) {
+            return this.showAlert(msg, title || "Confirm", true);
+        };
+        WindowService.prototype.showAlert = function (msg, title, confirm) {
+            return new Promise(function (resolve, reject) {
+                var AtomUI = window["AtomUI"];
+                var AtomWindow = window["WebAtoms"]["AtomWindow"];
+                var d = { Message: msg, ConfirmValue: false, Confirm: confirm };
+                var e = document.createElement("DIV");
+                document.body.appendChild(e);
+                var w = AtomUI.createControl(e, AtomWindow, d);
+                w.set_windowWidth(380);
+                w.set_windowHeight(120);
+                w.set_windowTemplate(w.getTemplate("alertTemplate"));
+                w.set_title(title);
+                w.set_next(function () {
+                    w.dispose();
+                    //$(e).remove();
+                    e.remove();
+                    if (d.ConfirmValue) {
+                        resolve(true);
+                    }
+                    else {
+                        resolve(false);
+                    }
+                });
+                w.set_cancelNext(function () {
+                    w.dispose();
+                    //$(e).remove();
+                    e.remove();
+                    resolve(false);
+                });
+                w.refresh();
+            });
+        };
+        WindowService.prototype.openWindow = function (windowType, viewModel) {
+            return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
+                return __generator(this, function (_a) {
+                    return [2 /*return*/, new Promise(function (resolve, reject) {
+                            // if(modal === undefined){
+                            //     modal = true;
+                            // }
+                            var windowDiv = document.createElement("div");
+                            windowDiv.id = "atom_window_" + _this.lastWindowID++;
+                            var atomApplication = window["atomApplication"];
+                            var AtomUI = window["AtomUI"];
+                            atomApplication._element.appendChild(windowDiv);
+                            if (windowType instanceof String) {
+                                windowType = window[windowType];
+                            }
+                            var windowCtrl = AtomUI.createControl(windowDiv, windowType);
+                            var closeSubscription = WebAtoms.AtomDevice.instance.subscribe("atom-window-close:" + windowDiv.id, function (g, i) {
+                                if (i !== undefined) {
+                                    Atom.set(windowCtrl, "value", i);
+                                }
+                                windowCtrl.closeCommand();
+                            });
+                            var cancelSubscription = WebAtoms.AtomDevice.instance.subscribe("atom-window-cancel:" + windowDiv.id, function (g, i) {
+                                windowCtrl.cancelCommand();
+                            });
+                            windowDiv.setAttribute("atom-local-scope", "true");
+                            windowCtrl.init();
+                            var dispatcher = WebAtoms["dispatcher"];
+                            if (viewModel !== undefined) {
+                                Atom.set(windowCtrl, "viewModel", viewModel);
+                            }
+                            windowCtrl.set_next(function () {
+                                cancelSubscription.dispose();
+                                closeSubscription.dispose();
+                                try {
+                                    resolve(windowCtrl.get_value());
+                                }
+                                catch (e) {
+                                    console.error(e);
+                                }
+                                dispatcher.callLater(function () {
+                                    windowCtrl.dispose();
+                                    windowDiv.remove();
+                                });
+                            });
+                            windowCtrl.set_cancelNext(function () {
+                                cancelSubscription.dispose();
+                                closeSubscription.dispose();
+                                try {
+                                    reject("cancelled");
+                                }
+                                catch (e) {
+                                    console.error(e);
+                                }
+                                dispatcher.callLater(function () {
+                                    windowCtrl.dispose();
+                                    windowDiv.remove();
+                                });
+                            });
+                            dispatcher.callLater(function () {
+                                var scope = windowCtrl.get_scope();
+                                var vm = windowCtrl.get_viewModel();
+                                if (vm) {
+                                    vm.windowName = windowDiv.id;
+                                }
+                                windowCtrl.openWindow(scope, null);
+                            });
+                        })];
+                });
+            });
+        };
+        WindowService = __decorate([
+            WebAtoms.DIGlobal
+        ], WindowService);
+        return WindowService;
+    }());
+    WebAtoms.WindowService = WindowService;
+})(WebAtoms || (WebAtoms = {}));
+var WindowService = WebAtoms.WindowService;
 //# sourceMappingURL=web-atoms-mvvm.js.map
