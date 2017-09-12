@@ -2,6 +2,8 @@ function methodBuilder(method:string){
     return function(url:string){
         return function(target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any){
 
+            target.methods = target.methods || {};
+            
             var a = target.methods[propertyKey] as Array<WebAtoms.Rest.ServiceParameter>;
 
             var oldFunction = descriptor.value;
@@ -48,9 +50,8 @@ function parameterBuilder(paramName:string){
         return function(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number){
             //console.log("Instance");
             //console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
-            if(!target.methods){
-                target.methods = {};
-            }
+
+            target.methods = target.methods || {};
 
             var a = target.methods[propertyKey];
             if(!a){

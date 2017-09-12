@@ -210,6 +210,12 @@ namespace ComponentGenerator{
 
             var aa = a.attribs || {};
 
+            // if(aa["atom-type"]){
+            //     // needs separate initializer...
+            //     tags = new TagInitializerList(`${tags.component}_${tags.tags.length}`);
+            // }
+
+
             var inits:Array<string> = [];
 
             if(aa){
@@ -218,8 +224,13 @@ namespace ComponentGenerator{
                         continue;
 
                     var ckey = HtmlContent.camelCase(key);
-
+                    
                     var v = (aa[key] as string).trim();
+                    if(key === "data-atom-init"){
+                        inits.push(`WebAtoms.PageSetup.${v}(e);`);
+                        continue;
+                    }
+
                     if(v.startsWith("{") && v.endsWith("}")){
                         // one time binding...
                         inits.push(`this.setLocalValue('${ckey}',${HtmlContent.processOneTimeBinding(v)},e);`);
@@ -251,6 +262,14 @@ namespace ComponentGenerator{
                     }
 
                     ca[key] = aa[key];
+                }
+
+                if(children){
+                    inits.push(`var oldInit = AtomUI.attr(e,'base-data-atom-init');
+                        if(oldInit){
+                            (window.WebAtoms.PageSetup[oldInit]).call(this,e);
+                        }
+                    `);
                 }
 
                 if(inits.length){
@@ -303,7 +322,7 @@ namespace ComponentGenerator{
 
             var type = "WebAtoms.AtomControl";
 
-
+            var props = "";
 
             if(node.attribs){
 
@@ -317,6 +336,11 @@ namespace ComponentGenerator{
                     if(type.startsWith("Atom")){
                         type = "WebAtoms." + type;
                     }
+                }
+
+                if(node.attribs["atom-properties"]){
+                    props = node.attribs["atom-properties"];
+                    delete node.attribs["atom-properties"];
                 }
             }else{
                 if(!name){
@@ -336,7 +360,19 @@ namespace ComponentGenerator{
             for(var key in rootNode){
                 if(!rootNode.hasOwnProperty(key)) continue;
                 var value = rootNode[key];
-                startScript += ` if(!AtomUI.attr(e,'${key}')) AtomUI.attr(e, '${key}', '${value}' );\r\n\t\t`;
+
+                if(key === "data-atom-init"){
+                    startScript += `
+                        var oldInit = AtomUI.attr(e,'data-atom-init');
+                        if(oldInit){
+                            AtomUI.attr(e, 'base-data-atom-init',oldInit);
+                        };
+                        AtomUI.attr(e, 'data-atom-init','${value}');
+                    `;
+                }else{
+                    startScript += ` if(!AtomUI.attr(e,'${key}')) AtomUI.attr(e, '${key}', '${value}' );\r\n\t\t`;
+                }
+
             }
 
             result = JSON.stringify( rootChildren, undefined,2);
@@ -359,7 +395,9 @@ namespace ComponentGenerator{
                         ${startScript}
                     },
                     methods:{},
-                    properties:{}
+                    properties:{
+                        ${props}
+                    }
                 })
             })(window, ${type}.prototype);\r\n`;
 

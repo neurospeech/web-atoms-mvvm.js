@@ -154,6 +154,10 @@ var ComponentGenerator;
             if (!a.children)
                 return r;
             var aa = a.attribs || {};
+            // if(aa["atom-type"]){
+            //     // needs separate initializer...
+            //     tags = new TagInitializerList(`${tags.component}_${tags.tags.length}`);
+            // }
             var inits = [];
             if (aa) {
                 for (var key in aa) {
@@ -161,6 +165,10 @@ var ComponentGenerator;
                         continue;
                     var ckey = HtmlContent.camelCase(key);
                     var v = aa[key].trim();
+                    if (key === "data-atom-init") {
+                        inits.push("WebAtoms.PageSetup." + v + "(e);");
+                        continue;
+                    }
                     if (v.startsWith("{") && v.endsWith("}")) {
                         // one time binding...
                         inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e);");
@@ -186,6 +194,9 @@ var ComponentGenerator;
                         continue;
                     }
                     ca[key] = aa[key];
+                }
+                if (children) {
+                    inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            (window.WebAtoms.PageSetup[oldInit]).call(this,e);\n                        }\n                    ");
                 }
                 if (inits.length) {
                     ca["data-atom-init"] = tags.component + "_t" + tags.tags.length;
@@ -229,6 +240,7 @@ var ComponentGenerator;
                 return "";
             var result = "";
             var type = "WebAtoms.AtomControl";
+            var props = "";
             if (node.attribs) {
                 name = node.attribs["atom-component"];
                 delete node.attribs["atom-component"];
@@ -238,6 +250,10 @@ var ComponentGenerator;
                     if (type.startsWith("Atom")) {
                         type = "WebAtoms." + type;
                     }
+                }
+                if (node.attribs["atom-properties"]) {
+                    props = node.attribs["atom-properties"];
+                    delete node.attribs["atom-properties"];
                 }
             }
             else {
@@ -254,11 +270,16 @@ var ComponentGenerator;
                 if (!rootNode.hasOwnProperty(key))
                     continue;
                 var value = rootNode[key];
-                startScript += " if(!AtomUI.attr(e,'" + key + "')) AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
+                if (key === "data-atom-init") {
+                    startScript += "\n                        var oldInit = AtomUI.attr(e,'data-atom-init');\n                        if(oldInit){\n                            AtomUI.attr(e, 'base-data-atom-init',oldInit);\n                        };\n                        AtomUI.attr(e, 'data-atom-init','" + value + "');\n                    ";
+                }
+                else {
+                    startScript += " if(!AtomUI.attr(e,'" + key + "')) AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
+                }
             }
             result = JSON.stringify(rootChildren, undefined, 2);
             name = "" + (this.nsNamespace + "." || "") + name;
-            this.generated = "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{}\n                })\n            })(window, " + type + ".prototype);\r\n";
+            this.generated = "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{},\n                    properties:{\n                        " + props + "\n                    }\n                })\n            })(window, " + type + ".prototype);\r\n";
         };
         return HtmlComponent;
     }());

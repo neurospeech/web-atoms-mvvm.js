@@ -41,7 +41,7 @@ declare namespace WebAtoms {
     class AtomDevice {
         static instance: AtomDevice;
         constructor();
-        runAsync<T>(task: Promise<T>): Promise<any>;
+        runAsync<T>(tf: () => Promise<T>): void;
         private bag;
         broadcast(msg: string, data: any): void;
         subscribe(msg: string, action: AtomAction): AtomDisposable;
@@ -64,7 +64,9 @@ declare namespace WebAtoms {
     class AtomViewModel extends AtomModel {
         private disposables;
         constructor();
-        protected watch(item: any, property: string, f: () => void): void;
+        private privateInit();
+        private setupWatchers();
+        protected watch(item: any, property: string, f: () => void): AtomDisposable;
         protected registerDisposable(d: AtomDisposable): void;
         protected onPropertyChanged(name: string): void;
         protected onMessage<T>(msg: string, a: (data: T) => void): void;
@@ -76,6 +78,25 @@ declare namespace WebAtoms {
         windowName: string;
         close(result?: any): void;
         cancel(): void;
+    }
+}
+declare namespace WebAtoms {
+    class AtomErrors {
+        clear(): void;
+    }
+    class ObjectProperty {
+        target: object;
+        name: string;
+        watcher: AtomDisposable;
+        constructor(name: string);
+    }
+    class AtomWatcher implements AtomDisposable {
+        func: () => void;
+        evaluate(): any;
+        path: Array<Array<ObjectProperty>>;
+        target: any;
+        constructor(target: any, path: Array<string>, f: () => void);
+        dispose(): void;
     }
 }
 /**
@@ -133,6 +154,9 @@ declare namespace WebAtoms.Rest {
             new ();
         }): Promise<any>;
     }
+}
+declare var validate: (error: string, func: (...a: any[]) => boolean, ...args: any[]) => (target: WebAtoms.AtomViewModel, propertyKey: string) => void;
+declare namespace WebAtoms {
 }
 declare class WindowService {
     private lastWindowID;

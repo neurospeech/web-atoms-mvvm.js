@@ -28,4 +28,4 @@ window.Test.Namespace.HelpButton = (function(window,baseType){
                     methods:{},
                     properties:{}
                 })
-            })(window, WebAtoms.AtomButton.prototype)
+            })(window, WebAtoms.AtomButton.prototype);

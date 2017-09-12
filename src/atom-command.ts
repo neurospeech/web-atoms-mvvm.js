@@ -22,7 +22,7 @@ function bindableProperty(target: any, key: string) {
             Atom.refresh(this, key);
 
             if(this.onPropertyChanged){
-                this.onPropertyChanged(keyName);
+                this.onPropertyChanged(key);
             }
         };
     

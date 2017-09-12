@@ -13,9 +13,15 @@ global.window = {
     },
     AtomBinder:{
         
+    },
+    AtomUI:{
+        createControl: function(){
+
+        }
     }
 };
 
+loadScript("./node_modules/web-atoms-unit/web-atoms-mock.js")
 loadScript("./dist/web-atoms-mvvm.js");
 loadScript("./node_modules/web-atoms-unit/index.js");
 
