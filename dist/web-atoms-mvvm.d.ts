@@ -47,6 +47,15 @@ declare namespace WebAtoms {
         subscribe(msg: string, action: AtomAction): AtomDisposable;
     }
 }
+declare class WindowService {
+    private lastWindowID;
+    alert(msg: string, title?: string): Promise<any>;
+    confirm(msg: string, title?: string): Promise<boolean>;
+    private showAlert(msg, title, confirm);
+    openWindow<T>(windowType: string | {
+        new (e);
+    }, viewModel?: any): Promise<T>;
+}
 declare namespace WebAtoms {
     class AtomList<T> extends Array<T> {
         constructor();
@@ -166,13 +175,4 @@ declare namespace WebAtoms.Rest {
 }
 declare var validate: (error: string, func: (...a: any[]) => boolean, ...args: any[]) => (target: WebAtoms.AtomViewModel, propertyKey: string) => void;
 declare namespace WebAtoms {
-}
-declare class WindowService {
-    private lastWindowID;
-    alert(msg: string, title?: string): Promise<any>;
-    confirm(msg: string, title?: string): Promise<boolean>;
-    private showAlert(msg, title, confirm);
-    openWindow<T>(windowType: string | {
-        new (e);
-    }, viewModel?: any): Promise<T>;
 }
