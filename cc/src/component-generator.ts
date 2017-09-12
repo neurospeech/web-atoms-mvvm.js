@@ -264,7 +264,7 @@ namespace ComponentGenerator{
                     ca[key] = aa[key];
                 }
 
-                if(aa["atom-type"]){
+                if(children === undefined){
                     inits.push(`var oldInit = AtomUI.attr(e,'base-data-atom-init');
                         if(oldInit){
                             var f = this[oldInit];

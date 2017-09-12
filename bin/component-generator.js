@@ -195,7 +195,7 @@ var ComponentGenerator;
                     }
                     ca[key] = aa[key];
                 }
-                if (aa["atom-type"]) {
+                if (children === undefined) {
                     inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            var f = this[oldInit];\n                            f.call(this,e);\n                        }\n                    ");
                 }
                 if (inits.length) {
