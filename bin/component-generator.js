@@ -196,7 +196,7 @@ var ComponentGenerator;
                     ca[key] = aa[key];
                 }
                 if (children) {
-                    inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            (this[oldInit]).call(this,e);\n                        }\n                    ");
+                    inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            (window.WebAtoms.PageSetup[oldInit]).call(this,e);\n                        }\n                    ");
                 }
                 if (inits.length) {
                     ca["data-atom-init"] = tags.component + "_t" + tags.tags.length;
