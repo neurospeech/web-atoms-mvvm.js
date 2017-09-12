@@ -114,13 +114,14 @@ namespace WebAtoms{
                 this.bag = {};
             }
     
-            public async runAsync<T>(task: Promise<T>): Promise<any> {
-                try {
-                    await task;
-                } catch (error) {
+            public runAsync<T>(tf: () => Promise<T>) {
+
+                var task = tf();
+                task.catch(error=>{
                     console.error(error);
                     Atom.showError(error);
-                }
+                });
+                task.then(()=>{});
             }
     
             private bag: any;

@@ -41,7 +41,7 @@ declare namespace WebAtoms {
     class AtomDevice {
         static instance: AtomDevice;
         constructor();
-        runAsync<T>(task: Promise<T>): Promise<any>;
+        runAsync<T>(tf: () => Promise<T>): void;
         private bag;
         broadcast(msg: string, data: any): void;
         subscribe(msg: string, action: AtomAction): AtomDisposable;
@@ -64,8 +64,9 @@ declare namespace WebAtoms {
     class AtomViewModel extends AtomModel {
         private disposables;
         constructor();
+        private privateInit();
         private setupWatchers();
-        protected watch(item: any, property: string, f: () => void): void;
+        protected watch(item: any, property: string, f: () => void): AtomDisposable;
         protected registerDisposable(d: AtomDisposable): void;
         protected onPropertyChanged(name: string): void;
         protected onMessage<T>(msg: string, a: (data: T) => void): void;
@@ -81,7 +82,6 @@ declare namespace WebAtoms {
 }
 declare namespace WebAtoms {
     class AtomErrors {
-        set(name: any, value: any): void;
         clear(): void;
     }
     class ObjectProperty {
@@ -155,7 +155,7 @@ declare namespace WebAtoms.Rest {
         }): Promise<any>;
     }
 }
-declare var watch: (name: string) => (target: WebAtoms.AtomViewModel, propertyKey: string, i: number) => void;
+declare var validate: (error: string, func: (...a: any[]) => boolean, ...args: any[]) => (target: WebAtoms.AtomViewModel, propertyKey: string) => void;
 declare namespace WebAtoms {
 }
 declare class WindowService {

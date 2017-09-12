@@ -2,11 +2,6 @@ namespace WebAtoms{
 
     export class AtomErrors{
 
-        set(name,value){
-            this[name] = value;
-            Atom.refresh(this,name);
-        }
-
         clear(){
             for(var k in this){
                 if(this.hasOwnProperty(k)){
@@ -49,19 +44,28 @@ namespace WebAtoms{
                     if(t !== op.target){
                         if(op.watcher){
                             op.watcher.dispose();
+                            op.watcher = null;
                         }
                         op.target = t;
-                        if(tx){
+                    }
+                    if(tx){
+                        if(!op.watcher){
                             op.watcher = Atom.watch(tx,op.name, ()=> {
                                 this.evaluate();
                             });
                         }
                     }
-                    return t;
+                return t;
                 }) 
             });
 
-            this.func.apply(this.target,values);
+            values = values.map( op => op[op.length-1] );
+
+            try{
+                this.func.apply(this.target,values);
+            }catch(e){
+                
+            }
         }
 
         path: Array<Array<ObjectProperty>>;

@@ -25,7 +25,7 @@ function bindableProperty(target, key) {
         this[keyName] = newVal;
         Atom.refresh(this, key);
         if (this.onPropertyChanged) {
-            this.onPropertyChanged(keyName);
+            this.onPropertyChanged(key);
         }
     };
     // Delete property.
@@ -280,26 +280,13 @@ var WebAtoms;
         function AtomDevice() {
             this.bag = {};
         }
-        AtomDevice.prototype.runAsync = function (task) {
-            return __awaiter(this, void 0, void 0, function () {
-                var error_1;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            _a.trys.push([0, 2, , 3]);
-                            return [4 /*yield*/, task];
-                        case 1:
-                            _a.sent();
-                            return [3 /*break*/, 3];
-                        case 2:
-                            error_1 = _a.sent();
-                            console.error(error_1);
-                            Atom.showError(error_1);
-                            return [3 /*break*/, 3];
-                        case 3: return [2 /*return*/];
-                    }
-                });
+        AtomDevice.prototype.runAsync = function (tf) {
+            var task = tf();
+            task.catch(function (error) {
+                console.error(error);
+                Atom.showError(error);
             });
+            task.then(function () { });
         };
         AtomDevice.prototype.broadcast = function (msg, data) {
             var ary = this.bag[msg];
@@ -401,11 +388,27 @@ var WebAtoms;
         __extends(AtomViewModel, _super);
         function AtomViewModel() {
             var _this = _super.call(this) || this;
-            WebAtoms.AtomDevice.instance.runAsync(_this.init());
-            _this.setupWatchers();
+            WebAtoms.AtomDevice.instance.runAsync(function () { return _this.privateInit(); });
             return _this;
         }
+        AtomViewModel.prototype.privateInit = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, Atom.delay(1)];
+                        case 1:
+                            _a.sent();
+                            this.setupWatchers();
+                            return [4 /*yield*/, this.init()];
+                        case 2:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
         AtomViewModel.prototype.setupWatchers = function () {
+            var _this = this;
             //debugger;
             var vm = this.constructor.prototype;
             if (!vm._watchMethods)
@@ -415,12 +418,26 @@ var WebAtoms;
                 if (!vm.hasOwnProperty(k))
                     continue;
                 var params = wm[k];
-                var op = new WebAtoms.AtomWatcher(this, params, this[k]);
+                var pl = params.args;
+                var error = params.error;
+                var func = params.func;
+                var op = new WebAtoms.AtomWatcher(this, pl, function () {
+                    var x = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        x[_i] = arguments[_i];
+                    }
+                    _this[k] = func.apply(_this, x) ? error : "";
+                });
                 this.registerDisposable(op);
             }
         };
         AtomViewModel.prototype.watch = function (item, property, f) {
-            this.registerDisposable(Atom.watch(item, property, f));
+            var _this = this;
+            var d = Atom.watch(item, property, f);
+            this.registerDisposable(d);
+            return new WebAtoms.DisposableAction(function () {
+                _this.disposables = _this.disposables.filter(function (f) { return f != d; });
+            });
         };
         AtomViewModel.prototype.registerDisposable = function (d) {
             this.disposables = this.disposables || [];
@@ -476,10 +493,6 @@ var WebAtoms;
     var AtomErrors = /** @class */ (function () {
         function AtomErrors() {
         }
-        AtomErrors.prototype.set = function (name, value) {
-            this[name] = value;
-            Atom.refresh(this, name);
-        };
         AtomErrors.prototype.clear = function () {
             for (var k in this) {
                 if (this.hasOwnProperty(k)) {
@@ -515,9 +528,12 @@ var WebAtoms;
                     if (t !== op.target) {
                         if (op.watcher) {
                             op.watcher.dispose();
+                            op.watcher = null;
                         }
                         op.target = t;
-                        if (tx) {
+                    }
+                    if (tx) {
+                        if (!op.watcher) {
                             op.watcher = Atom.watch(tx, op.name, function () {
                                 _this.evaluate();
                             });
@@ -526,7 +542,12 @@ var WebAtoms;
                     return t;
                 });
             });
-            this.func.apply(this.target, values);
+            values = values.map(function (op) { return op[op.length - 1]; });
+            try {
+                this.func.apply(this.target, values);
+            }
+            catch (e) {
+            }
         };
         AtomWatcher.prototype.dispose = function () {
             for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
@@ -798,16 +819,45 @@ var WebAtoms;
         Rest.BaseService = BaseService;
     })(Rest = WebAtoms.Rest || (WebAtoms.Rest = {}));
 })(WebAtoms || (WebAtoms = {}));
-var watch = function (name) {
-    return function (target, propertyKey, i) {
+var validate = function (error, func) {
+    var args = [];
+    for (var _i = 2; _i < arguments.length; _i++) {
+        args[_i - 2] = arguments[_i];
+    }
+    return function (target, propertyKey) {
         //debugger;
         var vm = target;
         if (!vm._watchMethods) {
             vm._watchMethods = {};
         }
-        var a = vm._watchMethods[propertyKey]
-            || (vm._watchMethods[propertyKey] = []);
-        a[i] = name;
+        var watcher = {
+            error: error,
+            func: func,
+            args: args
+        };
+        vm._watchMethods[propertyKey] = watcher;
+        var keyName = "_" + propertyKey;
+        var getter = function () {
+            return this[keyName];
+        };
+        var setter = function (newVal) {
+            var oldValue = this[keyName];
+            if (oldValue == newVal)
+                return;
+            this[keyName] = newVal;
+            Atom.refresh(this, propertyKey);
+            if (this.onPropertyChanged) {
+                this.onPropertyChanged(propertyKey);
+            }
+        };
+        if (delete this[propertyKey]) {
+            Object.defineProperty(target, propertyKey, {
+                get: getter,
+                set: setter,
+                enumerable: true,
+                configurable: true
+            });
+        }
     };
 };
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {

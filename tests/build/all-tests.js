@@ -52,30 +52,66 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var Task = /** @class */ (function (_super) {
+    __extends(Task, _super);
+    function Task() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate([
+        bindableProperty
+    ], Task.prototype, "label", void 0);
+    return Task;
+}(WebAtoms.AtomModel));
+var ServiceTest = /** @class */ (function (_super) {
+    __extends(ServiceTest, _super);
+    function ServiceTest() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    ServiceTest.prototype.postData = function (data, a, cancel) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, null];
+            });
+        });
+    };
+    __decorate([
+        Post("/post/data/{a}"),
+        Return(Task),
+        __param(0, Body),
+        __param(1, Path("a")),
+        __param(2, Cancel)
+    ], ServiceTest.prototype, "postData", null);
+    ServiceTest = __decorate([
+        DIGlobal
+    ], ServiceTest);
+    return ServiceTest;
+}(WebAtoms.Rest.BaseService));
 var AtomViewModel = WebAtoms.AtomViewModel;
 var Category = WebAtoms.Unit.Category;
 var Test = WebAtoms.Unit.Test;
 var TestItem = WebAtoms.Unit.TestItem;
 var Assert = WebAtoms.Unit.Assert;
 var AtomList = WebAtoms.AtomList;
+var AtomErrors = WebAtoms.AtomErrors;
 var initCalled = false;
+var SampleViewModelErrors = /** @class */ (function (_super) {
+    __extends(SampleViewModelErrors, _super);
+    function SampleViewModelErrors() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate([
+        bindableProperty
+    ], SampleViewModelErrors.prototype, "name", void 0);
+    return SampleViewModelErrors;
+}(AtomErrors));
 var SampleViewModel = /** @class */ (function (_super) {
     __extends(SampleViewModel, _super);
     function SampleViewModel() {
         var _this = _super.call(this) || this;
-        _this.errors = new WebAtoms.AtomErrors();
         _this.list = new WebAtoms.AtomList();
         _this.data = {};
-        _this.errors = new WebAtoms.AtomErrors();
         return _this;
     }
-    SampleViewModel.prototype.validateObject = function (firstName, lastName) {
-        debugger;
-        if (!this.errors)
-            return;
-        console.log("Changed");
-        this.errors.set("name", !(firstName || lastName) ? "Name cannot be empty" : "");
-    };
     SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -98,18 +134,14 @@ var SampleViewModel = /** @class */ (function (_super) {
         bindableProperty
     ], SampleViewModel.prototype, "data", void 0);
     __decorate([
-        bindableProperty
-    ], SampleViewModel.prototype, "errors", void 0);
+        validate("Name cannot be empty", function (v1, v2) { return v1 || v2; }, "data.firstName", "data.lastName")
+    ], SampleViewModel.prototype, "nameError", void 0);
     __decorate([
         bindableProperty
     ], SampleViewModel.prototype, "name", void 0);
     __decorate([
         bindableProperty
     ], SampleViewModel.prototype, "list", void 0);
-    __decorate([
-        __param(0, watch("data.firstName")),
-        __param(1, watch("data.lastName"))
-    ], SampleViewModel.prototype, "validateObject", null);
     return SampleViewModel;
 }(AtomViewModel));
 var AtomViewModelTest = /** @class */ (function (_super) {
@@ -127,13 +159,10 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.delay(100)];
                     case 1:
                         _a.sent();
-                        debugger;
-                        //Assert.equals("Name cannot be empty", sm.errors["name"]);
                         Atom.set(sm, "data.firstName", "something");
-                        console.log("" + sm.errors["name"]);
-                        Assert.isFalse(sm.errors["name"]);
+                        Assert.isTrue(sm.nameError == "");
                         Atom.set(sm, "data.firstName", "");
-                        Assert.isTrue(sm.errors["name"]);
+                        Assert.isTrue(sm.nameError != "");
                         return [2 /*return*/];
                 }
             });
@@ -227,38 +256,4 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     ], AtomViewModelTest);
     return AtomViewModelTest;
 }(TestItem));
-var Task = /** @class */ (function (_super) {
-    __extends(Task, _super);
-    function Task() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate([
-        bindableProperty
-    ], Task.prototype, "label", void 0);
-    return Task;
-}(WebAtoms.AtomModel));
-var ServiceTest = /** @class */ (function (_super) {
-    __extends(ServiceTest, _super);
-    function ServiceTest() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    ServiceTest.prototype.postData = function (data, a, cancel) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/, null];
-            });
-        });
-    };
-    __decorate([
-        Post("/post/data/{a}"),
-        Return(Task),
-        __param(0, Body),
-        __param(1, Path("a")),
-        __param(2, Cancel)
-    ], ServiceTest.prototype, "postData", null);
-    ServiceTest = __decorate([
-        DIGlobal
-    ], ServiceTest);
-    return ServiceTest;
-}(WebAtoms.Rest.BaseService));
 //# sourceMappingURL=all-tests.js.map
