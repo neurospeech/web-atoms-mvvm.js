@@ -110,12 +110,11 @@ var SampleViewModel = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.list = new WebAtoms.AtomList();
         _this.data = {};
-        _this.errors = new SampleViewModelErrors(_this);
+        _this.errors = _this.createErrors(SampleViewModelErrors);
         _this.errors
             .ifExpression("data.firstName")
             .isEmpty()
             .setError("name", "Name cannot be empty");
-        _this.registerDisposable(_this.errors);
         return _this;
     }
     SampleViewModel.prototype.init = function () {

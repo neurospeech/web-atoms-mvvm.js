@@ -53,8 +53,6 @@ namespace WebAtoms{
     export class AtomErrorExpression implements AtomDisposable{
         private setErrorMessage(a: any): any {
             Atom.set(this.errors,this.errorField, a ? this.errorMessage.replace("{errorField}",this.errorField) : false);
-
-            this.watcher.evaluate();
         }
 
         errors: any;
@@ -106,6 +104,8 @@ namespace WebAtoms{
             if(msg !== undefined){
                 this.errorMessage = msg;
             }
+            this.watcher.func = () => true;
+            this.watcher.evaluate();
             this.watcher.func = this.func;
         }
 

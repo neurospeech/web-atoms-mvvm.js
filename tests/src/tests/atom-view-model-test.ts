@@ -31,14 +31,13 @@ class SampleViewModel extends AtomViewModel{
         this.data = {};
 
 
-        this.errors = new SampleViewModelErrors(this);
+        this.errors = this.createErrors(SampleViewModelErrors);
 
         this.errors
             .ifExpression("data.firstName")
             .isEmpty()
             .setError("name","Name cannot be empty");
 
-        this.registerDisposable(this.errors);
 
     }
 

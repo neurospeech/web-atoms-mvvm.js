@@ -13,6 +13,12 @@ namespace WebAtoms{
 
         }
 
+        protected createErrors<T extends AtomErrors>(f:new (a:any)=>T):T{
+            var ae = new f(this);
+            this.registerDisposable(ae);
+            return ae;
+        }
+
         private async privateInit(){
             await Atom.delay(1);
             this.setupWatchers();

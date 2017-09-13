@@ -391,6 +391,11 @@ var WebAtoms;
             WebAtoms.AtomDevice.instance.runAsync(function () { return _this.privateInit(); });
             return _this;
         }
+        AtomViewModel.prototype.createErrors = function (f) {
+            var ae = new f(this);
+            this.registerDisposable(ae);
+            return ae;
+        };
         AtomViewModel.prototype.privateInit = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -539,7 +544,6 @@ var WebAtoms;
         }
         AtomErrorExpression.prototype.setErrorMessage = function (a) {
             Atom.set(this.errors, this.errorField, a ? this.errorMessage.replace("{errorField}", this.errorField) : false);
-            this.watcher.evaluate();
         };
         AtomErrorExpression.prototype.isEmpty = function () {
             var _this = this;
@@ -588,6 +592,8 @@ var WebAtoms;
             if (msg !== undefined) {
                 this.errorMessage = msg;
             }
+            this.watcher.func = function () { return true; };
+            this.watcher.evaluate();
             this.watcher.func = this.func;
         };
         AtomErrorExpression.prototype.dispose = function () {

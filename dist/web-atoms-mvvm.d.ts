@@ -64,6 +64,7 @@ declare namespace WebAtoms {
     class AtomViewModel extends AtomModel {
         private disposables;
         constructor();
+        protected createErrors<T extends AtomErrors>(f: new (a: any) => T): T;
         private privateInit();
         private setupWatchers();
         protected watch(item: any, property: string, f: () => void): AtomDisposable;
