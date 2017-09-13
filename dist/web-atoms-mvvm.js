@@ -391,11 +391,6 @@ var WebAtoms;
             WebAtoms.AtomDevice.instance.runAsync(function () { return _this.privateInit(); });
             return _this;
         }
-        AtomViewModel.prototype.createErrors = function (f) {
-            var ae = new f(this);
-            this.registerDisposable(ae);
-            return ae;
-        };
         AtomViewModel.prototype.privateInit = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
