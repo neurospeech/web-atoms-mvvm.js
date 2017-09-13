@@ -1,14 +1,36 @@
 namespace WebAtoms{
 
+    /**
+     * 
+     * 
+     * @export
+     * @class WindowService
+     */
     @DIGlobal
     export class WindowService{
 
         private lastWindowID:number = 1;
 
+        /**
+         * 
+         * 
+         * @param {string} msg 
+         * @param {string} [title] 
+         * @returns {Promise<any>} 
+         * @memberof WindowService
+         */
         alert(msg:string,title?:string):Promise<any>{
             return this.showAlert(msg,title || "Message",false);
         }
 
+        /**
+         * 
+         * 
+         * @param {string} msg 
+         * @param {string} [title] 
+         * @returns {Promise<boolean>} 
+         * @memberof WindowService
+         */
         confirm(msg:string,title?:string):Promise<boolean>{
             return this.showAlert(msg,title || "Confirm",true);
         }
@@ -56,6 +78,15 @@ namespace WebAtoms{
         }
 
 
+        /**
+         * 
+         * 
+         * @template T 
+         * @param {(string | {new(e)})} windowType 
+         * @param {*} [viewModel] 
+         * @returns {Promise<T>} 
+         * @memberof WindowService
+         */
         async openWindow<T>(windowType: string | {new(e)}, viewModel?: any):Promise<T>{
 
             return new  Promise<T>((resolve,reject)=>{

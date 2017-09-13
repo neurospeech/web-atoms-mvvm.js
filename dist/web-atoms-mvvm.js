@@ -8,6 +8,20 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+/**
+ * This decorator will mark given property as bindable, it will define
+ * getter and setter, and in the setter, it will refresh the property.
+ *
+ *      class Customer{
+ *
+ *          @bindableProperty
+ *          firstName:string;
+ *
+ *      }
+ *
+ * @param {*} target
+ * @param {string} key
+ */
 function bindableProperty(target, key) {
     var Atom = window["Atom"];
     // property value
@@ -42,6 +56,12 @@ function bindableProperty(target, key) {
 var WebAtoms;
 (function (WebAtoms) {
     var Atom = window["Atom"];
+    /**
+     *
+     *
+     * @export
+     * @class CancelToken
+     */
     var CancelToken = /** @class */ (function () {
         function CancelToken() {
             this.listeners = [];
@@ -84,6 +104,22 @@ var WebAtoms;
         return AtomModel;
     }());
     WebAtoms.AtomModel = AtomModel;
+    /**
+     * Though you can directly call methods of view model in binding expression,
+     * but we recommend using AtomCommand for two reasons.
+     *
+     * First one, it has enabled bindable property, which can be used to enable/disable UI.
+     * AtomButton already has `command` and `commandParameter` property which automatically
+     * binds execution and disabling the UI.
+     *
+     * Second one, it has busy bindable property, which can be used to display a busy indicator
+     * when corresponding action is a promise and it is yet not resolved.
+     *
+     * @export
+     * @class AtomCommand
+     * @extends {AtomModel}
+     * @template T
+     */
     var AtomCommand = /** @class */ (function (_super) {
         __extends(AtomCommand, _super);
         function AtomCommand(action) {
@@ -101,6 +137,12 @@ var WebAtoms;
             return _this;
         }
         Object.defineProperty(AtomCommand.prototype, "enabled", {
+            /**
+             *
+             *
+             * @type {boolean}
+             * @memberof AtomCommand
+             */
             get: function () {
                 return this._enabled;
             },
@@ -112,6 +154,12 @@ var WebAtoms;
             configurable: true
         });
         Object.defineProperty(AtomCommand.prototype, "busy", {
+            /**
+             *
+             *
+             * @type {boolean}
+             * @memberof AtomCommand
+             */
             get: function () {
                 return this._busy;
             },
@@ -192,6 +240,29 @@ var WebAtoms;
     var Atom = window["Atom"];
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
+    /**
+     * DisposableAction holds an action that
+     * will be executed when dispose will be called.
+     *
+     *      subscribe(m,f):AtomDisposable{
+     *          //...
+     *          //subscribe to something...
+     *          //...
+     *          return new AtomDisposable(()=>{
+     *
+     *              //...
+     *              //unsubscribe from something
+     *              //
+     *
+     *          });
+     *      }
+     *
+     * User can simply call dispose to make sure subscription was unsubscribed.
+     *
+     * @export
+     * @class DisposableAction
+     * @implements {AtomDisposable}
+     */
     var DisposableAction = /** @class */ (function () {
         function DisposableAction(f) {
             this.f = f;
@@ -276,6 +347,12 @@ var WebAtoms;
         return AtomMessageAction;
     }());
     WebAtoms.AtomMessageAction = AtomMessageAction;
+    /**
+     *
+     *
+     * @export
+     * @class AtomDevice
+     */
     var AtomDevice = /** @class */ (function () {
         function AtomDevice() {
             this.bag = {};
@@ -288,6 +365,14 @@ var WebAtoms;
             });
             task.then(function () { });
         };
+        /**
+         *
+         *
+         * @param {string} msg
+         * @param {*} data
+         * @returns
+         * @memberof AtomDevice
+         */
         AtomDevice.prototype.broadcast = function (msg, data) {
             var ary = this.bag[msg];
             if (!ary)
@@ -297,6 +382,14 @@ var WebAtoms;
                 entry.call(this, msg, data);
             }
         };
+        /**
+         *
+         *
+         * @param {string} msg
+         * @param {AtomAction} action
+         * @returns {AtomDisposable}
+         * @memberof AtomDevice
+         */
         AtomDevice.prototype.subscribe = function (msg, action) {
             var _this = this;
             var ary = this.bag[msg];
@@ -312,6 +405,13 @@ var WebAtoms;
                 }
             });
         };
+        /**
+         *
+         *
+         * @static
+         * @type {AtomDevice}
+         * @memberof AtomDevice
+         */
         AtomDevice.instance = new AtomDevice();
         return AtomDevice;
     }());
@@ -321,6 +421,14 @@ var WebAtoms;
 (function (WebAtoms) {
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
+    /**
+     *
+     *
+     * @export
+     * @class AtomList
+     * @extends {Array<T>}
+     * @template T
+     */
     var AtomList = /** @class */ (function (_super) {
         __extends(AtomList, _super);
         function AtomList() {
@@ -384,6 +492,13 @@ var WebAtoms;
 /// <reference path="atom-command.ts"/>
 var WebAtoms;
 (function (WebAtoms) {
+    /**
+     *
+     *
+     * @export
+     * @class AtomViewModel
+     * @extends {AtomModel}
+     */
     var AtomViewModel = /** @class */ (function (_super) {
         __extends(AtomViewModel, _super);
         function AtomViewModel() {
@@ -429,12 +544,40 @@ var WebAtoms;
                 });
             });
         };
+        /**
+         * Internal method, do not use, instead use errors.hasErrors()
+         *
+         * @memberof AtomViewModel
+         */
         AtomViewModel.prototype.validate = function () {
             for (var _i = 0, _a = this.validations; _i < _a.length; _i++) {
                 var v = _a[_i];
                 v.evaluate(true);
             }
         };
+        /**
+         * Adds validation expression to be executed when any bindable expression is updated.
+         *
+         * `target` must always be set to `this`.
+         *
+         *      this.addValidation(this, x => {
+         *          x.errors.nameError = x.data.firstName ? "" : "Name cannot be empty";
+         *      });
+         *
+         * Only difference here is, validation will not kick in first time, where else watch will
+         * be invoked as soon as it is setup.
+         *
+         * Validation will be invoked when any bindable property in given expression is updated.
+         *
+         * Validation can be invoked explicitly only by calling `errors.hasErrors()`.
+         *
+         * @protected
+         * @template T
+         * @param {T} target
+         * @param {(x:T) => any} ft
+         * @returns {AtomDisposable}
+         * @memberof AtomViewModel
+         */
         AtomViewModel.prototype.addValidation = function (target, ft) {
             var _this = this;
             if (target !== this) {
@@ -447,6 +590,25 @@ var WebAtoms;
                 _this.disposables = _this.disposables.filter(function (f) { return f != d; });
             });
         };
+        /**
+         * Execute given expression whenever any bindable expression changes
+         * in the expression.
+         *
+         * For correct generic type resolution, target must always be `this`.
+         *
+         *      this.watch(this, x => {
+         *          if(!x.data.fullName){
+         *              x.data.fullName = `${x.data.firstName} ${x.data.lastName}`;
+         *          }
+         *      });
+         *
+         * @protected
+         * @template T
+         * @param {T} target
+         * @param {(x:T) => any} ft
+         * @returns {AtomDisposable}
+         * @memberof AtomViewModel
+         */
         AtomViewModel.prototype.watch = function (target, ft) {
             var _this = this;
             if (target !== this) {
@@ -458,12 +620,28 @@ var WebAtoms;
                 _this.disposables = _this.disposables.filter(function (f) { return f != d; });
             });
         };
+        /**
+         * Register a disposable to be disposed when view model will be disposed.
+         *
+         * @protected
+         * @param {AtomDisposable} d
+         * @memberof AtomViewModel
+         */
         AtomViewModel.prototype.registerDisposable = function (d) {
             this.disposables = this.disposables || [];
             this.disposables.push(d);
         };
         AtomViewModel.prototype.onPropertyChanged = function (name) {
         };
+        /**
+         * Register listener for given message.
+         *
+         * @protected
+         * @template T
+         * @param {string} msg
+         * @param {(data: T) => void} a
+         * @memberof AtomViewModel
+         */
         AtomViewModel.prototype.onMessage = function (msg, a) {
             var action = function (m, d) {
                 a(d);
@@ -471,9 +649,22 @@ var WebAtoms;
             var sub = WebAtoms.AtomDevice.instance.subscribe(msg, action);
             this.registerDisposable(sub);
         };
+        /**
+         * Broadcast given data to channel (msg)
+         *
+         * @param {string} msg
+         * @param {*} data
+         * @memberof AtomViewModel
+         */
         AtomViewModel.prototype.broadcast = function (msg, data) {
             WebAtoms.AtomDevice.instance.broadcast(msg, data);
         };
+        /**
+         * Put your asynchronous initializations here
+         *
+         * @returns {Promise<any>}
+         * @memberof AtomViewModel
+         */
         AtomViewModel.prototype.init = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -481,6 +672,12 @@ var WebAtoms;
                 });
             });
         };
+        /**
+         * dispose method will becalled when attached view will be disposed or
+         * when a new view model will be assigned to view, old view model will be disposed.
+         *
+         * @memberof AtomViewModel
+         */
         AtomViewModel.prototype.dispose = function () {
             if (this.disposables) {
                 for (var _i = 0, _a = this.disposables; _i < _a.length; _i++) {
@@ -492,14 +689,50 @@ var WebAtoms;
         return AtomViewModel;
     }(WebAtoms.AtomModel));
     WebAtoms.AtomViewModel = AtomViewModel;
+    /**
+     * This view model should be used with WindowService to create and open window.
+     *
+     * This view model has `close` and `cancel` methods. `close` method will
+     * close the window and will resolve the given result in promise. `cancel`
+     * will reject the given promise.
+     *
+     *      var windowService = WebAtoms.DI.resolve(WindowService);
+     *      var result = await
+     *          windowService.openWindow(
+     *              "Namespace.WindowName",
+     *              new WindowNameViewModel());
+     *
+     * @export
+     * @class AtomWindowViewModel
+     * @extends {AtomViewModel}
+     */
     var AtomWindowViewModel = /** @class */ (function (_super) {
         __extends(AtomWindowViewModel, _super);
         function AtomWindowViewModel() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * This will broadcast `atom-window-close:windowName`.
+         * WindowService will close the window on receipt of such message and
+         * it will resolve the promise with given result.
+         *
+         *      this.close(someResult);
+         *
+         * @param {*} [result]
+         * @memberof AtomWindowViewModel
+         */
         AtomWindowViewModel.prototype.close = function (result) {
             this.broadcast("atom-window-close:" + this.windowName, result);
         };
+        /**
+         * This will broadcast `atom-window-cancel:windowName`
+         * WindowService will cancel the window on receipt of such message and
+         * it will reject the promise with "cancelled" message.
+         *
+         *      this.cancel();
+         *
+         * @memberof AtomWindowViewModel
+         */
         AtomWindowViewModel.prototype.cancel = function () {
             this.broadcast("atom-window-cancel:" + this.windowName, null);
         };
@@ -863,6 +1096,12 @@ var WebAtoms;
             return CancellablePromise;
         }());
         Rest.CancellablePromise = CancellablePromise;
+        /**
+         *
+         *
+         * @export
+         * @class BaseService
+         */
         var BaseService = /** @class */ (function () {
             function BaseService() {
                 this.testMode = false;
@@ -971,13 +1210,35 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var WebAtoms;
 (function (WebAtoms) {
+    /**
+     *
+     *
+     * @export
+     * @class WindowService
+     */
     var WindowService = /** @class */ (function () {
         function WindowService() {
             this.lastWindowID = 1;
         }
+        /**
+         *
+         *
+         * @param {string} msg
+         * @param {string} [title]
+         * @returns {Promise<any>}
+         * @memberof WindowService
+         */
         WindowService.prototype.alert = function (msg, title) {
             return this.showAlert(msg, title || "Message", false);
         };
+        /**
+         *
+         *
+         * @param {string} msg
+         * @param {string} [title]
+         * @returns {Promise<boolean>}
+         * @memberof WindowService
+         */
         WindowService.prototype.confirm = function (msg, title) {
             return this.showAlert(msg, title || "Confirm", true);
         };
@@ -1013,6 +1274,15 @@ var WebAtoms;
                 w.refresh();
             });
         };
+        /**
+         *
+         *
+         * @template T
+         * @param {(string | {new(e)})} windowType
+         * @param {*} [viewModel]
+         * @returns {Promise<T>}
+         * @memberof WindowService
+         */
         WindowService.prototype.openWindow = function (windowType, viewModel) {
             return __awaiter(this, void 0, void 0, function () {
                 var _this = this;

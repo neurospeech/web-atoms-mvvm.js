@@ -170,6 +170,12 @@ namespace WebAtoms.Rest{
         }
     }
 
+    /**
+     * 
+     * 
+     * @export
+     * @class BaseService
+     */
     export class BaseService{
 
 

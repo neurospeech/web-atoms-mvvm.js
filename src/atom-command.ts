@@ -1,3 +1,17 @@
+/**
+ * This decorator will mark given property as bindable, it will define
+ * getter and setter, and in the setter, it will refresh the property.
+ * 
+ *      class Customer{
+ *          
+ *          @bindableProperty
+ *          firstName:string;
+ * 
+ *      }
+ * 
+ * @param {*} target 
+ * @param {string} key 
+ */
 function bindableProperty(target: any, key: string) {
     
         var Atom = window["Atom"];
@@ -43,6 +57,12 @@ namespace WebAtoms{
 
     var Atom = window["Atom"];
 
+    /**
+     * 
+     * 
+     * @export
+     * @class CancelToken
+     */
     export class CancelToken{
 
         listeners:Array<()=>void> = [];
@@ -83,12 +103,34 @@ namespace WebAtoms{
 
 
 
+    /**
+     * Though you can directly call methods of view model in binding expression, 
+     * but we recommend using AtomCommand for two reasons.
+     * 
+     * First one, it has enabled bindable property, which can be used to enable/disable UI.
+     * AtomButton already has `command` and `commandParameter` property which automatically
+     * binds execution and disabling the UI.
+     * 
+     * Second one, it has busy bindable property, which can be used to display a busy indicator
+     * when corresponding action is a promise and it is yet not resolved.
+     * 
+     * @export
+     * @class AtomCommand
+     * @extends {AtomModel}
+     * @template T 
+     */
     export class AtomCommand<T> extends AtomModel {
 
         public readonly isMVVMAtomCommand: boolean = true;
 
 
         private _enabled: boolean = true;
+        /**
+         * 
+         * 
+         * @type {boolean}
+         * @memberof AtomCommand
+         */
         get enabled(): boolean {
             return this._enabled;
         }
@@ -98,6 +140,12 @@ namespace WebAtoms{
         }
 
         private _busy: boolean = false;
+        /**
+         * 
+         * 
+         * @type {boolean}
+         * @memberof AtomCommand
+         */
         get busy(): boolean{
             return this._busy;
         }
