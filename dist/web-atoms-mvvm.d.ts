@@ -64,10 +64,10 @@ declare namespace WebAtoms {
     class AtomViewModel extends AtomModel {
         private disposables;
         constructor();
-        protected createErrors<T extends AtomErrors>(f: new (a: any) => T): T;
+        protected createErrors<Tx, T extends AtomErrors<Tx>>(f: new (a: any) => T): T;
         private privateInit();
         private setupWatchers();
-        protected watch(item: any, property: string, f: () => void): AtomDisposable;
+        protected watch<T extends AtomViewModel>(target: T, ft: (x: T) => any): AtomDisposable;
         protected registerDisposable(d: AtomDisposable): void;
         protected onPropertyChanged(name: string): void;
         protected onMessage<T>(msg: string, a: (data: T) => void): void;
@@ -82,7 +82,7 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
-    function errorIf<T>(fx: (fi: (t: T) => any) => boolean): (f: (t: T) => any, msg: string) => (target: AtomErrors<T>, propertyKey: string | symbol) => void;
+    function errorIf<T>(fx: (fi: (t: T) => any) => ((tx: T) => boolean)): (f: (t: T) => any, msg: string) => (target: AtomErrors<T>, propertyKey: string | symbol) => void;
     class AtomErrors<T> implements AtomDisposable {
         dispose(): void;
         watchers: AtomErrorExpression<T>[];
@@ -103,27 +103,29 @@ declare namespace WebAtoms {
     class AtomErrorExpression<T> implements AtomDisposable {
         private setErrorMessage(a);
         errors: any;
-        watcher: AtomWatcher;
+        watcher: AtomWatcher<T>;
         errorMessage: string;
         errorField: string;
         func: (...args: any[]) => void;
-        constructor(errors: AtomErrors<T>, watcher: AtomWatcher);
+        constructor(errors: AtomErrors<T>, watcher: AtomWatcher<T>);
         isEmpty(): AtomErrorExpression<T>;
         isTrue(f: (...args: any[]) => boolean): AtomErrorExpression<T>;
         isFalse(f: (...args: any[]) => boolean): AtomErrorExpression<T>;
         setError(name: string, msg?: string): void;
         dispose(): void;
     }
-    class AtomWatcher implements AtomDisposable {
-        func: () => void;
+    class AtomWatcher<T> implements AtomDisposable {
+        func: (t: T) => any;
+        private _isExecuting;
         evaluate(): any;
         path: Array<Array<ObjectProperty>>;
         target: any;
-        constructor(target: any, path: Array<string>);
+        constructor(target: T, path: string[] | ((x: T) => any));
         dispose(): void;
     }
 }
-declare var errorIf: any;
+declare var errorIf: (f: (t: {}) => any, msg: string) => (target: WebAtoms.AtomErrors<{}>, propertyKey: string | symbol) => void;
+declare var errorIfEmpty: (f: (t: {}) => any, msg: string) => (target: WebAtoms.AtomErrors<{}>, propertyKey: string | symbol) => void;
 /**
  * Easy and Simple Dependency Injection
  */
@@ -188,9 +190,6 @@ declare namespace WebAtoms.Rest {
             new ();
         }): Promise<any>;
     }
-}
-declare var validate: (error: string, func: (...a: any[]) => boolean, ...args: any[]) => (target: WebAtoms.AtomViewModel, propertyKey: string) => void;
-declare namespace WebAtoms {
 }
 declare namespace WebAtoms {
     class WindowService {

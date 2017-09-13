@@ -426,19 +426,23 @@ var WebAtoms;
                 var pl = params.args;
                 var error = params.error;
                 var func = params.func;
-                var op = new WebAtoms.AtomWatcher(this, pl, function () {
+                var op = new WebAtoms.AtomWatcher(this, pl);
+                op.func = function () {
                     var x = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
                         x[_i] = arguments[_i];
                     }
                     _this[k] = func.apply(_this, x) ? error : "";
-                });
+                };
                 this.registerDisposable(op);
             }
         };
-        AtomViewModel.prototype.watch = function (item, property, f) {
+        AtomViewModel.prototype.watch = function (target, ft) {
             var _this = this;
-            var d = Atom.watch(item, property, f);
+            if (target !== this) {
+                throw new Error("watch must only be called with this");
+            }
+            var d = new WebAtoms.AtomWatcher(target, ft);
             this.registerDisposable(d);
             return new WebAtoms.DisposableAction(function () {
                 _this.disposables = _this.disposables.filter(function (f) { return f != d; });
@@ -534,6 +538,33 @@ var WebAtoms;
         };
     }
     WebAtoms.errorIf = errorIf;
+    function parsePath(f) {
+        var str = f.toString().trim();
+        // remove last }
+        if (str.endsWith("}")) {
+            str = str.substr(0, str.length - 1);
+        }
+        if (str.startsWith("function (")) {
+            str = str.substr("function (".length);
+        }
+        if (str.startsWith("function(")) {
+            str = str.substr("function(".length);
+        }
+        var index = str.indexOf(")");
+        var p = str.substr(0, index);
+        str = str.substr(index + 1);
+        var regExp = "(?:(" + p + ")(?:.[a-zA-Z_][a-zA-Z_0-9.]*)+)";
+        var re = new RegExp(regExp, "gi");
+        var path = [];
+        var ms = str.replace(re, function (m) {
+            //console.log(`m: ${m}`);
+            var px = m.substr(p.length + 1);
+            path.push(px);
+            return m;
+        });
+        //debugger;
+        return path;
+    }
     var AtomErrors = /** @class */ (function () {
         function AtomErrors(target) {
             this.watchers = [];
@@ -564,26 +595,7 @@ var WebAtoms;
         };
         AtomErrors.prototype.ifExpressionTrue = function (f, fx) {
             var _this = this;
-            var str = f.toString().trim();
-            // remove last }
-            if (str.endsWith("}")) {
-                str = str.substr(0, str.length - 1);
-            }
-            if (str.startsWith("function (")) {
-                str = str.substr("function (".length);
-            }
-            var index = str.indexOf(")");
-            var p = str.substr(0, index);
-            str = str.substr(index + 1);
-            var regExp = "(?:(" + p + ")(?:.[a-zA-Z_][a-zA-Z_0-9.]*)+)";
-            var re = new RegExp(regExp, "gi");
-            var path = [];
-            var ms = str.replace(re, function (m) {
-                //console.log(`m: ${m}`);
-                var px = m.substr(p.length + 1);
-                path.push(px);
-                return m;
-            });
+            var path = parsePath(f);
             var ae = this.ifExpression.apply(this, path);
             ae.func = function () {
                 var r = fx.call(_this, _this.target);
@@ -688,38 +700,57 @@ var WebAtoms;
     WebAtoms.AtomErrorExpression = AtomErrorExpression;
     var AtomWatcher = /** @class */ (function () {
         function AtomWatcher(target, path) {
+            this._isExecuting = false;
             this.target = target;
+            var e = false;
+            if (path instanceof Function) {
+                var f = path;
+                path = parsePath(path);
+                e = true;
+                this.func = f;
+            }
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
+            if (e) {
+                this.evaluate();
+            }
         }
         AtomWatcher.prototype.evaluate = function () {
             var _this = this;
-            var values = this.path.map(function (p) {
-                var t = _this.target;
-                return p.map(function (op) {
-                    var tx = t;
-                    t = Atom.get(t, op.name);
-                    if (t !== op.target) {
-                        if (op.watcher) {
-                            op.watcher.dispose();
-                            op.watcher = null;
-                        }
-                        op.target = t;
-                    }
-                    if (tx) {
-                        if (!op.watcher) {
-                            op.watcher = Atom.watch(tx, op.name, function () {
-                                _this.evaluate();
-                            });
-                        }
-                    }
-                    return t;
-                });
-            });
-            values = values.map(function (op) { return op[op.length - 1]; });
+            if (this._isExecuting)
+                return;
+            this._isExecuting = true;
             try {
-                this.func.apply(this.target, values);
+                var values = this.path.map(function (p) {
+                    var t = _this.target;
+                    return p.map(function (op) {
+                        var tx = t;
+                        t = Atom.get(t, op.name);
+                        if (t !== op.target) {
+                            if (op.watcher) {
+                                op.watcher.dispose();
+                                op.watcher = null;
+                            }
+                            op.target = t;
+                        }
+                        if (tx) {
+                            if (!op.watcher) {
+                                op.watcher = Atom.watch(tx, op.name, function () {
+                                    _this.evaluate();
+                                });
+                            }
+                        }
+                        return t;
+                    });
+                });
+                //values = values.map( op => op[op.length-1] );
+                try {
+                    this.func.call(this.target, this.target);
+                }
+                catch (e) {
+                }
             }
-            catch (e) {
+            finally {
+                this._isExecuting = false;
             }
         };
         AtomWatcher.prototype.dispose = function () {
@@ -729,6 +760,7 @@ var WebAtoms;
                     var op = p_1[_b];
                     if (op.watcher) {
                         op.watcher.dispose();
+                        op.watcher = null;
                     }
                 }
             }
@@ -740,7 +772,8 @@ var WebAtoms;
     }());
     WebAtoms.AtomWatcher = AtomWatcher;
 })(WebAtoms || (WebAtoms = {}));
-var errorIf = WebAtoms.errorIf(function (f) { return f; });
+var errorIf = WebAtoms.errorIf(function (f) { return function (x) { return (f(x) ? true : false); }; });
+var errorIfEmpty = WebAtoms.errorIf(function (f) { return function (x) { return (!f(x) ? true : false); }; });
 /**
  * Easy and Simple Dependency Injection
  */
@@ -817,8 +850,8 @@ function methodBuilder(method) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
                 }
-                if (this.testMode) {
-                    console.log("Test Mode: " + url);
+                if (this.testMode || Atom.designMode) {
+                    console.log("TestDesign Mode: " + url + " .. " + args.join(","));
                     var ro = oldFunction.apply(this, args);
                     if (ro) {
                         return ro;
@@ -1041,47 +1074,6 @@ var WebAtoms;
         Rest.BaseService = BaseService;
     })(Rest = WebAtoms.Rest || (WebAtoms.Rest = {}));
 })(WebAtoms || (WebAtoms = {}));
-var validate = function (error, func) {
-    var args = [];
-    for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
-    }
-    return function (target, propertyKey) {
-        //debugger;
-        var vm = target;
-        if (!vm._watchMethods) {
-            vm._watchMethods = {};
-        }
-        var watcher = {
-            error: error,
-            func: func,
-            args: args
-        };
-        vm._watchMethods[propertyKey] = watcher;
-        var keyName = "_" + propertyKey;
-        var getter = function () {
-            return this[keyName];
-        };
-        var setter = function (newVal) {
-            var oldValue = this[keyName];
-            if (oldValue == newVal)
-                return;
-            this[keyName] = newVal;
-            Atom.refresh(this, propertyKey);
-            if (this.onPropertyChanged) {
-                this.onPropertyChanged(propertyKey);
-            }
-        };
-        if (delete this[propertyKey]) {
-            Object.defineProperty(target, propertyKey, {
-                get: getter,
-                set: setter,
-                enumerable: true,
-                configurable: true
-            });
-        }
-    };
-};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);

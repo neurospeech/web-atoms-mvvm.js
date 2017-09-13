@@ -1,6 +1,6 @@
 namespace WebAtoms{
 
-    export function errorIf<T>(fx:( fi:(t:T) => any)=>boolean){
+    export function errorIf<T>(fx:( fi:(t:T) => any)=>((tx:T) => boolean)){
         return function(f:(t:T)=>any, msg:string){
             return function(target: AtomErrors<T>, propertyKey:string | symbol){
                 var vm = target as any;
@@ -44,6 +44,44 @@ namespace WebAtoms{
         }
     }
 
+    function parsePath(f:any):string[]{
+        var str = f.toString().trim();
+        
+        // remove last }
+
+        if(str.endsWith("}")){
+            str = str.substr(0,str.length-1);
+        }
+
+        if(str.startsWith("function (")){
+            str = str.substr("function (".length);
+        }
+
+        if(str.startsWith("function(")){
+            str = str.substr("function(".length);
+        }
+
+        var index = str.indexOf(")");
+        var p = str.substr(0,index);
+
+        str = str.substr(index+1);
+
+        var regExp = `(?:(${p})(?:\.[a-zA-Z_][a-zA-Z_0-9\.]*)+)`;
+
+        var re = new RegExp(regExp, "gi");
+
+        var path: string[] = [];
+
+        var ms = str.replace(re, m => {
+            //console.log(`m: ${m}`);
+            var px = m.substr(p.length + 1);
+            path.push(px);
+            return m;
+        });
+        //debugger;
+        return path;
+    }
+
     export class AtomErrors<T> implements AtomDisposable {
 
         dispose(){
@@ -83,35 +121,8 @@ namespace WebAtoms{
         }
 
         private ifExpressionTrue(f:(x:T) => any, fx:(x:T) => boolean): AtomErrorExpression<T>{
-            var str = f.toString().trim();
 
-            // remove last }
-
-            if(str.endsWith("}")){
-                str = str.substr(0,str.length-1);
-            }
-
-            if(str.startsWith("function (")){
-                str = str.substr("function (".length);
-            }
-
-            var index = str.indexOf(")");
-            var p = str.substr(0,index);
-
-            str = str.substr(index+1);
-
-            var regExp = `(?:(${p})(?:\.[a-zA-Z_][a-zA-Z_0-9\.]*)+)`;
-
-            var re = new RegExp(regExp, "gi");
-
-            var path: string[] = [];
-
-            var ms = str.replace(re, m => {
-                //console.log(`m: ${m}`);
-                var px = m.substr(p.length + 1);
-                path.push(px);
-                return m;
-            });
+            var path = parsePath(f);
 
             var ae = this.ifExpression(...path);
             ae.func = () => {
@@ -159,14 +170,14 @@ namespace WebAtoms{
 
         errors: any;
 
-        watcher: AtomWatcher;
+        watcher: AtomWatcher<T>;
 
         errorMessage:string;
         errorField:string;
 
         func: (...args:any[]) => void;
 
-        constructor(errors:AtomErrors<T>, watcher:AtomWatcher){
+        constructor(errors:AtomErrors<T>, watcher:AtomWatcher<T>){
             this.errors = errors;
             this.watcher = watcher;
         }
@@ -218,45 +229,55 @@ namespace WebAtoms{
         }
     }
 
-    export class AtomWatcher implements AtomDisposable {
+    export class AtomWatcher<T> implements AtomDisposable {
         
-        func: () => void;
+        func: (t:T) => any;
+
+        private _isExecuting:boolean = false;
 
         evaluate(): any {
 
+            if(this._isExecuting)
+                return;
 
-            var values = this.path.map( p => {
-
-                var t = this.target;
-
-                return  p.map( op => {
-
-                    var tx = t;
-
-                    t = Atom.get(t, op.name);
-                    if(t !== op.target){
-                        if(op.watcher){
-                            op.watcher.dispose();
-                            op.watcher = null;
-                        }
-                        op.target = t;
-                    }
-                    if(tx){
-                        if(!op.watcher){
-                            op.watcher = Atom.watch(tx,op.name, ()=> {
-                                this.evaluate();
-                            });
-                        }
-                    }
-                return t;
-                }) 
-            });
-
-            values = values.map( op => op[op.length-1] );
+            this._isExecuting = true;
 
             try{
-                this.func.apply(this.target,values);
-            }catch(e){
+
+                var values = this.path.map( p => {
+
+                    var t = this.target;
+
+                    return  p.map( op => {
+
+                        var tx = t;
+
+                        t = Atom.get(t, op.name);
+                        if(t !== op.target){
+                            if(op.watcher){
+                                op.watcher.dispose();
+                                op.watcher = null;
+                            }
+                            op.target = t;
+                        }
+                        if(tx){
+                            if(!op.watcher){
+                                op.watcher = Atom.watch(tx,op.name, ()=> {
+                                    this.evaluate();
+                                });
+                            }
+                        }
+                    return t;
+                    }) 
+                });
+
+                //values = values.map( op => op[op.length-1] );
+                try{
+                    this.func.call(this.target,this.target);
+                }catch(e){
+                }
+            }finally{
+                this._isExecuting = false;
             }
         }
 
@@ -264,9 +285,19 @@ namespace WebAtoms{
 
         target: any;
 
-        constructor(target, path:Array<string>){
+        constructor(target:T, path:string[] | ((x:T) => any) ){
             this.target = target;
+            var e:boolean = false;
+            if(path instanceof Function){
+                var f = path;
+                path = parsePath(path);
+                e = true;
+                this.func = f;
+            }
             this.path = path.map( x => x.split(".").map( y => new ObjectProperty(y) ) );
+            if(e){
+                this.evaluate();
+            }
         }
 
 
@@ -276,6 +307,7 @@ namespace WebAtoms{
                 for(var op of p){
                     if(op.watcher){
                         op.watcher.dispose();
+                        op.watcher = null;
                     }
                 }
             }
@@ -287,4 +319,5 @@ namespace WebAtoms{
     }
 }
 
-var errorIf = WebAtoms.errorIf(f => f);
+var errorIf = WebAtoms.errorIf(f =>  (x) => (f(x) ? true : false));
+var errorIfEmpty = WebAtoms.errorIf(f =>  (x) => (!f(x) ? true : false));

@@ -94,31 +94,25 @@ var Assert = WebAtoms.Unit.Assert;
 var AtomList = WebAtoms.AtomList;
 var AtomErrors = WebAtoms.AtomErrors;
 var initCalled = false;
-var SampleViewModelErrors = /** @class */ (function (_super) {
-    __extends(SampleViewModelErrors, _super);
+var SampleViewModelErrors = /** @class */ (function () {
     function SampleViewModelErrors() {
-        return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate([
-        errorIf(function (x) { return !x.data.firstName; }, "Name cannot be empty")
+        bindableProperty
     ], SampleViewModelErrors.prototype, "name", void 0);
     return SampleViewModelErrors;
-}(AtomErrors));
+}());
 var SampleViewModel = /** @class */ (function (_super) {
     __extends(SampleViewModel, _super);
     function SampleViewModel() {
         var _this = _super.call(this) || this;
         _this.list = new WebAtoms.AtomList();
         _this.data = {};
-        _this.errors = _this.createErrors(SampleViewModelErrors);
+        _this.errors = new SampleViewModelErrors();
+        _this.watch(_this, function (x) {
+            x.errors.name = x.data.firstName ? "" : "Name cannot be empty";
+        });
         return _this;
-        // this.errors
-        //     .ifEmpty( x => x.data.firstName || x.data.lastName)
-        //     .setError("name","Name cannot be empty");
-        // this.errors
-        //     .ifExpression("data.firstName")
-        //     .isEmpty()
-        //     .setError("name","Name cannot be empty");
     }
     SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -164,7 +158,6 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.delay(100)];
                     case 1:
                         _a.sent();
-                        debugger;
                         Atom.set(sm, "data.firstName", "something");
                         Assert.isTrue(sm.errors.name == "", "Error is not empty " + sm.errors.name);
                         Atom.set(sm, "data.firstName", "");

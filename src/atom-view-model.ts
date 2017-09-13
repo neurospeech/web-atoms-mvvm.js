@@ -13,7 +13,7 @@ namespace WebAtoms{
 
         }
 
-        protected createErrors<T extends AtomErrors>(f:new (a:any)=>T):T{
+        protected createErrors<Tx,T extends AtomErrors<Tx>>(f:new (a:any)=>T):T{
             var ae = new f(this);
             this.registerDisposable(ae);
             return ae;
@@ -42,16 +42,22 @@ namespace WebAtoms{
                 var error = params.error;
                 var func = params.func as (...args:any[])=>boolean;
 
-                var op = new WebAtoms.AtomWatcher(this, pl, (...x:any[]) => {
+                var op = new WebAtoms.AtomWatcher(this, pl);
+                op.func = (...x:any[]) => {
                     this[k] = func.apply(this,x) ? error : "";
-                });
+                };
 
                 this.registerDisposable(op);
             }
         }
 
-        protected watch(item:any, property:string, f:()=>void): AtomDisposable{
-            var d = Atom.watch(item,property,f);
+        protected watch<T extends AtomViewModel>(target:T, ft:(x:T) => any): AtomDisposable{
+
+            if(target as any !== this){
+                throw new Error("watch must only be called with this");
+            }
+
+            var d = new AtomWatcher<T>(target,ft);
             this.registerDisposable(d);
             return new DisposableAction(()=>{
                 this.disposables = this.disposables.filter( f => f != d );

@@ -10,9 +10,9 @@ function methodBuilder(method:string){
 
             descriptor.value = function(... args:any[]){
 
-                if(this.testMode){
+                if(this.testMode || Atom.designMode ){
 
-                    console.log(`Test Mode: ${url}`);
+                    console.log(`Test\Design Mode: ${url} .. ${args.join(",")}`);
 
                     var ro = oldFunction.apply(this, args);
                     if(ro){
