@@ -388,6 +388,27 @@ var WebAtoms;
         __extends(AtomViewModel, _super);
         function AtomViewModel() {
             var _this = _super.call(this) || this;
+            // private setupWatchers(){
+            //     //debugger;
+            //     var vm = this.constructor.prototype as any;
+            //     if(!vm._watchMethods)
+            //         return;
+            //     var wm = vm._watchMethods;
+            //     for(var k in wm){
+            //         if(!vm.hasOwnProperty(k))
+            //             continue;
+            //         var params = wm[k];
+            //         var pl = params.args;
+            //         var error = params.error;
+            //         var func = params.func as (...args:any[])=>boolean;
+            //         var op = new WebAtoms.AtomWatcher(this, pl);
+            //         op.func = (...x:any[]) => {
+            //             this[k] = func.apply(this,x) ? error : "";
+            //         };
+            //         this.registerDisposable(op);
+            //     }
+            // }
+            _this.validations = [];
             WebAtoms.AtomDevice.instance.runAsync(function () { return _this.privateInit(); });
             return _this;
         }
@@ -408,32 +429,20 @@ var WebAtoms;
                 });
             });
         };
-        // private setupWatchers(){
-        //     //debugger;
-        //     var vm = this.constructor.prototype as any;
-        //     if(!vm._watchMethods)
-        //         return;
-        //     var wm = vm._watchMethods;
-        //     for(var k in wm){
-        //         if(!vm.hasOwnProperty(k))
-        //             continue;
-        //         var params = wm[k];
-        //         var pl = params.args;
-        //         var error = params.error;
-        //         var func = params.func as (...args:any[])=>boolean;
-        //         var op = new WebAtoms.AtomWatcher(this, pl);
-        //         op.func = (...x:any[]) => {
-        //             this[k] = func.apply(this,x) ? error : "";
-        //         };
-        //         this.registerDisposable(op);
-        //     }
-        // }
-        AtomViewModel.prototype.validate = function (target, ft) {
+        AtomViewModel.prototype.isValid = function (errors) {
+            for (var _i = 0, _a = this.validations; _i < _a.length; _i++) {
+                var f = _a[_i];
+                f.evaluate(true);
+            }
+            return errors.hasErrors();
+        };
+        AtomViewModel.prototype.addValidation = function (target, ft) {
             var _this = this;
             if (target !== this) {
                 throw new Error("watch must only be called with this");
             }
             var d = new WebAtoms.AtomWatcher(target, ft, true);
+            this.validations.push(d);
             this.registerDisposable(d);
             return new WebAtoms.DisposableAction(function () {
                 _this.disposables = _this.disposables.filter(function (f) { return f != d; });
@@ -581,7 +590,7 @@ var WebAtoms;
                 this.evaluate();
             }
         }
-        AtomWatcher.prototype.evaluate = function () {
+        AtomWatcher.prototype.evaluate = function (force) {
             var _this = this;
             if (this._isExecuting)
                 return;
@@ -610,6 +619,9 @@ var WebAtoms;
                     });
                 });
                 values = values.map(function (op) { return op[op.length - 1]; });
+                if (force === true) {
+                    this.forValidation = false;
+                }
                 if (this.forValidation) {
                     var x = true;
                     if (values.find(function (x) { return x ? true : false; })) {

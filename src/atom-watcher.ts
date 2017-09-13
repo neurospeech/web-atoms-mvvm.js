@@ -85,7 +85,7 @@ namespace WebAtoms{
 
         private _isExecuting:boolean = false;
 
-        evaluate(): any {
+        evaluate(force?:boolean): any {
 
             if(this._isExecuting)
                 return;
@@ -124,6 +124,10 @@ namespace WebAtoms{
 
 
                 values = values.map( op => op[op.length-1] );
+
+                if(force === true){
+                    this.forValidation = false;
+                }
 
                 if(this.forValidation){
                     var x:boolean = true;
