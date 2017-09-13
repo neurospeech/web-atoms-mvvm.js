@@ -11,7 +11,7 @@
     "manakin": "^0.5.1",
     "ts-promise": "^0.3.4",
     "typescript": "^2.4.2",
-    "web-atoms-unit": "^1.0.6"
+    "web-atoms-unit": "^1.0.8"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

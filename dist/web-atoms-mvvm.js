@@ -491,8 +491,29 @@ var WebAtoms;
 var WebAtoms;
 (function (WebAtoms) {
     var AtomErrors = /** @class */ (function () {
-        function AtomErrors() {
+        function AtomErrors(target) {
+            this.watchers = [];
+            this.target = target;
         }
+        AtomErrors.prototype.dispose = function () {
+            for (var _i = 0, _a = this.watchers; _i < _a.length; _i++) {
+                var w = _a[_i];
+                w.dispose();
+            }
+            this.watchers.length = 0;
+            this.watchers = null;
+            this.target = null;
+        };
+        AtomErrors.prototype.ifExpression = function () {
+            var path = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                path[_i] = arguments[_i];
+            }
+            var watcher = new AtomWatcher(this.target, path);
+            var exp = new AtomErrorExpression(this, watcher);
+            this.watchers.push(exp);
+            return exp;
+        };
         AtomErrors.prototype.clear = function () {
             for (var k in this) {
                 if (this.hasOwnProperty(k)) {
@@ -511,12 +532,76 @@ var WebAtoms;
         return ObjectProperty;
     }());
     WebAtoms.ObjectProperty = ObjectProperty;
+    var AtomErrorExpression = /** @class */ (function () {
+        function AtomErrorExpression(errors, watcher) {
+            this.errors = errors;
+            this.watcher = watcher;
+        }
+        AtomErrorExpression.prototype.setErrorMessage = function (a) {
+            Atom.set(this.errors, this.errorField, a ? this.errorMessage.replace("{errorField}", this.errorField) : false);
+            this.watcher.evaluate();
+        };
+        AtomErrorExpression.prototype.isEmpty = function () {
+            var _this = this;
+            this.func = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                if (args.length !== 1)
+                    throw new Error("isEmpty can only be applied on single parameter");
+                _this.errorMessage = "{errorField} cannot be empty";
+                _this.setErrorMessage(!args[0]);
+            };
+            return this;
+        };
+        AtomErrorExpression.prototype.isTrue = function (f) {
+            var _this = this;
+            this.func = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                if (args.length !== f.arguments.length)
+                    throw new Error("Parameters must match");
+                _this.errorMessage = "{errorField} should be true";
+                _this.setErrorMessage(f.apply(_this.errors.target, args));
+            };
+            return this;
+        };
+        AtomErrorExpression.prototype.isFalse = function (f) {
+            var _this = this;
+            this.func = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                if (args.length !== f.arguments.length)
+                    throw new Error("Parameters must match");
+                _this.errorMessage = "{errorField} should be true";
+                _this.setErrorMessage(!f.apply(_this.errors.target, args));
+            };
+            return this;
+        };
+        AtomErrorExpression.prototype.setError = function (name, msg) {
+            this.errorField = name;
+            if (msg !== undefined) {
+                this.errorMessage = msg;
+            }
+            this.watcher.func = this.func;
+        };
+        AtomErrorExpression.prototype.dispose = function () {
+            this.watcher.dispose();
+            this.watcher = null;
+            this.func = null;
+        };
+        return AtomErrorExpression;
+    }());
+    WebAtoms.AtomErrorExpression = AtomErrorExpression;
     var AtomWatcher = /** @class */ (function () {
-        function AtomWatcher(target, path, f) {
+        function AtomWatcher(target, path) {
             this.target = target;
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
-            this.func = f;
-            this.evaluate();
         }
         AtomWatcher.prototype.evaluate = function () {
             var _this = this;
@@ -559,6 +644,9 @@ var WebAtoms;
                     }
                 }
             }
+            this.func = null;
+            this.path.length = 0;
+            this.path = null;
         };
         return AtomWatcher;
     }());

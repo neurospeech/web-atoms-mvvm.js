@@ -81,7 +81,12 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
-    class AtomErrors {
+    class AtomErrors implements AtomDisposable {
+        dispose(): void;
+        watchers: AtomErrorExpression[];
+        target: any;
+        constructor(target: any);
+        ifExpression(...path: string[]): AtomErrorExpression;
         clear(): void;
     }
     class ObjectProperty {
@@ -90,12 +95,26 @@ declare namespace WebAtoms {
         watcher: AtomDisposable;
         constructor(name: string);
     }
+    class AtomErrorExpression implements AtomDisposable {
+        private setErrorMessage(a);
+        errors: any;
+        watcher: AtomWatcher;
+        errorMessage: string;
+        errorField: string;
+        func: (...args: any[]) => void;
+        constructor(errors: AtomErrors, watcher: AtomWatcher);
+        isEmpty(): AtomErrorExpression;
+        isTrue(f: (...args: any[]) => boolean): AtomErrorExpression;
+        isFalse(f: (...args: any[]) => boolean): AtomErrorExpression;
+        setError(name: string, msg?: string): void;
+        dispose(): void;
+    }
     class AtomWatcher implements AtomDisposable {
         func: () => void;
         evaluate(): any;
         path: Array<Array<ObjectProperty>>;
         target: any;
-        constructor(target: any, path: Array<string>, f: () => void);
+        constructor(target: any, path: Array<string>);
         dispose(): void;
     }
 }

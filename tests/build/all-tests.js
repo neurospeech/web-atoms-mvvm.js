@@ -110,6 +110,12 @@ var SampleViewModel = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.list = new WebAtoms.AtomList();
         _this.data = {};
+        _this.errors = new SampleViewModelErrors(_this);
+        _this.errors
+            .ifExpression("data.firstName")
+            .isEmpty()
+            .setError("name", "Name cannot be empty");
+        _this.registerDisposable(_this.errors);
         return _this;
     }
     SampleViewModel.prototype.init = function () {
@@ -134,9 +140,6 @@ var SampleViewModel = /** @class */ (function (_super) {
         bindableProperty
     ], SampleViewModel.prototype, "data", void 0);
     __decorate([
-        validate("Name cannot be empty", function (v1, v2) { return v1 || v2; }, "data.firstName", "data.lastName")
-    ], SampleViewModel.prototype, "nameError", void 0);
-    __decorate([
         bindableProperty
     ], SampleViewModel.prototype, "name", void 0);
     __decorate([
@@ -159,10 +162,11 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.delay(100)];
                     case 1:
                         _a.sent();
+                        debugger;
                         Atom.set(sm, "data.firstName", "something");
-                        Assert.isTrue(sm.nameError == "");
+                        Assert.isTrue(sm.errors.name == "", "Error is not empty " + sm.errors.name);
                         Atom.set(sm, "data.firstName", "");
-                        Assert.isTrue(sm.nameError != "");
+                        Assert.isTrue(sm.errors.name != "", "Error is empty " + sm.errors.name);
                         return [2 /*return*/];
                 }
             });
