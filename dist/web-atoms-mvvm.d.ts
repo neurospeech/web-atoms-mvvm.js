@@ -65,6 +65,7 @@ declare namespace WebAtoms {
         private disposables;
         constructor();
         private privateInit();
+        protected validate<T extends AtomViewModel>(target: T, ft: (x: T) => any): AtomDisposable;
         protected watch<T extends AtomViewModel>(target: T, ft: (x: T) => any): AtomDisposable;
         protected registerDisposable(d: AtomDisposable): void;
         protected onPropertyChanged(name: string): void;
@@ -91,12 +92,14 @@ declare namespace WebAtoms {
         constructor(name: string);
     }
     class AtomWatcher<T> implements AtomDisposable {
+        verifyNonEmpty: boolean;
         func: (t: T) => any;
         private _isExecuting;
         evaluate(): any;
         path: Array<Array<ObjectProperty>>;
         target: any;
         constructor(target: T, path: string[] | ((x: T) => any));
+        validate(): void;
         dispose(): void;
     }
 }

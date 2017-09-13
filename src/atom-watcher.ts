@@ -79,7 +79,8 @@ namespace WebAtoms{
     }
 
     export class AtomWatcher<T> implements AtomDisposable {
-        
+        verifyNonEmpty: boolean;
+
         func: (t:T) => any;
 
         private _isExecuting:boolean = false;
@@ -120,7 +121,19 @@ namespace WebAtoms{
                     }) 
                 });
 
-                //values = values.map( op => op[op.length-1] );
+
+
+                values = values.map( op => op[op.length-1] );
+
+                if(this.verifyNonEmpty){
+                    var x:boolean = true;
+                    if(values.find( x=> x ? true : false)){
+                        this.verifyNonEmpty = false;
+                    }else{
+                        return;
+                    }
+                }
+
                 try{
                     this.func.call(this.target,this.target);
                 }catch(e){
@@ -149,6 +162,9 @@ namespace WebAtoms{
             }
         }
 
+        validate(){
+            this.verifyNonEmpty = true;
+        }
 
 
         dispose(){

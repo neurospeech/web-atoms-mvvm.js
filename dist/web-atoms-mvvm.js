@@ -428,6 +428,18 @@ var WebAtoms;
         //         this.registerDisposable(op);
         //     }
         // }
+        AtomViewModel.prototype.validate = function (target, ft) {
+            var _this = this;
+            if (target !== this) {
+                throw new Error("watch must only be called with this");
+            }
+            var d = new WebAtoms.AtomWatcher(target, ft);
+            d.validate();
+            this.registerDisposable(d);
+            return new WebAtoms.DisposableAction(function () {
+                _this.disposables = _this.disposables.filter(function (f) { return f != d; });
+            });
+        };
         AtomViewModel.prototype.watch = function (target, ft) {
             var _this = this;
             if (target !== this) {
@@ -595,7 +607,16 @@ var WebAtoms;
                         return t;
                     });
                 });
-                //values = values.map( op => op[op.length-1] );
+                values = values.map(function (op) { return op[op.length - 1]; });
+                if (this.verifyNonEmpty) {
+                    var x = true;
+                    if (values.find(function (x) { return x ? true : false; })) {
+                        this.verifyNonEmpty = false;
+                    }
+                    else {
+                        return;
+                    }
+                }
                 try {
                     this.func.call(this.target, this.target);
                 }
@@ -605,6 +626,9 @@ var WebAtoms;
             finally {
                 this._isExecuting = false;
             }
+        };
+        AtomWatcher.prototype.validate = function () {
+            this.verifyNonEmpty = true;
         };
         AtomWatcher.prototype.dispose = function () {
             for (var _i = 0, _a = this.path; _i < _a.length; _i++) {

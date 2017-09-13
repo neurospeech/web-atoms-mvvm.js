@@ -45,6 +45,21 @@ namespace WebAtoms{
         //     }
         // }
 
+
+        protected validate<T extends AtomViewModel>(target:T, ft:(x:T) => any): AtomDisposable{
+
+            if(target as any !== this){
+                throw new Error("watch must only be called with this");
+            }
+
+            var d = new AtomWatcher<T>(target,ft);
+            d.validate();
+            this.registerDisposable(d);
+            return new DisposableAction(()=>{
+                this.disposables = this.disposables.filter( f => f != d );
+            });
+        }
+
         protected watch<T extends AtomViewModel>(target:T, ft:(x:T) => any): AtomDisposable{
 
             if(target as any !== this){
