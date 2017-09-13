@@ -40,8 +40,19 @@ namespace WebAtoms{
     }
 
     export class AtomErrors{
+        
+        private __target: AtomViewModel;
+
+        constructor(target:AtomViewModel){
+            this.__target = target;
+        }
 
         hasErrors():boolean{
+
+            if(this.__target){
+                this.__target.validate();
+            }
+
             for(var k in this){
                 if(k.startsWith("_$_"))
                     continue;

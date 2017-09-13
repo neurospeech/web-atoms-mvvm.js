@@ -429,22 +429,12 @@ var WebAtoms;
                 });
             });
         };
-        AtomViewModel.prototype.createErrors = function (c) {
-            var e = new c();
-            this._errors = e;
-            return e;
+        AtomViewModel.prototype.validate = function () {
+            for (var _i = 0, _a = this.validations; _i < _a.length; _i++) {
+                var v = _a[_i];
+                v.evaluate(true);
+            }
         };
-        Object.defineProperty(AtomViewModel.prototype, "isValid", {
-            get: function () {
-                for (var _i = 0, _a = this.validations; _i < _a.length; _i++) {
-                    var f = _a[_i];
-                    f.evaluate(true);
-                }
-                return this._errors.hasErrors();
-            },
-            enumerable: true,
-            configurable: true
-        });
         AtomViewModel.prototype.addValidation = function (target, ft) {
             var _this = this;
             if (target !== this) {
@@ -547,9 +537,13 @@ var WebAtoms;
         return path;
     }
     var AtomErrors = /** @class */ (function () {
-        function AtomErrors() {
+        function AtomErrors(target) {
+            this.__target = target;
         }
         AtomErrors.prototype.hasErrors = function () {
+            if (this.__target) {
+                this.__target.validate();
+            }
             for (var k in this) {
                 if (k.startsWith("_$_"))
                     continue;
