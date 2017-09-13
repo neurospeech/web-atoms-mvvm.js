@@ -65,7 +65,6 @@ declare namespace WebAtoms {
         private disposables;
         constructor();
         private privateInit();
-        private setupWatchers();
         protected watch<T extends AtomViewModel>(target: T, ft: (x: T) => any): AtomDisposable;
         protected registerDisposable(d: AtomDisposable): void;
         protected onPropertyChanged(name: string): void;

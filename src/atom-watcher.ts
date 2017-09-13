@@ -43,6 +43,8 @@ namespace WebAtoms{
 
         hasErrors():boolean{
             for(var k in this){
+                if(k.startsWith("_$_"))
+                    continue;
                 if(this.hasOwnProperty(k)){
                     if(this[k])
                         return true;
@@ -53,6 +55,8 @@ namespace WebAtoms{
 
         clear(){
             for(var k in this){
+                if(k.startsWith("_$_"))
+                    continue;
                 if(this.hasOwnProperty(k)){
                     this[k] = null;
                     Atom.refresh(this,k);

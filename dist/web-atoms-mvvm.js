@@ -395,43 +395,39 @@ var WebAtoms;
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, Atom.delay(1)];
+                        case 0: 
+                        //await Atom.delay(1);
+                        //this.setupWatchers();
+                        return [4 /*yield*/, this.init()];
                         case 1:
-                            _a.sent();
-                            this.setupWatchers();
-                            return [4 /*yield*/, this.init()];
-                        case 2:
+                            //await Atom.delay(1);
+                            //this.setupWatchers();
                             _a.sent();
                             return [2 /*return*/];
                     }
                 });
             });
         };
-        AtomViewModel.prototype.setupWatchers = function () {
-            var _this = this;
-            //debugger;
-            var vm = this.constructor.prototype;
-            if (!vm._watchMethods)
-                return;
-            var wm = vm._watchMethods;
-            for (var k in wm) {
-                if (!vm.hasOwnProperty(k))
-                    continue;
-                var params = wm[k];
-                var pl = params.args;
-                var error = params.error;
-                var func = params.func;
-                var op = new WebAtoms.AtomWatcher(this, pl);
-                op.func = function () {
-                    var x = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        x[_i] = arguments[_i];
-                    }
-                    _this[k] = func.apply(_this, x) ? error : "";
-                };
-                this.registerDisposable(op);
-            }
-        };
+        // private setupWatchers(){
+        //     //debugger;
+        //     var vm = this.constructor.prototype as any;
+        //     if(!vm._watchMethods)
+        //         return;
+        //     var wm = vm._watchMethods;
+        //     for(var k in wm){
+        //         if(!vm.hasOwnProperty(k))
+        //             continue;
+        //         var params = wm[k];
+        //         var pl = params.args;
+        //         var error = params.error;
+        //         var func = params.func as (...args:any[])=>boolean;
+        //         var op = new WebAtoms.AtomWatcher(this, pl);
+        //         op.func = (...x:any[]) => {
+        //             this[k] = func.apply(this,x) ? error : "";
+        //         };
+        //         this.registerDisposable(op);
+        //     }
+        // }
         AtomViewModel.prototype.watch = function (target, ft) {
             var _this = this;
             if (target !== this) {
@@ -526,6 +522,8 @@ var WebAtoms;
         }
         AtomErrors.prototype.hasErrors = function () {
             for (var k in this) {
+                if (k.startsWith("_$_"))
+                    continue;
                 if (this.hasOwnProperty(k)) {
                     if (this[k])
                         return true;
@@ -535,6 +533,8 @@ var WebAtoms;
         };
         AtomErrors.prototype.clear = function () {
             for (var k in this) {
+                if (k.startsWith("_$_"))
+                    continue;
                 if (this.hasOwnProperty(k)) {
                     this[k] = null;
                     Atom.refresh(this, k);
