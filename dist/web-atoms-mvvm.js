@@ -499,45 +499,6 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
-    function errorIf(fx) {
-        return function (f, msg) {
-            return function (target, propertyKey) {
-                var vm = target;
-                if (!vm._validators) {
-                    vm._validators = {};
-                }
-                vm._validators[propertyKey] = {
-                    name: propertyKey,
-                    msg: msg,
-                    func: f,
-                    funcTrue: fx(f)
-                };
-                var keyName = "_" + propertyKey;
-                var getter = function () {
-                    return this[keyName];
-                };
-                var setter = function (newVal) {
-                    var oldValue = this[keyName];
-                    if (oldValue == newVal)
-                        return;
-                    this[keyName] = newVal;
-                    Atom.refresh(this, propertyKey);
-                    if (this.onPropertyChanged) {
-                        this.onPropertyChanged(propertyKey);
-                    }
-                };
-                if (delete this[propertyKey]) {
-                    Object.defineProperty(target, propertyKey, {
-                        get: getter,
-                        set: setter,
-                        enumerable: true,
-                        configurable: true
-                    });
-                }
-            };
-        };
-    }
-    WebAtoms.errorIf = errorIf;
     function parsePath(f) {
         var str = f.toString().trim();
         // remove last }
@@ -566,52 +527,16 @@ var WebAtoms;
         return path;
     }
     var AtomErrors = /** @class */ (function () {
-        function AtomErrors(target) {
-            this.watchers = [];
-            this.target = target;
-            var x = this.constructor.prototype;
-            if (x._validators) {
-                for (var k in x._validators) {
-                    var v = x._validators[k];
-                    this.ifTrue(v.func).setError(v.name, v.msg);
+        function AtomErrors() {
+        }
+        AtomErrors.prototype.hasErrors = function () {
+            for (var k in this) {
+                if (this.hasOwnProperty(k)) {
+                    if (this[k])
+                        return true;
                 }
             }
-        }
-        AtomErrors.prototype.dispose = function () {
-            for (var _i = 0, _a = this.watchers; _i < _a.length; _i++) {
-                var w = _a[_i];
-                w.dispose();
-            }
-            this.watchers.length = 0;
-            this.watchers = null;
-            this.target = null;
-        };
-        AtomErrors.prototype.ifEmpty = function (f) {
-            var _this = this;
-            return this.ifExpressionTrue(f, function (t) { return !(f.call(_this.target)); });
-        };
-        AtomErrors.prototype.ifTrue = function (f) {
-            return this.ifExpressionTrue(f, f);
-        };
-        AtomErrors.prototype.ifExpressionTrue = function (f, fx) {
-            var _this = this;
-            var path = parsePath(f);
-            var ae = this.ifExpression.apply(this, path);
-            ae.func = function () {
-                var r = fx.call(_this, _this.target);
-                Atom.set(_this, ae.errorField, r ? ae.errorMessage : "");
-            };
-            return ae;
-        };
-        AtomErrors.prototype.ifExpression = function () {
-            var path = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                path[_i] = arguments[_i];
-            }
-            var watcher = new AtomWatcher(this.target, path);
-            var exp = new AtomErrorExpression(this, watcher);
-            this.watchers.push(exp);
-            return exp;
+            return false;
         };
         AtomErrors.prototype.clear = function () {
             for (var k in this) {
@@ -631,73 +556,6 @@ var WebAtoms;
         return ObjectProperty;
     }());
     WebAtoms.ObjectProperty = ObjectProperty;
-    var AtomErrorExpression = /** @class */ (function () {
-        function AtomErrorExpression(errors, watcher) {
-            this.errors = errors;
-            this.watcher = watcher;
-        }
-        AtomErrorExpression.prototype.setErrorMessage = function (a) {
-            Atom.set(this.errors, this.errorField, a ? this.errorMessage.replace("{errorField}", this.errorField) : false);
-        };
-        AtomErrorExpression.prototype.isEmpty = function () {
-            var _this = this;
-            this.func = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                if (args.length !== 1)
-                    throw new Error("isEmpty can only be applied on single parameter");
-                _this.errorMessage = "{errorField} cannot be empty";
-                _this.setErrorMessage(!args[0]);
-            };
-            return this;
-        };
-        AtomErrorExpression.prototype.isTrue = function (f) {
-            var _this = this;
-            this.func = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                if (args.length !== f.arguments.length)
-                    throw new Error("Parameters must match");
-                _this.errorMessage = "{errorField} should be true";
-                _this.setErrorMessage(f.apply(_this.errors.target, args));
-            };
-            return this;
-        };
-        AtomErrorExpression.prototype.isFalse = function (f) {
-            var _this = this;
-            this.func = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                if (args.length !== f.arguments.length)
-                    throw new Error("Parameters must match");
-                _this.errorMessage = "{errorField} should be true";
-                _this.setErrorMessage(!f.apply(_this.errors.target, args));
-            };
-            return this;
-        };
-        AtomErrorExpression.prototype.setError = function (name, msg) {
-            this.errorField = name;
-            if (msg !== undefined) {
-                this.errorMessage = msg;
-            }
-            this.watcher.func = function () { return true; };
-            this.watcher.evaluate();
-            this.watcher.func = this.func;
-        };
-        AtomErrorExpression.prototype.dispose = function () {
-            this.watcher.dispose();
-            this.watcher = null;
-            this.func = null;
-        };
-        return AtomErrorExpression;
-    }());
-    WebAtoms.AtomErrorExpression = AtomErrorExpression;
     var AtomWatcher = /** @class */ (function () {
         function AtomWatcher(target, path) {
             this._isExecuting = false;
