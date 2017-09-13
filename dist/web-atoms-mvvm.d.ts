@@ -102,8 +102,6 @@ declare namespace WebAtoms {
         dispose(): void;
     }
 }
-declare var errorIf: any;
-declare var errorIfEmpty: any;
 /**
  * Easy and Simple Dependency Injection
  */

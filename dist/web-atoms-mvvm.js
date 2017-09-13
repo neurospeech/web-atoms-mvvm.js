@@ -630,8 +630,6 @@ var WebAtoms;
     }());
     WebAtoms.AtomWatcher = AtomWatcher;
 })(WebAtoms || (WebAtoms = {}));
-var errorIf = WebAtoms.errorIf(function (f) { return function (x) { return (f(x) ? true : false); }; });
-var errorIfEmpty = WebAtoms.errorIf(function (f) { return function (x) { return (!f(x) ? true : false); }; });
 /**
  * Easy and Simple Dependency Injection
  */

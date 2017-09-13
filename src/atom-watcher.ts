@@ -163,6 +163,3 @@ namespace WebAtoms{
 
     }
 }
-
-var errorIf = WebAtoms.errorIf(f =>  (x) => (f(x) ? true : false));
-var errorIfEmpty = WebAtoms.errorIf(f =>  (x) => (!f(x) ? true : false));
