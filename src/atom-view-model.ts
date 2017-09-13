@@ -52,8 +52,7 @@ namespace WebAtoms{
                 throw new Error("watch must only be called with this");
             }
 
-            var d = new AtomWatcher<T>(target,ft);
-            d.validate();
+            var d = new AtomWatcher<T>(target,ft, true);
             this.registerDisposable(d);
             return new DisposableAction(()=>{
                 this.disposables = this.disposables.filter( f => f != d );

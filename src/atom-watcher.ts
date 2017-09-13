@@ -79,7 +79,7 @@ namespace WebAtoms{
     }
 
     export class AtomWatcher<T> implements AtomDisposable {
-        verifyNonEmpty: boolean;
+        private forValidation: boolean;
 
         func: (t:T) => any;
 
@@ -125,10 +125,10 @@ namespace WebAtoms{
 
                 values = values.map( op => op[op.length-1] );
 
-                if(this.verifyNonEmpty){
+                if(this.forValidation){
                     var x:boolean = true;
                     if(values.find( x=> x ? true : false)){
-                        this.verifyNonEmpty = false;
+                        this.forValidation = false;
                     }else{
                         return;
                     }
@@ -147,9 +147,12 @@ namespace WebAtoms{
 
         target: any;
 
-        constructor(target:T, path:string[] | ((x:T) => any) ){
+        constructor(target:T, path:string[] | ((x:T) => any) , forValidation?:boolean){
             this.target = target;
             var e:boolean = false;
+            if(forValidation === true){
+                this.forValidation = true;
+            }
             if(path instanceof Function){
                 var f = path;
                 path = parsePath(path);
@@ -162,9 +165,6 @@ namespace WebAtoms{
             }
         }
 
-        validate(){
-            this.verifyNonEmpty = true;
-        }
 
 
         dispose(){

@@ -92,14 +92,13 @@ declare namespace WebAtoms {
         constructor(name: string);
     }
     class AtomWatcher<T> implements AtomDisposable {
-        verifyNonEmpty: boolean;
+        private forValidation;
         func: (t: T) => any;
         private _isExecuting;
         evaluate(): any;
         path: Array<Array<ObjectProperty>>;
         target: any;
-        constructor(target: T, path: string[] | ((x: T) => any));
-        validate(): void;
+        constructor(target: T, path: string[] | ((x: T) => any), forValidation?: boolean);
         dispose(): void;
     }
 }

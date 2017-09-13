@@ -433,8 +433,7 @@ var WebAtoms;
             if (target !== this) {
                 throw new Error("watch must only be called with this");
             }
-            var d = new WebAtoms.AtomWatcher(target, ft);
-            d.validate();
+            var d = new WebAtoms.AtomWatcher(target, ft, true);
             this.registerDisposable(d);
             return new WebAtoms.DisposableAction(function () {
                 _this.disposables = _this.disposables.filter(function (f) { return f != d; });
@@ -564,10 +563,13 @@ var WebAtoms;
     }());
     WebAtoms.ObjectProperty = ObjectProperty;
     var AtomWatcher = /** @class */ (function () {
-        function AtomWatcher(target, path) {
+        function AtomWatcher(target, path, forValidation) {
             this._isExecuting = false;
             this.target = target;
             var e = false;
+            if (forValidation === true) {
+                this.forValidation = true;
+            }
             if (path instanceof Function) {
                 var f = path;
                 path = parsePath(path);
@@ -608,10 +610,10 @@ var WebAtoms;
                     });
                 });
                 values = values.map(function (op) { return op[op.length - 1]; });
-                if (this.verifyNonEmpty) {
+                if (this.forValidation) {
                     var x = true;
                     if (values.find(function (x) { return x ? true : false; })) {
-                        this.verifyNonEmpty = false;
+                        this.forValidation = false;
                     }
                     else {
                         return;
@@ -626,9 +628,6 @@ var WebAtoms;
             finally {
                 this._isExecuting = false;
             }
-        };
-        AtomWatcher.prototype.validate = function () {
-            this.verifyNonEmpty = true;
         };
         AtomWatcher.prototype.dispose = function () {
             for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
