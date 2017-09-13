@@ -495,10 +495,56 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
+    function errorIf(fx) {
+        return function (f, msg) {
+            return function (target, propertyKey) {
+                var vm = target;
+                if (!vm._validators) {
+                    vm._validators = {};
+                }
+                vm._validators[propertyKey] = {
+                    name: propertyKey,
+                    msg: msg,
+                    func: f,
+                    funcTrue: fx(f)
+                };
+                var keyName = "_" + propertyKey;
+                var getter = function () {
+                    return this[keyName];
+                };
+                var setter = function (newVal) {
+                    var oldValue = this[keyName];
+                    if (oldValue == newVal)
+                        return;
+                    this[keyName] = newVal;
+                    Atom.refresh(this, propertyKey);
+                    if (this.onPropertyChanged) {
+                        this.onPropertyChanged(propertyKey);
+                    }
+                };
+                if (delete this[propertyKey]) {
+                    Object.defineProperty(target, propertyKey, {
+                        get: getter,
+                        set: setter,
+                        enumerable: true,
+                        configurable: true
+                    });
+                }
+            };
+        };
+    }
+    WebAtoms.errorIf = errorIf;
     var AtomErrors = /** @class */ (function () {
         function AtomErrors(target) {
             this.watchers = [];
             this.target = target;
+            var x = this.constructor.prototype;
+            if (x._validators) {
+                for (var k in x._validators) {
+                    var v = x._validators[k];
+                    this.ifTrue(v.func).setError(v.name, v.msg);
+                }
+            }
         }
         AtomErrors.prototype.dispose = function () {
             for (var _i = 0, _a = this.watchers; _i < _a.length; _i++) {
@@ -508,6 +554,42 @@ var WebAtoms;
             this.watchers.length = 0;
             this.watchers = null;
             this.target = null;
+        };
+        AtomErrors.prototype.ifEmpty = function (f) {
+            var _this = this;
+            return this.ifExpressionTrue(f, function (t) { return !(f.call(_this.target)); });
+        };
+        AtomErrors.prototype.ifTrue = function (f) {
+            return this.ifExpressionTrue(f, f);
+        };
+        AtomErrors.prototype.ifExpressionTrue = function (f, fx) {
+            var _this = this;
+            var str = f.toString().trim();
+            // remove last }
+            if (str.endsWith("}")) {
+                str = str.substr(0, str.length - 1);
+            }
+            if (str.startsWith("function (")) {
+                str = str.substr("function (".length);
+            }
+            var index = str.indexOf(")");
+            var p = str.substr(0, index);
+            str = str.substr(index + 1);
+            var regExp = "(?:(" + p + ")(?:.[a-zA-Z_][a-zA-Z_0-9.]*)+)";
+            var re = new RegExp(regExp, "gi");
+            var path = [];
+            var ms = str.replace(re, function (m) {
+                //console.log(`m: ${m}`);
+                var px = m.substr(p.length + 1);
+                path.push(px);
+                return m;
+            });
+            var ae = this.ifExpression.apply(this, path);
+            ae.func = function () {
+                var r = fx.call(_this, _this.target);
+                Atom.set(_this, ae.errorField, r ? ae.errorMessage : "");
+            };
+            return ae;
         };
         AtomErrors.prototype.ifExpression = function () {
             var path = [];
@@ -658,6 +740,7 @@ var WebAtoms;
     }());
     WebAtoms.AtomWatcher = AtomWatcher;
 })(WebAtoms || (WebAtoms = {}));
+var errorIf = WebAtoms.errorIf(function (f) { return f; });
 /**
  * Easy and Simple Dependency Injection
  */
@@ -895,26 +978,28 @@ var WebAtoms;
                     return __generator(this, function (_a) {
                         options = new AjaxOptions();
                         options.method = method;
-                        for (i = 0; i < bag.length; i++) {
-                            p = bag[i];
-                            v = values[i];
-                            switch (p.type) {
-                                case 'path':
-                                    url = url.replace("{" + p.key + "}", encodeURIComponent(v));
-                                    break;
-                                case 'query':
-                                    if (url.indexOf('?') === -1) {
-                                        url += "?";
-                                    }
-                                    url += "&" + p.key + "=" + encodeURIComponent(v);
-                                    break;
-                                case 'body':
-                                    options.data = v;
-                                    options = this.encodeData(options);
-                                    break;
-                                case 'cancel':
-                                    options.cancel = v;
-                                    break;
+                        if (bag) {
+                            for (i = 0; i < bag.length; i++) {
+                                p = bag[i];
+                                v = values[i];
+                                switch (p.type) {
+                                    case 'path':
+                                        url = url.replace("{" + p.key + "}", encodeURIComponent(v));
+                                        break;
+                                    case 'query':
+                                        if (url.indexOf('?') === -1) {
+                                            url += "?";
+                                        }
+                                        url += "&" + p.key + "=" + encodeURIComponent(v);
+                                        break;
+                                    case 'body':
+                                        options.data = v;
+                                        options = this.encodeData(options);
+                                        break;
+                                    case 'cancel':
+                                        options.cancel = v;
+                                        break;
+                                }
                             }
                         }
                         options.url = url;

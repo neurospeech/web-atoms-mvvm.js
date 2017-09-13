@@ -100,7 +100,7 @@ var SampleViewModelErrors = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate([
-        bindableProperty
+        errorIf(function (x) { return !x.data.firstName; }, "Name cannot be empty")
     ], SampleViewModelErrors.prototype, "name", void 0);
     return SampleViewModelErrors;
 }(AtomErrors));
@@ -111,11 +111,14 @@ var SampleViewModel = /** @class */ (function (_super) {
         _this.list = new WebAtoms.AtomList();
         _this.data = {};
         _this.errors = _this.createErrors(SampleViewModelErrors);
-        _this.errors
-            .ifExpression("data.firstName")
-            .isEmpty()
-            .setError("name", "Name cannot be empty");
         return _this;
+        // this.errors
+        //     .ifEmpty( x => x.data.firstName || x.data.lastName)
+        //     .setError("name","Name cannot be empty");
+        // this.errors
+        //     .ifExpression("data.firstName")
+        //     .isEmpty()
+        //     .setError("name","Name cannot be empty");
     }
     SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {

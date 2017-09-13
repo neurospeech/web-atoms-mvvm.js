@@ -8,8 +8,8 @@ var AtomErrors = WebAtoms.AtomErrors;
 
 var initCalled = false;
 
-class SampleViewModelErrors extends AtomErrors{
-    @bindableProperty
+class SampleViewModelErrors extends AtomErrors<SampleViewModel>{
+    @errorIf<SampleViewModel>(  x => !x.data.firstName , "Name cannot be empty")
     name:string;
 }
 
@@ -33,10 +33,14 @@ class SampleViewModel extends AtomViewModel{
 
         this.errors = this.createErrors(SampleViewModelErrors);
 
-        this.errors
-            .ifExpression("data.firstName")
-            .isEmpty()
-            .setError("name","Name cannot be empty");
+        // this.errors
+        //     .ifEmpty( x => x.data.firstName || x.data.lastName)
+        //     .setError("name","Name cannot be empty");
+
+        // this.errors
+        //     .ifExpression("data.firstName")
+        //     .isEmpty()
+        //     .setError("name","Name cannot be empty");
 
 
     }
@@ -56,6 +60,9 @@ class SampleViewModel extends AtomViewModel{
 
 @Category("AtomViewModel")
 class AtomViewModelTest extends TestItem{
+
+
+
     
     @Test("watch")
     async watch (){

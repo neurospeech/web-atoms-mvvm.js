@@ -82,12 +82,16 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
-    class AtomErrors implements AtomDisposable {
+    function errorIf<T>(fx: (fi: (t: T) => any) => boolean): (f: (t: T) => any, msg: string) => (target: AtomErrors<T>, propertyKey: string | symbol) => void;
+    class AtomErrors<T> implements AtomDisposable {
         dispose(): void;
-        watchers: AtomErrorExpression[];
+        watchers: AtomErrorExpression<T>[];
         target: any;
-        constructor(target: any);
-        ifExpression(...path: string[]): AtomErrorExpression;
+        constructor(target: T);
+        ifEmpty(f: (x: T) => any): AtomErrorExpression<T>;
+        ifTrue(f: (x: T) => boolean): AtomErrorExpression<T>;
+        private ifExpressionTrue(f, fx);
+        ifExpression(...path: string[]): AtomErrorExpression<T>;
         clear(): void;
     }
     class ObjectProperty {
@@ -96,17 +100,17 @@ declare namespace WebAtoms {
         watcher: AtomDisposable;
         constructor(name: string);
     }
-    class AtomErrorExpression implements AtomDisposable {
+    class AtomErrorExpression<T> implements AtomDisposable {
         private setErrorMessage(a);
         errors: any;
         watcher: AtomWatcher;
         errorMessage: string;
         errorField: string;
         func: (...args: any[]) => void;
-        constructor(errors: AtomErrors, watcher: AtomWatcher);
-        isEmpty(): AtomErrorExpression;
-        isTrue(f: (...args: any[]) => boolean): AtomErrorExpression;
-        isFalse(f: (...args: any[]) => boolean): AtomErrorExpression;
+        constructor(errors: AtomErrors<T>, watcher: AtomWatcher);
+        isEmpty(): AtomErrorExpression<T>;
+        isTrue(f: (...args: any[]) => boolean): AtomErrorExpression<T>;
+        isFalse(f: (...args: any[]) => boolean): AtomErrorExpression<T>;
         setError(name: string, msg?: string): void;
         dispose(): void;
     }
@@ -119,6 +123,7 @@ declare namespace WebAtoms {
         dispose(): void;
     }
 }
+declare var errorIf: any;
 /**
  * Easy and Simple Dependency Injection
  */

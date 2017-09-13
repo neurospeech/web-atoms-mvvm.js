@@ -212,26 +212,28 @@ namespace WebAtoms.Rest{
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
-            for(var i=0;i<bag.length;i++){
-                var p:ServiceParameter = bag[i];
-                var v = values[i];
-                switch(p.type){
-                    case 'path':
-                        url = url.replace(`{${p.key}}`,encodeURIComponent(v));
-                    break;
-                    case 'query': 
-                        if(url.indexOf('?')===-1){
-                            url += "?";
-                        }
-                        url += `&${p.key}=${encodeURIComponent(v)}`;
-                    break;
-                    case 'body':
-                        options.data = v;
-                        options = this.encodeData(options);
-                    break;
-                    case 'cancel':
-                        options.cancel = v as CancelToken;
-                    break;
+            if(bag){
+                for(var i=0;i<bag.length;i++){
+                    var p:ServiceParameter = bag[i];
+                    var v = values[i];
+                    switch(p.type){
+                        case 'path':
+                            url = url.replace(`{${p.key}}`,encodeURIComponent(v));
+                        break;
+                        case 'query': 
+                            if(url.indexOf('?')===-1){
+                                url += "?";
+                            }
+                            url += `&${p.key}=${encodeURIComponent(v)}`;
+                        break;
+                        case 'body':
+                            options.data = v;
+                            options = this.encodeData(options);
+                        break;
+                        case 'cancel':
+                            options.cancel = v as CancelToken;
+                        break;
+                    }
                 }
             }
             options.url = url;            
