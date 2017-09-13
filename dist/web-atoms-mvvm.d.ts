@@ -66,7 +66,9 @@ declare namespace WebAtoms {
         constructor();
         private privateInit();
         private validations;
-        isValid(errors: AtomErrors): boolean;
+        private _errors;
+        protected createErrors<T extends AtomErrors>(c: new () => T): T;
+        readonly isValid: boolean;
         protected addValidation<T extends AtomViewModel>(target: T, ft: (x: T) => any): AtomDisposable;
         protected watch<T extends AtomViewModel>(target: T, ft: (x: T) => any): AtomDisposable;
         protected registerDisposable(d: AtomDisposable): void;

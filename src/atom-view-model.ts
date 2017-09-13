@@ -48,11 +48,19 @@ namespace WebAtoms{
 
         private validations:AtomWatcher<AtomViewModel>[] = [];
 
-        isValid(errors:AtomErrors):boolean{
+        private _errors: AtomErrors;
+
+        protected createErrors<T extends AtomErrors>(c: new () => T): T{
+            var e = new c();
+            this._errors = e;
+            return e;
+        }
+
+        get isValid():boolean{
             for(var f of this.validations){
                 f.evaluate(true);
             }
-            return errors.hasErrors();
+            return this._errors.hasErrors();
         }
 
         protected addValidation<T extends AtomViewModel>(target:T, ft:(x:T) => any): AtomDisposable{

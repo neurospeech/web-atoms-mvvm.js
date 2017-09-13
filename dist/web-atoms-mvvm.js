@@ -429,13 +429,22 @@ var WebAtoms;
                 });
             });
         };
-        AtomViewModel.prototype.isValid = function (errors) {
-            for (var _i = 0, _a = this.validations; _i < _a.length; _i++) {
-                var f = _a[_i];
-                f.evaluate(true);
-            }
-            return errors.hasErrors();
+        AtomViewModel.prototype.createErrors = function (c) {
+            var e = new c();
+            this._errors = e;
+            return e;
         };
+        Object.defineProperty(AtomViewModel.prototype, "isValid", {
+            get: function () {
+                for (var _i = 0, _a = this.validations; _i < _a.length; _i++) {
+                    var f = _a[_i];
+                    f.evaluate(true);
+                }
+                return this._errors.hasErrors();
+            },
+            enumerable: true,
+            configurable: true
+        });
         AtomViewModel.prototype.addValidation = function (target, ft) {
             var _this = this;
             if (target !== this) {
