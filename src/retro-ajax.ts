@@ -10,9 +10,9 @@ function methodBuilder(method:string){
 
             descriptor.value = function(... args:any[]){
 
-                if(this.testMode){
+                if(this.testMode || Atom.designMode ){
 
-                    console.log(`Test Mode: ${url}`);
+                    console.log(`Test\Design Mode: ${url} .. ${args.join(",")}`);
 
                     var ro = oldFunction.apply(this, args);
                     if(ro){
@@ -90,6 +90,37 @@ var Cancel = function(target:WebAtoms.Rest.BaseService, propertyKey: string | sy
 };
 
 
+
+if(!window["__atomSetLocalValue"]){
+    window["__atomSetLocalValue"] = function(bt){
+        return function(k,v,e,r){
+            var self = this;
+            if(v){
+                if(v.then && v.catch){
+
+                    e._promisesQueue = e._promisesQueue || {};
+                    var c = e._promisesQueue[k];
+                    if(c){
+                        c.abort();
+                    }
+
+                    v.then(function(pr){
+                        if(c && c.cancelled)
+                            return;
+                        e._promisesQueue[k] = null;
+                        bt.setLocalValue.call(self,k,pr,e,r);
+                    });
+
+                    v.catch(function(er){
+                        e._promisesQueue[k] = null;
+                    });
+                }
+            }
+            bt.setLocalValue.call(this,k,v,e,r);
+        }
+    };
+}
+
 namespace WebAtoms.Rest{
 
 
@@ -114,6 +145,37 @@ namespace WebAtoms.Rest{
 
     var AtomPromise = window["AtomPromise"];
 
+    export class CancellablePromise<T> implements Promise<T>{
+
+        [Symbol.toStringTag]: "Promise"
+
+        onCancel: () => void;
+        p: Promise<T>;
+        constructor(p: Promise<T>, onCancel: () => void) {
+            this.p = p;
+            this.onCancel = onCancel;
+        }
+
+        abort(){
+            this.onCancel();
+        }
+
+        then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>
+        {
+            return this.p.then(onfulfilled,onrejected);
+        }
+
+        catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>{
+            return this.p.catch(onrejected);
+        }
+    }
+
+    /**
+     * 
+     * 
+     * @export
+     * @class BaseService
+     */
     export class BaseService{
 
 
@@ -156,26 +218,28 @@ namespace WebAtoms.Rest{
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
-            for(var i=0;i<bag.length;i++){
-                var p:ServiceParameter = bag[i];
-                var v = values[i];
-                switch(p.type){
-                    case 'path':
-                        url = url.replace(`{${p.key}}`,encodeURIComponent(v));
-                    break;
-                    case 'query': 
-                        if(url.indexOf('?')===-1){
-                            url += "?";
-                        }
-                        url += `&${p.key}=${encodeURIComponent(v)}`;
-                    break;
-                    case 'body':
-                        options.data = v;
-                        options = this.encodeData(options);
-                    break;
-                    case 'cancel':
-                        options.cancel = v as CancelToken;
-                    break;
+            if(bag){
+                for(var i=0;i<bag.length;i++){
+                    var p:ServiceParameter = bag[i];
+                    var v = values[i];
+                    switch(p.type){
+                        case 'path':
+                            url = url.replace(`{${p.key}}`,encodeURIComponent(v));
+                        break;
+                        case 'query': 
+                            if(url.indexOf('?')===-1){
+                                url += "?";
+                            }
+                            url += `&${p.key}=${encodeURIComponent(v)}`;
+                        break;
+                        case 'body':
+                            options.data = v;
+                            options = this.encodeData(options);
+                        break;
+                        case 'cancel':
+                            options.cancel = v as CancelToken;
+                        break;
+                    }
                 }
             }
             options.url = url;            
@@ -189,7 +253,7 @@ namespace WebAtoms.Rest{
                 });
             }
 
-            return new Promise((resolve: (v?: any | PromiseLike<any>) => void, reject: (reason?:any) => void)=>{
+            var rp = new Promise((resolve: (v?: any | PromiseLike<any>) => void, reject: (reason?:any) => void)=>{
 
                 pr.then(()=>{
                     var v = pr.value();
@@ -215,6 +279,10 @@ namespace WebAtoms.Rest{
                 pr.showError(this.showError);
                 pr.showProgress(this.showProgress);
                 pr.invoke("Ok");                 
+            });
+
+            return new CancellablePromise(rp, ()=>{
+                pr.abort();
             });
         }
 

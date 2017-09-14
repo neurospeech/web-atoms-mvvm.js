@@ -4,6 +4,14 @@ namespace WebAtoms{
     var AtomPromise = window["AtomPromise"];
 
         
+    /**
+     * 
+     * 
+     * @export
+     * @class AtomList
+     * @extends {Array<T>}
+     * @template T 
+     */
     export class AtomList<T> extends Array<T> {
         
         constructor(){

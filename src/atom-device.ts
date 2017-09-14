@@ -4,6 +4,29 @@ namespace WebAtoms{
     var AtomBinder = window["AtomBinder"];
     var AtomPromise = window["AtomPromise"];
 
+    /**
+     * DisposableAction holds an action that
+     * will be executed when dispose will be called.
+     * 
+     *      subscribe(m,f):AtomDisposable{
+     *          //...
+     *          //subscribe to something...
+     *          //...
+     *          return new AtomDisposable(()=>{
+     * 
+     *              //...
+     *              //unsubscribe from something
+     *              //
+     *              
+     *          });
+     *      }
+     * 
+     * User can simply call dispose to make sure subscription was unsubscribed.
+     * 
+     * @export
+     * @class DisposableAction
+     * @implements {AtomDisposable}
+     */
     export class DisposableAction implements AtomDisposable{
 
         f:()=>void;
@@ -75,6 +98,12 @@ namespace WebAtoms{
         });
     };
 
+    /**
+     * 
+     * 
+     * @export
+     * @interface AtomDisposable
+     */
     export interface AtomDisposable{
 
         dispose();
@@ -106,8 +135,21 @@ namespace WebAtoms{
             }
         }
     
+        /**
+         * 
+         * 
+         * @export
+         * @class AtomDevice
+         */
         export class AtomDevice {
     
+            /**
+             * 
+             * 
+             * @static
+             * @type {AtomDevice}
+             * @memberof AtomDevice
+             */
             static instance: AtomDevice = new AtomDevice();
     
             constructor() {
@@ -126,6 +168,14 @@ namespace WebAtoms{
     
             private bag: any;
     
+            /**
+             * 
+             * 
+             * @param {string} msg 
+             * @param {*} data 
+             * @returns 
+             * @memberof AtomDevice
+             */
             public broadcast(msg: string, data: any) {
                 var ary = this.bag[msg] as AtomHandler;
                 if (!ary)
@@ -135,6 +185,14 @@ namespace WebAtoms{
                 }
             }
     
+            /**
+             * 
+             * 
+             * @param {string} msg 
+             * @param {AtomAction} action 
+             * @returns {AtomDisposable} 
+             * @memberof AtomDevice
+             */
             public subscribe(msg: string, action: AtomAction): AtomDisposable {
                 var ary = this.bag[msg] as AtomHandler;
                 if (!ary) {

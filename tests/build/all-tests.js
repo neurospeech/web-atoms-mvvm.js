@@ -94,22 +94,24 @@ var Assert = WebAtoms.Unit.Assert;
 var AtomList = WebAtoms.AtomList;
 var AtomErrors = WebAtoms.AtomErrors;
 var initCalled = false;
-var SampleViewModelErrors = /** @class */ (function (_super) {
-    __extends(SampleViewModelErrors, _super);
+var SampleViewModelErrors = /** @class */ (function () {
     function SampleViewModelErrors() {
-        return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate([
         bindableProperty
     ], SampleViewModelErrors.prototype, "name", void 0);
     return SampleViewModelErrors;
-}(AtomErrors));
+}());
 var SampleViewModel = /** @class */ (function (_super) {
     __extends(SampleViewModel, _super);
     function SampleViewModel() {
         var _this = _super.call(this) || this;
         _this.list = new WebAtoms.AtomList();
         _this.data = {};
+        _this.errors = new SampleViewModelErrors();
+        _this.watch(_this, function (x) {
+            x.errors.name = x.data.firstName ? "" : "Name cannot be empty";
+        });
         return _this;
     }
     SampleViewModel.prototype.init = function () {
@@ -134,9 +136,6 @@ var SampleViewModel = /** @class */ (function (_super) {
         bindableProperty
     ], SampleViewModel.prototype, "data", void 0);
     __decorate([
-        validate("Name cannot be empty", function (v1, v2) { return v1 || v2; }, "data.firstName", "data.lastName")
-    ], SampleViewModel.prototype, "nameError", void 0);
-    __decorate([
         bindableProperty
     ], SampleViewModel.prototype, "name", void 0);
     __decorate([
@@ -160,9 +159,9 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                     case 1:
                         _a.sent();
                         Atom.set(sm, "data.firstName", "something");
-                        Assert.isTrue(sm.nameError == "");
+                        Assert.isTrue(sm.errors.name == "", "Error is not empty " + sm.errors.name);
                         Atom.set(sm, "data.firstName", "");
-                        Assert.isTrue(sm.nameError != "");
+                        Assert.isTrue(sm.errors.name != "", "Error is empty " + sm.errors.name);
                         return [2 /*return*/];
                 }
             });

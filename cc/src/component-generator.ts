@@ -199,7 +199,117 @@ namespace ComponentGenerator{
             }).join("");
         }
 
+        static formLayoutNode(a){
+
+            var cl1 = a.children.filter(c=>c.type == "tag").map( c => {
+                
+                var aa = c.attribs || {};
+
+                var label = aa["atom-label"] || "";
+                if(label){
+                    delete aa["atom-label"];
+                }
+
+                var isRequired = aa["atom-required"];
+
+                if(isRequired){
+                    delete aa["atom-required"];
+                }
+                else{
+                    isRequired = "";
+                }
+
+                if(isRequired.endsWith("}") || isRequired.endsWith("]")){
+                    var last = isRequired.substr(isRequired.length-1);
+                    isRequired = isRequired.substr(0,isRequired.length-1) + " ? '*' : 'false'" + last;
+                }
+
+                if(/true/i.test(isRequired)){
+                    isRequired = "*";
+                }
+
+                var error = aa["atom-error"] || "";
+                if(error){
+                    delete aa["atom-error"];
+                }
+
+
+                var errorAttribs = {
+                    "class":"atom-error",
+                    "atom-text": error
+                };
+
+                var errorStyle = "";
+                if(error){
+                    if(error.endsWith("}") || error.endsWith("]")){
+                        var last = error.substr(error.length-1);
+                        errorStyle = error.substr(0,error.length-1) + " ? '' : 'none'" + last;
+                        errorAttribs["style-display"] = errorStyle;
+                    }
+                }
+
+
+
+                var cl = [
+                    { 
+                        name: "label", 
+                        type:"tag",
+                        attribs:{
+                            "atom-text": label,
+                            "class":"atom-label"
+                        },
+                        children:[]
+                    },
+                    {
+                        name:"span",
+                        type:"tag",
+                        attribs:{
+                            "class":"atom-required",
+                            "atom-text": isRequired
+                        },
+                        children:[]
+                    },
+                    c,
+                    {
+                        name: "div",
+                        type:"tag",
+                        attribs:errorAttribs,
+                        children:[]
+                    }
+                ];
+
+                return {
+                    name:"div",
+                    type:"tag",
+                    attribs:{
+                        "class":"atom-field"
+                    },
+                    children:cl
+                };
+
+            });
+
+            return { 
+                name:"div",
+                type:"tag",
+                attribs:{
+                    "class":"atom-form"
+                },
+                children: cl1
+            } ;
+        }
+
         static mapNode(a,tags:TagInitializerList, children?:Array<any>){
+
+            //debugger;
+
+            if(a.name == "form-layout"){
+                //console.log(`converting form layout with ${a.children.length} children`);
+                a = HtmlContent.formLayoutNode(a);
+                //console.log(`converting form layout to ${a.children.length} children`);
+                
+            }            
+
             var r = [a.name];
 
             var ca = {};
@@ -220,12 +330,16 @@ namespace ComponentGenerator{
 
             if(aa){
                 for(var key in aa){
-                    if(!aa.hasOwnProperty(key))
-                        continue;
+                    //if(!aa.hasOwnProperty(key))
+                    //    continue;
 
                     var ckey = HtmlContent.camelCase(key);
                     
                     var v = (aa[key] as string).trim();
+
+                    if(!v)
+                        continue;
+
                     if(key === "data-atom-init"){
                         inits.push(`WebAtoms.PageSetup.${v}(e);`);
                         continue;
@@ -394,7 +508,9 @@ namespace ComponentGenerator{
                     start: function(e){
                         ${startScript}
                     },
-                    methods:{},
+                    methods:{
+                        setLocalValue: window.__atomSetLocalValue(baseType)
+                    },
                     properties:{
                         ${props}
                     }
@@ -652,5 +768,6 @@ namespace ComponentGenerator{
 
     global["HtmlContent"] = HtmlContent;
     global["ComponentGenerator"] = ComponentGenerator;
+    global["HtmlFragment"] = HtmlFragment;
 
 }

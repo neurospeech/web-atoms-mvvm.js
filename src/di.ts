@@ -49,36 +49,35 @@
         }
     }
 
-    export function DIGlobal(){
-        return function(c:any){
-           DI.register(c,()=>{
-               var dr = DI.instances = DI.instances || {};
-               var r = dr[c as any];
-               if(r)
-                    return r;
-               var cx = c as ({new ()});
-               var r = new cx();
-               dr[c as any] = r;
-               return r;
-           });
-           return c;
-        };
-    }
+    export function DIGlobal (c:any){
         
-    export function DIAlwaysNew(){
-        return function(c:any){
-           DI.register(c,()=>{
-               
-               var r = new (c as {new ()} )();
-               return r;
-           });
-           return c;
-        };
-    }
+        
+        DI.register(c,()=>{
+            var dr = DI.instances = DI.instances || {};
+            var r = dr[c as any];
+            if(r)
+                return r;
+            var cx = c as ({new ()});
+            var r = new cx();
+            dr[c as any] = r;
+            return r;
+        });
+        return c;
+    };
+    
+    export function DIAlwaysNew(c:any){
+        DI.register(c,()=>{
+            
+            var r = new (c as {new ()} )();
+            return r;
+        });
+        return c;
+    };
+        
 
 
 }
 
-var DIGlobal = WebAtoms.DIGlobal();
-var DIAlwaysNew = WebAtoms.DIAlwaysNew();
+var DIGlobal = WebAtoms.DIGlobal;
+var DIAlwaysNew = WebAtoms.DIAlwaysNew;
 
