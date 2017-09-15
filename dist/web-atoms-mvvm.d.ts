@@ -334,6 +334,7 @@ declare namespace WebAtoms {
 }
 declare namespace WebAtoms {
     class AtomErrors {
+        private static isInternal;
         private __target;
         constructor(target: AtomViewModel);
         hasErrors(): boolean;

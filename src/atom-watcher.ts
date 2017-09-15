@@ -40,6 +40,8 @@ namespace WebAtoms{
     }
 
     export class AtomErrors{
+
+        private static isInternal = /^\_(\_target|\$\_)/;
         
         private __target: AtomViewModel;
 
@@ -54,7 +56,7 @@ namespace WebAtoms{
             }
 
             for(var k in this){
-                if(k.startsWith("_$_"))
+                if(AtomErrors.isInternal.test(k))
                     continue;
                 if(this.hasOwnProperty(k)){
                     if(this[k])
@@ -66,7 +68,7 @@ namespace WebAtoms{
 
         clear(){
             for(var k in this){
-                if(k.startsWith("_$_"))
+                if(AtomErrors.isInternal.test(k))
                     continue;
                 if(this.hasOwnProperty(k)){
                     this[k] = null;

@@ -778,7 +778,7 @@ var WebAtoms;
                 this.__target.validate();
             }
             for (var k in this) {
-                if (k.startsWith("_$_"))
+                if (AtomErrors.isInternal.test(k))
                     continue;
                 if (this.hasOwnProperty(k)) {
                     if (this[k])
@@ -789,7 +789,7 @@ var WebAtoms;
         };
         AtomErrors.prototype.clear = function () {
             for (var k in this) {
-                if (k.startsWith("_$_"))
+                if (AtomErrors.isInternal.test(k))
                     continue;
                 if (this.hasOwnProperty(k)) {
                     this[k] = null;
@@ -797,6 +797,7 @@ var WebAtoms;
                 }
             }
         };
+        AtomErrors.isInternal = /^\_(\_target|\$\_)/;
         return AtomErrors;
     }());
     WebAtoms.AtomErrors = AtomErrors;
