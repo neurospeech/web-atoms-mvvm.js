@@ -19,7 +19,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.0.64/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.1.30/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -94,6 +94,12 @@ For unit testing, please see
         label:String;
     }
 
+    class TaskViewModelErrors extends AtomErrors{
+
+        @bindableProperty
+        label: string;
+    }
+
     class TaskViewModel extends AtomViewModel{
         
         @bindableProperty
@@ -110,6 +116,8 @@ For unit testing, please see
 
         backendService: BackendService;
 
+        errors:TaskViewModelErrors;
+
         constructor(){
             this.list = new AtomList<Task>();
             this.newItem = new Task();
@@ -119,6 +127,14 @@ For unit testing, please see
 
             // simple dependency injection !!!
             this.backendService = WebAtoms.DI.resolve(BackendService);
+
+
+            // setup validation
+            this.errors = new TaskViewModelErrors();
+
+            this.addValidation(this, x => {
+                x.errors.label = x.newItem.label ? "" : "Task cannot be empty";
+            });
         }
 
         async init():Promise<any>{
@@ -133,13 +149,9 @@ For unit testing, please see
 
         async addCommand():Promise<any>{
 
-            if(!this.newItem.label){
-                this.broadcast(
-                    "ui-notification",
-                    new AtomNotification(
-                        "Task cannot be empty",
-                        "Error"
-                    ));
+            var windowService = WebAtoms.DI.resolve(WindowService);
+            if(this.errors.hasErrors()){
+                windowService.alert("Please complete all required fields");
                 return;
             }
 
