@@ -426,10 +426,16 @@ var ComponentGenerator;
     }());
     ComponentGenerator_1.HtmlFile = HtmlFile;
     var ComponentGenerator = /** @class */ (function () {
-        function ComponentGenerator(folder, outFile, nsNamespace) {
+        function ComponentGenerator(folder, outFile, nsNamespace, emitDeclaration) {
             this.folder = folder;
             this.outFile = outFile;
             this.nsNamesapce = nsNamespace;
+            if (emitDeclaration !== undefined) {
+                this.emitDeclaration = emitDeclaration;
+            }
+            else {
+                this.emitDeclaration = true;
+            }
             this.files = [];
             this.watch();
             this.compile();
@@ -483,6 +489,7 @@ var ComponentGenerator;
                 this.files = this.files.filter(function (x) { return x.file == file.file; });
             }
             var result = "";
+            var declarations = "";
             for (var _e = 0, nodes_1 = nodes; _e < nodes_1.length; _e++) {
                 var node = nodes_1[_e];
                 if (node.nsNamespace) {
@@ -495,9 +502,18 @@ var ComponentGenerator;
                 }
                 result += "\r\n";
                 result += node.generated;
+                if (node.nsNamespace) {
+                    declarations = "declare namespace " + node.nsNamespace + "{    class " + node.name + "{ }   }";
+                }
+                else {
+                    declarations = "declare class " + node.name + " {  }";
+                }
             }
             fs.writeFileSync(this.outFile, result);
             var now = new Date();
+            if (this.emitDeclaration) {
+                fs.writeFileSync(this.outFile + ".d.ts", declarations);
+            }
             console.log(now.toLocaleTimeString() + " - File generated " + this.outFile);
         };
         ComponentGenerator.prototype.watch = function () {
@@ -533,7 +549,7 @@ var ComponentGenerator;
                     var config = JSON.parse(fs.readFileSync(fullName, 'utf8'));
                     config.srcFolder = path.join(folder, config.srcFolder);
                     config.outFile = path.join(folder, config.outFile);
-                    var cc = new ComponentGenerator(config.srcFolder, config.outFile, config.namespace || "");
+                    var cc = new ComponentGenerator(config.srcFolder, config.outFile, config.namespace || "", config.emitDeclaration);
                     return;
                 }
             }
