@@ -441,6 +441,7 @@ namespace ComponentGenerator{
             if(node.attribs){
 
                 name = node.attribs["atom-component"];
+                this.name = name;
                 delete node.attribs["atom-component"];
 
                 if(node.attribs["atom-type"]){
@@ -596,9 +597,12 @@ namespace ComponentGenerator{
     }
 
 
+
     export class ComponentGenerator{
         
         nsNamesapce: string;
+
+        emitDeclaration: boolean;
 
         loadFiles(folder: string){
 
@@ -629,10 +633,16 @@ namespace ComponentGenerator{
 
         
 
-        constructor(folder: string, outFile?:string, nsNamespace?:string) {
+        constructor(folder: string, outFile?:string, nsNamespace?:string, emitDeclaration?:boolean) {
             this.folder = folder;
             this.outFile = outFile;
             this.nsNamesapce = nsNamespace;
+
+            if(emitDeclaration !== undefined){
+                this.emitDeclaration = emitDeclaration;
+            }else{
+                this.emitDeclaration = true;
+            }
 
             this.files = [];
 
@@ -683,6 +693,9 @@ namespace ComponentGenerator{
             }
 
             var result = "";
+
+            var declarations = "";
+
             for(var node of nodes){
 
                 if(node.nsNamespace){
@@ -697,10 +710,20 @@ namespace ComponentGenerator{
 
                 result += "\r\n";
                 result += node.generated;
+
+                if(node.nsNamespace){
+                    declarations += `declare namespace ${node.nsNamespace}{    class ${node.name}{ }   }\r\n`;
+                }else{
+                    declarations += `declare class ${node.name} {  }\r\n`;
+                }
             }
 
             fs.writeFileSync(this.outFile,result);
             var now = new Date();
+
+            if(this.emitDeclaration){
+                fs.writeFileSync(`${this.outFile}.d.ts`,declarations);
+            }
             
             console.log(`${now.toLocaleTimeString()} - File generated ${this.outFile}`);
         }
@@ -741,8 +764,12 @@ namespace ComponentGenerator{
 
                     config.srcFolder = path.join(folder,config.srcFolder);
                     config.outFile = path.join(folder,config.outFile);
-
-                    var cc = new ComponentGenerator(config.srcFolder, config.outFile, config.namespace || "");
+                    
+                    var cc = new ComponentGenerator(
+                        config.srcFolder, 
+                        config.outFile, 
+                        config.namespace || "",
+                        config.emitDeclaration);
                     return;
                 }
             }

@@ -4,7 +4,7 @@
         "watch": true,
         "experimentalDecorators": true,
         "module":"none",
-        "outFile": "dist/web-atoms-mvvm.js",
+        "outFile": "../dist/web-atoms-mock-window-service.js",
         "sourceMap": true,
         "declaration": true
     },
@@ -12,12 +12,12 @@
         "src/**/*"
     ],
     "files": [
-        "node_modules/typescript/lib/lib.es6.d.ts"
+        "../node_modules/typescript/lib/lib.es6.d.ts",
+        "../dist/web-atoms-mvvm.d.ts"
     ],
     "exclude": [
         "node_modules",
         "tests",
         "dist",
-        "mock"
     ]
 }

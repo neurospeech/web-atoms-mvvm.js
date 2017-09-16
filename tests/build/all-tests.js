@@ -255,4 +255,153 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     ], AtomViewModelTest);
     return AtomViewModelTest;
 }(TestItem));
+var DateTimeService = /** @class */ (function () {
+    function DateTimeService() {
+    }
+    Object.defineProperty(DateTimeService.prototype, "now", {
+        get: function () {
+            return new Date();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DateTimeService = __decorate([
+        DIGlobal
+    ], DateTimeService);
+    return DateTimeService;
+}());
+var MockDateTimeService = /** @class */ (function (_super) {
+    __extends(MockDateTimeService, _super);
+    function MockDateTimeService() {
+        var _this = _super.call(this) || this;
+        _this.current = new Date();
+        return _this;
+    }
+    Object.defineProperty(MockDateTimeService.prototype, "now", {
+        get: function () {
+            return this.current;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return MockDateTimeService;
+}(DateTimeService));
+var DITests = /** @class */ (function (_super) {
+    __extends(DITests, _super);
+    function DITests() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    DITests.prototype.resolveTest = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var ts1, ts2, d1, d2, mts1, mts2, ts3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ts1 = WebAtoms.DI.resolve(DateTimeService);
+                        ts2 = WebAtoms.DI.resolve(DateTimeService);
+                        Assert.isTrue(ts1 === ts2);
+                        d1 = ts1.now;
+                        return [4 /*yield*/, this.delay(100)];
+                    case 1:
+                        _a.sent();
+                        d2 = ts2.now;
+                        Assert.isTrue(d1.getTime() !== d2.getTime());
+                        WebAtoms.DI.push(DateTimeService, new MockDateTimeService());
+                        mts1 = WebAtoms.DI.resolve(DateTimeService);
+                        Assert.isTrue(ts1 !== mts1);
+                        mts2 = WebAtoms.DI.resolve(DateTimeService);
+                        Assert.isTrue(mts1 === mts2);
+                        d1 = mts1.now;
+                        return [4 /*yield*/, this.delay(100)];
+                    case 2:
+                        _a.sent();
+                        d2 = mts2.now;
+                        Assert.isTrue(d1.getTime() === d2.getTime());
+                        WebAtoms.DI.pop(DateTimeService);
+                        ts3 = WebAtoms.DI.resolve(DateTimeService);
+                        Assert.isTrue(ts1 === ts3);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    __decorate([
+        Test("Resolve Test")
+    ], DITests.prototype, "resolveTest", null);
+    DITests = __decorate([
+        Category("DI Tests")
+    ], DITests);
+    return DITests;
+}(TestItem));
+var MockWindowService = WebAtoms.MockWindowService;
+var WindowTest = /** @class */ (function (_super) {
+    __extends(WindowTest, _super);
+    function WindowTest() {
+        var _this = _super.call(this) || this;
+        WebAtoms.DI.push(WindowService, new WebAtoms.MockWindowService());
+        return _this;
+    }
+    WindowTest.prototype.dispose = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                WebAtoms.DI.pop(WindowService);
+                return [2 /*return*/];
+            });
+        });
+    };
+    WindowTest.prototype.alertTest = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var windowService, alertMsg, alertTitle, confirmMsg, r;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        windowService = WebAtoms.DI.resolve(WindowService);
+                        alertMsg = "Sample message";
+                        alertTitle = "Sample title";
+                        MockWindowService.instance.expectAlert(alertMsg);
+                        return [4 /*yield*/, windowService.alert(alertMsg, alertTitle)];
+                    case 1:
+                        _a.sent();
+                        confirmMsg = "Are you sure?";
+                        MockWindowService.instance.expectConfirm(confirmMsg, function () { return true; });
+                        return [4 /*yield*/, windowService.confirm(confirmMsg, "Some title")];
+                    case 2:
+                        r = _a.sent();
+                        Assert.isTrue(r);
+                        MockWindowService.instance.expectConfirm(confirmMsg, function () { return false; });
+                        return [4 /*yield*/, windowService.confirm(confirmMsg, "Some title")];
+                    case 3:
+                        r = _a.sent();
+                        Assert.isFalse(r);
+                        MockWindowService.instance.assert();
+                        return [4 /*yield*/, Assert.throwsAsync("No window registered for __ConfirmWindow_Are you sure?", function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, windowService.confirm(confirmMsg, "Some title")];
+                                        case 1:
+                                            r = _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                    case 4:
+                        _a.sent();
+                        MockWindowService.instance.expectConfirm(confirmMsg, function () { return false; });
+                        Assert.throws("Expected windows did not open __ConfirmWindow_Are you sure?", function () {
+                            MockWindowService.instance.assert();
+                        });
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    __decorate([
+        Test("Alert test")
+    ], WindowTest.prototype, "alertTest", null);
+    WindowTest = __decorate([
+        Category("Window Service Tests")
+    ], WindowTest);
+    return WindowTest;
+}(TestItem));
 //# sourceMappingURL=all-tests.js.map

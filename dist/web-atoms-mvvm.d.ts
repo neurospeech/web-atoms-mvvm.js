@@ -334,6 +334,7 @@ declare namespace WebAtoms {
 }
 declare namespace WebAtoms {
     class AtomErrors {
+        private static isInternal;
         private __target;
         constructor(target: AtomViewModel);
         hasErrors(): boolean;
@@ -362,13 +363,13 @@ declare namespace WebAtoms {
 declare namespace WebAtoms {
     class DI {
         private static factory;
-        static instances: any;
-        static register(key: any, factory: any): void;
+        static register<T>(key: new () => T, factory: () => T, transient?: boolean): void;
         static resolve<T>(c: new () => T): T;
-        static put(key: any, instance: any): void;
+        static push(key: any, instance: any): void;
+        static pop(key: any): void;
     }
-    function DIGlobal(c: any): any;
-    function DIAlwaysNew(c: any): any;
+    function DIGlobal(c: new () => any): new () => any;
+    function DIAlwaysNew(c: new () => any): new () => any;
 }
 declare var DIGlobal: typeof WebAtoms.DIGlobal;
 declare var DIAlwaysNew: typeof WebAtoms.DIAlwaysNew;

@@ -11,66 +11,105 @@
 
         key: any;
 
-        constructor(key: any, factory:()=>any){
+        transient: boolean;
+
+        constructor(
+            key: any, 
+            factory:()=>any,
+            transient: boolean)
+        {
+            this.transient = transient;
             this.factory = factory;
             this.key = key;
+        }
+
+        instance: any;
+
+        resolve(){
+            if(this.transient){
+                return this.factory();
+            }
+            return this.instance || (this.instance = this.factory());
+        }
+
+        stack:Array<{factory:()=>any, transient:boolean, instance:any}>;
+
+        push(factory:()=>any, transient:boolean){
+            this.stack = this.stack || [];
+            this.stack.push({
+                factory: this.factory,
+                instance: this.instance,
+                transient: this.transient
+            });
+            this.transient = transient;
+            this.instance = undefined;
+            this.factory = factory;
+        }
+
+        pop(){
+            if(!(this.stack && this.stack.length)){
+                throw new Error("Stack in DIFactory is empty");
+            }
+            var obj = this.stack.pop();
+            this.factory = obj.factory;
+            this.transient = obj.transient;
+            this.instance = obj.instance;
         }
 
     }
 
     export class DI{
 
-        private static factory:Array<DIFactory> = [];
+        private static factory:any = {};
 
-        static instances: any = {};
+        static register<T>(
+            key: new () => T, 
+            factory: () => T,
+            transient: boolean = false ){
 
-        static register(key:any, factory: any){
+            var k = key as any;
 
-            for(var fx of DI.factory){
-                if(fx.key === key)
-                    return;
+            var existing = DI.factory[k];
+            if(existing){
+                throw new Error(`Factory for ${key.name} is already registered`);
             }
-
-            DI.factory.push(new DIFactory(key,factory));
-        }        
+            DI.factory[k] = new DIFactory(key,factory,transient);
+        }
 
         static resolve<T>(c: new () => T ):T{
 
-            var f = DI.factory.find( v => v.key === c );
+            var f:DIFactory = DI.factory[c as any];
             if(!f){
                 throw new Error("No factory registered for " + c);
             }
-            return f.factory();
+            return f.resolve();
         }
 
         
-        static put(key:any, instance:any){
-            DI.instances[key] = instance;
+        static push(key:any, instance:any){
+            var f = DI.factory[key] as DIFactory;
+            if(!f){
+                DI.register(key, () => instance);
+            }else{
+                f.push(()=> instance, true);
+            }
+        }
+
+        static pop(key:any){
+            var f = DI.factory[key] as DIFactory;
+            if(f){
+                f.pop();
+            }
         }
     }
 
-    export function DIGlobal (c:any){
-        
-        
-        DI.register(c,()=>{
-            var dr = DI.instances = DI.instances || {};
-            var r = dr[c as any];
-            if(r)
-                return r;
-            var cx = c as ({new ()});
-            var r = new cx();
-            dr[c as any] = r;
-            return r;
-        });
+    export function DIGlobal (c: new () => any){
+        DI.register(c,()=> new c());
         return c;
     };
     
-    export function DIAlwaysNew(c:any){
-        DI.register(c,()=>{
-            
-            var r = new (c as {new ()} )();
-            return r;
-        });
+    export function DIAlwaysNew(c: new () => any){
+        DI.register(c,()=> new c(), true);
         return c;
     };
         
