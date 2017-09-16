@@ -333,6 +333,7 @@ var ComponentGenerator;
             var props = "";
             if (node.attribs) {
                 name = node.attribs["atom-component"];
+                this.name = name;
                 delete node.attribs["atom-component"];
                 if (node.attribs["atom-type"]) {
                     type = node.attribs["atom-type"];
