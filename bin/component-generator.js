@@ -504,10 +504,10 @@ var ComponentGenerator;
                 result += "\r\n";
                 result += node.generated;
                 if (node.nsNamespace) {
-                    declarations = "declare namespace " + node.nsNamespace + "{    class " + node.name + "{ }   }";
+                    declarations += "declare namespace " + node.nsNamespace + "{    class " + node.name + "{ }   }\r\n";
                 }
                 else {
-                    declarations = "declare class " + node.name + " {  }";
+                    declarations += "declare class " + node.name + " {  }\r\n";
                 }
             }
             fs.writeFileSync(this.outFile, result);
