@@ -3,7 +3,12 @@ var vm = require("vm");
 
 function loadScript(file){
     var s = fs.readFileSync(file,'utf-8');
-    var script = new vm.Script(s, { filename: file });
+    var script = new vm.Script(s, { 
+        filename: file,
+        displayErrors: true,
+        lineOffset: 0,
+        columnOffset: 0
+    });
     script.runInThisContext();
 }
 
@@ -23,6 +28,7 @@ global.window = {
 
 loadScript("./node_modules/web-atoms-unit/web-atoms-mock.js")
 loadScript("./dist/web-atoms-mvvm.js");
+loadScript("./dist/web-atoms-mock-window-service.js");
 loadScript("./node_modules/web-atoms-unit/index.js");
 
 // load your tests..

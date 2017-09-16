@@ -903,58 +903,85 @@ var WebAtoms;
 var WebAtoms;
 (function (WebAtoms) {
     var DIFactory = /** @class */ (function () {
-        function DIFactory(key, factory) {
+        function DIFactory(key, factory, transient) {
+            this.transient = transient;
             this.factory = factory;
             this.key = key;
         }
+        DIFactory.prototype.resolve = function () {
+            if (this.transient) {
+                return this.factory();
+            }
+            return this.instance || (this.instance = this.factory());
+        };
+        DIFactory.prototype.push = function (factory, transient) {
+            this.stack = this.stack || [];
+            this.stack.push({
+                factory: this.factory,
+                instance: this.instance,
+                transient: this.transient
+            });
+            this.transient = transient;
+            this.instance = undefined;
+            this.factory = factory;
+        };
+        DIFactory.prototype.pop = function () {
+            if (!(this.stack && this.stack.length)) {
+                throw new Error("Stack in DIFactory is empty");
+            }
+            var obj = this.stack.pop();
+            this.factory = obj.factory;
+            this.transient = obj.transient;
+            this.instance = obj.instance;
+        };
         return DIFactory;
     }());
     var DI = /** @class */ (function () {
         function DI() {
         }
-        DI.register = function (key, factory) {
-            for (var _i = 0, _a = DI.factory; _i < _a.length; _i++) {
-                var fx = _a[_i];
-                if (fx.key === key)
-                    return;
+        DI.register = function (key, factory, transient) {
+            if (transient === void 0) { transient = false; }
+            var k = key;
+            var existing = DI.factory[k];
+            if (existing) {
+                throw new Error("Factory for " + key.name + " is already registered");
             }
-            DI.factory.push(new DIFactory(key, factory));
+            DI.factory[k] = new DIFactory(key, factory, transient);
         };
         DI.resolve = function (c) {
-            var f = DI.factory.find(function (v) { return v.key === c; });
+            var f = DI.factory[c];
             if (!f) {
                 throw new Error("No factory registered for " + c);
             }
-            return f.factory();
+            return f.resolve();
         };
-        DI.put = function (key, instance) {
-            DI.instances[key] = instance;
+        DI.push = function (key, instance) {
+            var f = DI.factory[key];
+            if (!f) {
+                DI.register(key, function () { return instance; });
+            }
+            else {
+                f.push(function () { return instance; }, true);
+            }
         };
-        DI.factory = [];
-        DI.instances = {};
+        DI.pop = function (key) {
+            var f = DI.factory[key];
+            if (f) {
+                f.pop();
+            }
+        };
+        DI.factory = {};
         return DI;
     }());
     WebAtoms.DI = DI;
     function DIGlobal(c) {
-        DI.register(c, function () {
-            var dr = DI.instances = DI.instances || {};
-            var r = dr[c];
-            if (r)
-                return r;
-            var cx = c;
-            var r = new cx();
-            dr[c] = r;
-            return r;
-        });
+        DI.register(c, function () { return new c(); });
         return c;
     }
     WebAtoms.DIGlobal = DIGlobal;
     ;
     function DIAlwaysNew(c) {
-        DI.register(c, function () {
-            var r = new c();
-            return r;
-        });
+        DI.register(c, function () { return new c(); }, true);
         return c;
     }
     WebAtoms.DIAlwaysNew = DIAlwaysNew;
