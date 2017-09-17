@@ -715,10 +715,12 @@ namespace ComponentGenerator{
 
                 if(node.nsNamespace){
                     declarations += `declare namespace ${node.nsNamespace}{    class ${node.name}{ }   }\r\n`;
-                    mock += `namespace ${node.nsNamespace} { export  class ${node.name} {}  }`;
+                    //mock += `namespace ${node.nsNamespace} { export  class ${node.name} {}  }`;
+                    mock += ` var ${node.nsNamespace} = ${node.nsNamespace} || {}; `;
+                    mock += ` ${node.nsNamespace}.${node.name} = {}; `
                 }else{
                     declarations += `declare class ${node.name} {  }\r\n`;
-                    mock += `class ${node.name} {} `;
+                    mock += `var ${node.name} = {}; `;
                 }
             }
 
