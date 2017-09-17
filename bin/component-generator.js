@@ -242,7 +242,7 @@ var ComponentGenerator;
             if (!a.children)
                 return r;
             var aa = a.attribs || {};
-            if (aa["commandTemplate"]) {
+            if (aa["atom-template"] == "commandTemplate") {
                 // reverse...
                 var ra = [];
                 for (var i = a.children.length - 1; i >= 0; i--) {
