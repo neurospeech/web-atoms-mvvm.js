@@ -364,7 +364,6 @@ namespace ComponentGenerator{
                     }
 
                     if(/autofocus/i.test(key)){
-                        console.log("adding auto focus");
                         inits.push(`window.WebAtoms.dispatcher.callLater( 
                             function() { 
                                 e.focus(); 
