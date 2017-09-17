@@ -21,6 +21,8 @@ namespace WebAtoms{
         }
 
         private async privateInit(){
+            // this is necessary for derived class initialization
+            await Atom.delay(1);
             await this.init();
         }
 

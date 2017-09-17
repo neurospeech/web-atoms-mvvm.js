@@ -28,6 +28,7 @@ function bindableProperty(target, key) {
     var _val = this[key];
     var keyName = "_" + key;
     this[keyName] = _val;
+    //debugger;
     // property getter
     var getter = function () {
         //console.log(`Get: ${key} => ${_val}`);
@@ -36,6 +37,7 @@ function bindableProperty(target, key) {
     // property setter
     var setter = function (newVal) {
         //console.log(`Set: ${key} => ${newVal}`);
+        //debugger;
         this[keyName] = newVal;
         Atom.refresh(this, key);
         if (this.onPropertyChanged) {
@@ -525,8 +527,14 @@ var WebAtoms;
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, this.init()];
+                        case 0: 
+                        // this is necessary for derived class initialization
+                        return [4 /*yield*/, Atom.delay(1)];
                         case 1:
+                            // this is necessary for derived class initialization
+                            _a.sent();
+                            return [4 /*yield*/, this.init()];
+                        case 2:
                             _a.sent();
                             return [2 /*return*/];
                     }

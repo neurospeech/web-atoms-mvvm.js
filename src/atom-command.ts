@@ -22,6 +22,7 @@ function bindableProperty(target: any, key: string) {
         var keyName = "_" + key;
     
         this[keyName] = _val;
+        //debugger;
     
         // property getter
         var getter = function () {
@@ -32,6 +33,7 @@ function bindableProperty(target: any, key: string) {
         // property setter
         var setter = function (newVal) {
             //console.log(`Set: ${key} => ${newVal}`);
+            //debugger;
             this[keyName] = newVal;
             Atom.refresh(this, key);
 
