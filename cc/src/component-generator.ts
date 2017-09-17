@@ -308,7 +308,9 @@ namespace ComponentGenerator{
                 a = HtmlContent.formLayoutNode(a);
                 //console.log(`converting form layout to ${a.children.length} children`);
                 
-            }            
+            }
+
+            
 
             var r = [a.name];
 
@@ -319,12 +321,6 @@ namespace ComponentGenerator{
                 return r;
 
             var aa = a.attribs || {};
-
-            // if(aa["atom-type"]){
-            //     // needs separate initializer...
-            //     tags = new TagInitializerList(`${tags.component}_${tags.tags.length}`);
-            // }
-
 
             var inits:Array<string> = [];
 
@@ -696,6 +692,8 @@ namespace ComponentGenerator{
 
             var declarations = "";
 
+            var mock = "";
+
             for(var node of nodes){
 
                 if(node.nsNamespace){
@@ -713,8 +711,12 @@ namespace ComponentGenerator{
 
                 if(node.nsNamespace){
                     declarations += `declare namespace ${node.nsNamespace}{    class ${node.name}{ }   }\r\n`;
+                    //mock += `namespace ${node.nsNamespace} { export  class ${node.name} {}  }`;
+                    mock += ` var ${node.nsNamespace} = ${node.nsNamespace} || {}; `;
+                    mock += ` ${node.nsNamespace}.${node.name} = {}; `
                 }else{
                     declarations += `declare class ${node.name} {  }\r\n`;
+                    mock += `var ${node.name} = {}; `;
                 }
             }
 
@@ -723,6 +725,7 @@ namespace ComponentGenerator{
 
             if(this.emitDeclaration){
                 fs.writeFileSync(`${this.outFile}.d.ts`,declarations);
+                fs.writeFileSync(`${this.outFile}.mock.js`,mock);
             }
             
             console.log(`${now.toLocaleTimeString()} - File generated ${this.outFile}`);

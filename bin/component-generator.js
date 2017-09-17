@@ -242,10 +242,6 @@ var ComponentGenerator;
             if (!a.children)
                 return r;
             var aa = a.attribs || {};
-            // if(aa["atom-type"]){
-            //     // needs separate initializer...
-            //     tags = new TagInitializerList(`${tags.component}_${tags.tags.length}`);
-            // }
             var inits = [];
             if (aa) {
                 for (var key in aa) {
@@ -491,6 +487,7 @@ var ComponentGenerator;
             }
             var result = "";
             var declarations = "";
+            var mock = "";
             for (var _e = 0, nodes_1 = nodes; _e < nodes_1.length; _e++) {
                 var node = nodes_1[_e];
                 if (node.nsNamespace) {
@@ -505,15 +502,20 @@ var ComponentGenerator;
                 result += node.generated;
                 if (node.nsNamespace) {
                     declarations += "declare namespace " + node.nsNamespace + "{    class " + node.name + "{ }   }\r\n";
+                    //mock += `namespace ${node.nsNamespace} { export  class ${node.name} {}  }`;
+                    mock += " var " + node.nsNamespace + " = " + node.nsNamespace + " || {}; ";
+                    mock += " " + node.nsNamespace + "." + node.name + " = {}; ";
                 }
                 else {
                     declarations += "declare class " + node.name + " {  }\r\n";
+                    mock += "var " + node.name + " = {}; ";
                 }
             }
             fs.writeFileSync(this.outFile, result);
             var now = new Date();
             if (this.emitDeclaration) {
                 fs.writeFileSync(this.outFile + ".d.ts", declarations);
+                fs.writeFileSync(this.outFile + ".mock.js", mock);
             }
             console.log(now.toLocaleTimeString() + " - File generated " + this.outFile);
         };

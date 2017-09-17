@@ -21,37 +21,10 @@ namespace WebAtoms{
         }
 
         private async privateInit(){
-            //await Atom.delay(1);
-            //this.setupWatchers();
+            // this is necessary for derived class initialization
+            await Atom.delay(1);
             await this.init();
         }
-
-        // private setupWatchers(){
-        //     //debugger;
-        //     var vm = this.constructor.prototype as any;
-        //     if(!vm._watchMethods)
-        //         return;
-
-        //     var wm = vm._watchMethods;
-
-        //     for(var k in wm){
-        //         if(!vm.hasOwnProperty(k))
-        //             continue;
-        //         var params = wm[k];
-
-        //         var pl = params.args;
-        //         var error = params.error;
-        //         var func = params.func as (...args:any[])=>boolean;
-
-        //         var op = new WebAtoms.AtomWatcher(this, pl);
-        //         op.func = (...x:any[]) => {
-        //             this[k] = func.apply(this,x) ? error : "";
-        //         };
-
-        //         this.registerDisposable(op);
-        //     }
-        // }
-
 
         private validations:AtomWatcher<AtomViewModel>[] = [];
 

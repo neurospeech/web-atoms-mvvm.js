@@ -58,10 +58,26 @@
 
     }
 
+    /**
+     * 
+     * 
+     * @export
+     * @class DI
+     */
     export class DI{
 
         private static factory:any = {};
 
+        /**
+         * 
+         * 
+         * @static
+         * @template T 
+         * @param {new () => T} key 
+         * @param {() => T} factory 
+         * @param {boolean} [transient=false] - If true, always new instance will be created
+         * @memberof DI
+         */
         static register<T>(
             key: new () => T, 
             factory: () => T,
@@ -76,6 +92,15 @@
             DI.factory[k] = new DIFactory(key,factory,transient);
         }
 
+        /**
+         * 
+         * 
+         * @static
+         * @template T 
+         * @param {new () => T} c 
+         * @returns {T} 
+         * @memberof DI
+         */
         static resolve<T>(c: new () => T ):T{
 
             var f:DIFactory = DI.factory[c as any];
@@ -86,6 +111,16 @@
         }
 
         
+        /**
+         * Use this for unit testing, this will push existing
+         * DI factory and all instances will be resolved with
+         * given instance
+         * 
+         * @static
+         * @param {*} key 
+         * @param {*} instance 
+         * @memberof DI
+         */
         static push(key:any, instance:any){
             var f = DI.factory[key] as DIFactory;
             if(!f){
@@ -95,6 +130,13 @@
             }
         }
 
+        /**
+         * 
+         * 
+         * @static
+         * @param {*} key 
+         * @memberof DI
+         */
         static pop(key:any){
             var f = DI.factory[key] as DIFactory;
             if(f){
@@ -103,11 +145,34 @@
         }
     }
 
+    /**
+     * This decorator will register given class as singleton instance on DI.
+     * 
+     *      @DIGlobal
+     *      class BackendService{
+     *      }
+     * 
+     * 
+     * @export
+     * @param {new () => any} c 
+     * @returns 
+     */
     export function DIGlobal (c: new () => any){
         DI.register(c,()=> new c());
         return c;
     };
     
+    /**
+     * This decorator will register given class as transient instance on DI.
+     * 
+     *      @DIAlwaysNew
+     *      class StringHelper{
+     *      }
+     * 
+     * @export
+     * @param {new () => any} c 
+     * @returns 
+     */
     export function DIAlwaysNew(c: new () => any){
         DI.register(c,()=> new c(), true);
         return c;
