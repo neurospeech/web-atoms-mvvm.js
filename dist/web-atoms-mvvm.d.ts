@@ -644,6 +644,21 @@ declare var Delete: (url: string) => (target: WebAtoms.Rest.BaseService, propert
  */
 declare var Put: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 /**
+ * Http Patch method
+ * @example
+ *
+ *      @Patch("/api/products")
+ *      async saveProduct(
+ *          @Body product: any
+ *      ): Promise<Product> {
+ *      }
+ *
+ * @export
+ * @function Patch
+ * @param {url} - Url for the operation
+ */
+declare var Patch: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
+/**
  * Cancellation token
  * @example
  *

@@ -185,6 +185,21 @@ var Delete = methodBuilder("Delete");
 var Put = methodBuilder("Put");
 
 
+/**
+ * Http Patch method
+ * @example
+ * 
+ *      @Patch("/api/products")
+ *      async saveProduct(
+ *          @Body product: any
+ *      ): Promise<Product> {
+ *      }
+ * 
+ * @export
+ * @function Patch
+ * @param {url} - Url for the operation
+ */
+var Patch = methodBuilder("Patch");
 
 /**
  * Cancellation token
