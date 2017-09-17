@@ -322,21 +322,6 @@ namespace ComponentGenerator{
 
             var aa = a.attribs || {};
 
-            // if(aa["atom-template"] == "commandTemplate"){
-            //     // reverse...
-            //     var ra = [];
-            //     for(var i=a.children.length-1;i>=0;i-- ){
-            //         ra.push(a.children[i]);
-            //     }
-            //     a.children = ra;
-            // }
-
-            // if(aa["atom-type"]){
-            //     // needs separate initializer...
-            //     tags = new TagInitializerList(`${tags.component}_${tags.tags.length}`);
-            // }
-
-
             var inits:Array<string> = [];
 
             if(aa){
