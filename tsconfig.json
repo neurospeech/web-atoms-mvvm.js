@@ -6,7 +6,7 @@
         "module":"none",
         "outFile": "dist/web-atoms-mvvm.js",
         "sourceMap": true,
-        "declaration": true
+        "declaration": true        
     },
     "include": [
         "src/**/*"

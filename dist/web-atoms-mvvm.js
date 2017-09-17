@@ -312,7 +312,6 @@ var WebAtoms;
             });
         });
     };
-    // watch for changes...
     Atom.watch = function (item, property, f) {
         AtomBinder.add_WatchHandler(item, property, f);
         return new DisposableAction(function () {
@@ -348,7 +347,8 @@ var WebAtoms;
     }());
     WebAtoms.AtomMessageAction = AtomMessageAction;
     /**
-     *
+     * Device (usually browser), instance of which supports
+     * singleton instance to provide broadcast/messaging
      *
      * @export
      * @class AtomDevice
@@ -357,6 +357,15 @@ var WebAtoms;
         function AtomDevice() {
             this.bag = {};
         }
+        /**
+         * This method will run any asynchronous method
+         * and it will display an error if it will fail
+         * asynchronously
+         *
+         * @template T
+         * @param {() => Promise<T>} tf
+         * @memberof AtomDevice
+         */
         AtomDevice.prototype.runAsync = function (tf) {
             var task = tf();
             task.catch(function (error) {
@@ -366,42 +375,47 @@ var WebAtoms;
             task.then(function () { });
         };
         /**
+         * Broadcast given data to channel, only within the current window.
          *
-         *
-         * @param {string} msg
+         * @param {string} channel
          * @param {*} data
          * @returns
          * @memberof AtomDevice
          */
-        AtomDevice.prototype.broadcast = function (msg, data) {
-            var ary = this.bag[msg];
+        AtomDevice.prototype.broadcast = function (channel, data) {
+            var ary = this.bag[channel];
             if (!ary)
                 return;
             for (var _i = 0, _a = ary.list; _i < _a.length; _i++) {
                 var entry = _a[_i];
-                entry.call(this, msg, data);
+                entry.call(this, channel, data);
             }
         };
         /**
+         * Subscribe for given channel with action that will be
+         * executed when anyone will broadcast (this only works within the
+         * current browser window)
          *
+         * This method returns a disposable, when you call `.dispose()` it will
+         * unsubscribe for current subscription
          *
-         * @param {string} msg
+         * @param {string} channel
          * @param {AtomAction} action
-         * @returns {AtomDisposable}
+         * @returns {AtomDisposable} Disposable that supports removal of subscription
          * @memberof AtomDevice
          */
-        AtomDevice.prototype.subscribe = function (msg, action) {
+        AtomDevice.prototype.subscribe = function (channel, action) {
             var _this = this;
-            var ary = this.bag[msg];
+            var ary = this.bag[channel];
             if (!ary) {
-                ary = new AtomHandler(msg);
-                this.bag[msg] = ary;
+                ary = new AtomHandler(channel);
+                this.bag[channel] = ary;
             }
             ary.list.push(action);
             return new DisposableAction(function () {
                 ary.list = ary.list.filter(function (a) { return a !== action; });
                 if (!ary.list.length) {
-                    _this.bag[msg] = null;
+                    _this.bag[channel] = null;
                 }
             });
         };
@@ -503,26 +517,6 @@ var WebAtoms;
         __extends(AtomViewModel, _super);
         function AtomViewModel() {
             var _this = _super.call(this) || this;
-            // private setupWatchers(){
-            //     //debugger;
-            //     var vm = this.constructor.prototype as any;
-            //     if(!vm._watchMethods)
-            //         return;
-            //     var wm = vm._watchMethods;
-            //     for(var k in wm){
-            //         if(!vm.hasOwnProperty(k))
-            //             continue;
-            //         var params = wm[k];
-            //         var pl = params.args;
-            //         var error = params.error;
-            //         var func = params.func as (...args:any[])=>boolean;
-            //         var op = new WebAtoms.AtomWatcher(this, pl);
-            //         op.func = (...x:any[]) => {
-            //             this[k] = func.apply(this,x) ? error : "";
-            //         };
-            //         this.registerDisposable(op);
-            //     }
-            // }
             _this.validations = [];
             WebAtoms.AtomDevice.instance.runAsync(function () { return _this.privateInit(); });
             return _this;
@@ -531,13 +525,8 @@ var WebAtoms;
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: 
-                        //await Atom.delay(1);
-                        //this.setupWatchers();
-                        return [4 /*yield*/, this.init()];
+                        case 0: return [4 /*yield*/, this.init()];
                         case 1:
-                            //await Atom.delay(1);
-                            //this.setupWatchers();
                             _a.sent();
                             return [2 /*return*/];
                     }
@@ -763,16 +752,37 @@ var WebAtoms;
         var ms = str.replace(re, function (m) {
             //console.log(`m: ${m}`);
             var px = m.substr(p.length + 1);
-            path.push(px);
+            if (!path.find(function (y) { return y == px; })) {
+                path.push(px);
+            }
             return m;
         });
         //debugger;
         return path;
     }
+    /**
+     * AtomErrors class holds all validation errors registered in view model.
+     *
+     * hasErrors() method will return true if there are any validation errors in this AtomErrors object.
+     *
+     * @export
+     * @class AtomErrors
+     */
     var AtomErrors = /** @class */ (function () {
+        /**
+         * Creates an instance of AtomErrors.
+         * @param {AtomViewModel} target
+         * @memberof AtomErrors
+         */
         function AtomErrors(target) {
             this.__target = target;
         }
+        /**
+         *
+         *
+         * @returns {boolean}
+         * @memberof AtomErrors
+         */
         AtomErrors.prototype.hasErrors = function () {
             if (this.__target) {
                 this.__target.validate();
@@ -787,6 +797,11 @@ var WebAtoms;
             }
             return false;
         };
+        /**
+         *
+         *
+         * @memberof AtomErrors
+         */
         AtomErrors.prototype.clear = function () {
             for (var k in this) {
                 if (AtomErrors.isInternal.test(k))
@@ -808,7 +823,39 @@ var WebAtoms;
         return ObjectProperty;
     }());
     WebAtoms.ObjectProperty = ObjectProperty;
+    /**
+     *
+     *
+     * @export
+     * @class AtomWatcher
+     * @implements {AtomDisposable}
+     * @template T
+     */
     var AtomWatcher = /** @class */ (function () {
+        /**
+         * Creates an instance of AtomWatcher.
+         *
+         *      var w = new AtomWatcher(this, x => x.data.fullName = `${x.data.firstName} ${x.data.lastName}`);
+         *
+         * You must dispose `w` in order to avoid memory leaks.
+         * Above method will set fullName whenver, data or its firstName,lastName property is modified.
+         *
+         * AtomWatcher will assign null if any expression results in null in single property path.
+         *
+         * In order to avoid null, you can rewrite above expression as,
+         *
+         *      var w = new AtomWatcher(this,
+         *                  x => {
+         *                      if(x.data.firstName && x.data.lastName){
+         *                        x.data.fullName = `${x.data.firstName} ${x.data.lastName}`
+         *                      }
+         *                  });
+         *
+         * @param {T} target - Target on which watch will be set to observe given set of properties
+         * @param {(string[] | ((x:T) => any))} path - Path is either lambda expression or array of property path to watch, if path was lambda, it will be executed when any of members will modify
+         * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
+         * @memberof AtomWatcher
+         */
         function AtomWatcher(target, path, forValidation) {
             this._isExecuting = false;
             this.target = target;
@@ -827,6 +874,13 @@ var WebAtoms;
                 this.evaluate();
             }
         }
+        /**
+         *
+         *
+         * @param {boolean} [force]
+         * @returns {*}
+         * @memberof AtomWatcher
+         */
         AtomWatcher.prototype.evaluate = function (force) {
             var _this = this;
             if (this._isExecuting)
@@ -878,6 +932,11 @@ var WebAtoms;
                 this._isExecuting = false;
             }
         };
+        /**
+         * This will dispose and unregister all watchers
+         *
+         * @memberof AtomWatcher
+         */
         AtomWatcher.prototype.dispose = function () {
             for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
                 var p = _a[_i];
@@ -936,9 +995,25 @@ var WebAtoms;
         };
         return DIFactory;
     }());
+    /**
+     *
+     *
+     * @export
+     * @class DI
+     */
     var DI = /** @class */ (function () {
         function DI() {
         }
+        /**
+         *
+         *
+         * @static
+         * @template T
+         * @param {new () => T} key
+         * @param {() => T} factory
+         * @param {boolean} [transient=false] - If true, always new instance will be created
+         * @memberof DI
+         */
         DI.register = function (key, factory, transient) {
             if (transient === void 0) { transient = false; }
             var k = key;
@@ -948,6 +1023,15 @@ var WebAtoms;
             }
             DI.factory[k] = new DIFactory(key, factory, transient);
         };
+        /**
+         *
+         *
+         * @static
+         * @template T
+         * @param {new () => T} c
+         * @returns {T}
+         * @memberof DI
+         */
         DI.resolve = function (c) {
             var f = DI.factory[c];
             if (!f) {
@@ -955,6 +1039,16 @@ var WebAtoms;
             }
             return f.resolve();
         };
+        /**
+         * Use this for unit testing, this will push existing
+         * DI factory and all instances will be resolved with
+         * given instance
+         *
+         * @static
+         * @param {*} key
+         * @param {*} instance
+         * @memberof DI
+         */
         DI.push = function (key, instance) {
             var f = DI.factory[key];
             if (!f) {
@@ -964,6 +1058,13 @@ var WebAtoms;
                 f.push(function () { return instance; }, true);
             }
         };
+        /**
+         *
+         *
+         * @static
+         * @param {*} key
+         * @memberof DI
+         */
         DI.pop = function (key) {
             var f = DI.factory[key];
             if (f) {
@@ -974,12 +1075,35 @@ var WebAtoms;
         return DI;
     }());
     WebAtoms.DI = DI;
+    /**
+     * This decorator will register given class as singleton instance on DI.
+     *
+     *      @DIGlobal
+     *      class BackendService{
+     *      }
+     *
+     *
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
     function DIGlobal(c) {
         DI.register(c, function () { return new c(); });
         return c;
     }
     WebAtoms.DIGlobal = DIGlobal;
     ;
+    /**
+     * This decorator will register given class as transient instance on DI.
+     *
+     *      @DIAlwaysNew
+     *      class StringHelper{
+     *      }
+     *
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
     function DIAlwaysNew(c) {
         DI.register(c, function () { return new c(); }, true);
         return c;
@@ -1044,13 +1168,129 @@ function parameterBuilder(paramName) {
         };
     };
 }
+/**
+ * This will register Url path fragment on parameter.
+ *
+ * @example
+ *
+ *      @Get("/api/products/{category}")
+ *      async getProducts(
+ *          @Path("category")  category: number
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function Path
+ * @param {name} - Name of the parameter
+ */
 var Path = parameterBuilder("Path");
+/**
+ * This will register Url query fragment on parameter.
+ *
+ * @example
+ *
+ *      @Get("/api/products")
+ *      async getProducts(
+ *          @Query("category")  category: number
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function Query
+ * @param {name} - Name of the parameter
+ */
 var Query = parameterBuilder("Query");
+/**
+ * This will register data fragment on ajax.
+ *
+ * @example
+ *
+ *      @Post("/api/products")
+ *      async getProducts(
+ *          @Query("id")  id: number,
+ *          @Body product: Product
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function Body
+ */
 var Body = parameterBuilder("Body")("");
+/**
+ * Http Post method
+ * @example
+ *
+ *      @Post("/api/products")
+ *      async saveProduct(
+ *          @Body product: Product
+ *      ): Promise<Product> {
+ *      }
+ *
+ * @export
+ * @function Post
+ * @param {url} - Url for the operation
+ */
 var Post = methodBuilder("Post");
+/**
+ * Http Get Method
+ *
+ * @example
+ *
+ *      @Get("/api/products/{category}")
+ *      async getProducts(
+ *          @Path("category") category?:string
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function Body
+ */
 var Get = methodBuilder("Get");
+/**
+ * Http Delete method
+ * @example
+ *
+ *      @Delete("/api/products")
+ *      async deleteProduct(
+ *          @Body product: Product
+ *      ): Promise<Product> {
+ *      }
+ *
+ * @export
+ * @function Delete
+ * @param {url} - Url for the operation
+ */
 var Delete = methodBuilder("Delete");
+/**
+ * Http Put method
+ * @example
+ *
+ *      @Put("/api/products")
+ *      async saveProduct(
+ *          @Body product: Product
+ *      ): Promise<Product> {
+ *      }
+ *
+ * @export
+ * @function Put
+ * @param {url} - Url for the operation
+ */
 var Put = methodBuilder("Put");
+/**
+ * Cancellation token
+ * @example
+ *
+ *      @Put("/api/products")
+ *      async saveProduct(
+ *          @Body product: Product
+ *          @Cancel cancel: CancelToken
+ *      ): Promise<Product> {
+ *      }
+ *
+ * @export
+ * @function Put
+ * @param {url} - Url for the operation
+ */
 var Cancel = function (target, propertyKey, parameterIndex) {
     if (!target.methods) {
         target.methods = {};
@@ -1107,6 +1347,14 @@ var WebAtoms;
         }());
         Rest.AjaxOptions = AjaxOptions;
         var AtomPromise = window["AtomPromise"];
+        /**
+         *
+         *
+         * @export
+         * @class CancellablePromise
+         * @implements {Promise<T>}
+         * @template T
+         */
         var CancellablePromise = /** @class */ (function () {
             function CancellablePromise(p, onCancel) {
                 this.p = p;

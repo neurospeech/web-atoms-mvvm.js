@@ -32,23 +32,44 @@ namespace WebAtoms{
         var ms = str.replace(re, m => {
             //console.log(`m: ${m}`);
             var px = m.substr(p.length + 1);
-            path.push(px);
+            if(!path.find(y => y == px)){
+                path.push(px);
+            }
             return m;
         });
         //debugger;
         return path;
     }
 
+    /**
+     * AtomErrors class holds all validation errors registered in view model.
+     * 
+     * hasErrors() method will return true if there are any validation errors in this AtomErrors object.
+     * 
+     * @export
+     * @class AtomErrors
+     */
     export class AtomErrors{
 
         private static isInternal = /^\_(\_target|\$\_)/;
         
         private __target: AtomViewModel;
 
+        /**
+         * Creates an instance of AtomErrors.
+         * @param {AtomViewModel} target 
+         * @memberof AtomErrors
+         */
         constructor(target:AtomViewModel){
             this.__target = target;
         }
 
+        /**
+         * 
+         * 
+         * @returns {boolean} 
+         * @memberof AtomErrors
+         */
         hasErrors():boolean{
 
             if(this.__target){
@@ -66,6 +87,11 @@ namespace WebAtoms{
             return false;
         }
 
+        /**
+         * 
+         * 
+         * @memberof AtomErrors
+         */
         clear(){
             for(var k in this){
                 if(AtomErrors.isInternal.test(k))
@@ -91,13 +117,36 @@ namespace WebAtoms{
 
     }
 
+    /**
+     * 
+     * 
+     * @export
+     * @class AtomWatcher
+     * @implements {AtomDisposable}
+     * @template T 
+     */
     export class AtomWatcher<T> implements AtomDisposable {
         private forValidation: boolean;
 
+        /**
+         * If path was given as an array of string property path, you can use this `func` that will be executed
+         * when any of property is updated. 
+         * 
+         * You must manually invoke evaluate after setting this property.
+         * 
+         * @memberof AtomWatcher
+         */
         func: (t:T) => any;
 
         private _isExecuting:boolean = false;
 
+        /**
+         * 
+         * 
+         * @param {boolean} [force] 
+         * @returns {*} 
+         * @memberof AtomWatcher
+         */
         evaluate(force?:boolean): any {
 
             if(this._isExecuting)
@@ -164,6 +213,30 @@ namespace WebAtoms{
 
         target: any;
 
+        /**
+         * Creates an instance of AtomWatcher.
+         * 
+         *      var w = new AtomWatcher(this, x => x.data.fullName = `${x.data.firstName} ${x.data.lastName}`);
+         * 
+         * You must dispose `w` in order to avoid memory leaks.
+         * Above method will set fullName whenver, data or its firstName,lastName property is modified.
+         * 
+         * AtomWatcher will assign null if any expression results in null in single property path.
+         * 
+         * In order to avoid null, you can rewrite above expression as,
+         * 
+         *      var w = new AtomWatcher(this, 
+         *                  x => { 
+         *                      if(x.data.firstName && x.data.lastName){
+         *                        x.data.fullName = `${x.data.firstName} ${x.data.lastName}`  
+         *                      }
+         *                  });
+         * 
+         * @param {T} target - Target on which watch will be set to observe given set of properties
+         * @param {(string[] | ((x:T) => any))} path - Path is either lambda expression or array of property path to watch, if path was lambda, it will be executed when any of members will modify
+         * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
+         * @memberof AtomWatcher
+         */
         constructor(target:T, path:string[] | ((x:T) => any) , forValidation?:boolean){
             this.target = target;
             var e:boolean = false;
@@ -184,6 +257,11 @@ namespace WebAtoms{
 
 
 
+        /**
+         * This will dispose and unregister all watchers
+         * 
+         * @memberof AtomWatcher
+         */
         dispose(){
             for(var p of this.path){
                 for(var op of p){

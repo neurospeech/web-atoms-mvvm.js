@@ -74,7 +74,7 @@ namespace WebAtoms{
         }
     };
 
-    // watch for changes...
+    
     Atom.watch = function(item:any, property:string, f: ()=>void):AtomDisposable{
         AtomBinder.add_WatchHandler(item,property,f);
         return new DisposableAction(()=>{
@@ -136,7 +136,8 @@ namespace WebAtoms{
         }
     
         /**
-         * 
+         * Device (usually browser), instance of which supports
+         * singleton instance to provide broadcast/messaging
          * 
          * @export
          * @class AtomDevice
@@ -156,6 +157,15 @@ namespace WebAtoms{
                 this.bag = {};
             }
     
+            /**
+             * This method will run any asynchronous method
+             * and it will display an error if it will fail 
+             * asynchronously
+             * 
+             * @template T 
+             * @param {() => Promise<T>} tf 
+             * @memberof AtomDevice
+             */
             public runAsync<T>(tf: () => Promise<T>) {
 
                 var task = tf();
@@ -169,41 +179,46 @@ namespace WebAtoms{
             private bag: any;
     
             /**
+             * Broadcast given data to channel, only within the current window.
              * 
-             * 
-             * @param {string} msg 
+             * @param {string} channel 
              * @param {*} data 
              * @returns 
              * @memberof AtomDevice
              */
-            public broadcast(msg: string, data: any) {
-                var ary = this.bag[msg] as AtomHandler;
+            public broadcast(channel: string, data: any) {
+                var ary = this.bag[channel] as AtomHandler;
                 if (!ary)
                     return;
                 for (let entry of ary.list) {
-                    entry.call(this, msg, data);
+                    entry.call(this, channel, data);
                 }
             }
     
             /**
+             * Subscribe for given channel with action that will be
+             * executed when anyone will broadcast (this only works within the
+             * current browser window)
              * 
+             * This method returns a disposable, when you call `.dispose()` it will
+             * unsubscribe for current subscription
              * 
-             * @param {string} msg 
+             * @param {string} channel 
              * @param {AtomAction} action 
-             * @returns {AtomDisposable} 
+             * @returns {AtomDisposable} Disposable that supports removal of subscription
              * @memberof AtomDevice
              */
-            public subscribe(msg: string, action: AtomAction): AtomDisposable {
-                var ary = this.bag[msg] as AtomHandler;
+            public subscribe(channel: string, action: AtomAction): AtomDisposable {
+                var ary = this.bag[channel] as AtomHandler;
                 if (!ary) {
-                    ary = new AtomHandler(msg);
-                    this.bag[msg] = ary;
+                    ary = new AtomHandler(channel);
+                    this.bag[channel] = ary;
                 }
                 ary.list.push(action);
                 return new DisposableAction(()=>{
                     ary.list = ary.list.filter(a=> a !== action);
                     if(!ary.list.length){
-                        this.bag[msg] = null;
+                        this.bag[channel] = null;
                     }
                 });
             }

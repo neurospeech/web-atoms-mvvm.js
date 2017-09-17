@@ -67,15 +67,140 @@ function parameterBuilder(paramName:string){
 
 declare var Atom:any;
 
+
+/**
+ * This will register Url path fragment on parameter.
+ * 
+ * @example
+ * 
+ *      @Get("/api/products/{category}")
+ *      async getProducts(
+ *          @Path("category")  category: number
+ *      ): Promise<Product[]> {
+ *      }
+ * 
+ * @export
+ * @function Path
+ * @param {name} - Name of the parameter
+ */
 var Path = parameterBuilder("Path");
+
+/**
+ * This will register Url query fragment on parameter.
+ * 
+ * @example
+ * 
+ *      @Get("/api/products")
+ *      async getProducts(
+ *          @Query("category")  category: number
+ *      ): Promise<Product[]> {
+ *      }
+ * 
+ * @export
+ * @function Query
+ * @param {name} - Name of the parameter
+ */
 var Query = parameterBuilder("Query");
+
+/**
+ * This will register data fragment on ajax.
+ * 
+ * @example
+ * 
+ *      @Post("/api/products")
+ *      async getProducts(
+ *          @Query("id")  id: number,
+ *          @Body product: Product
+ *      ): Promise<Product[]> {
+ *      }
+ * 
+ * @export
+ * @function Body
+ */
 var Body = parameterBuilder("Body")("");
 
+/**
+ * Http Post method
+ * @example
+ * 
+ *      @Post("/api/products")
+ *      async saveProduct(
+ *          @Body product: Product
+ *      ): Promise<Product> {
+ *      }
+ * 
+ * @export
+ * @function Post
+ * @param {url} - Url for the operation
+ */
 var Post = methodBuilder("Post");
+
+
+/**
+ * Http Get Method
+ * 
+ * @example
+ * 
+ *      @Get("/api/products/{category}")
+ *      async getProducts(
+ *          @Path("category") category?:string
+ *      ): Promise<Product[]> {
+ *      }
+ * 
+ * @export
+ * @function Body
+ */
 var Get = methodBuilder("Get");
+
+/**
+ * Http Delete method
+ * @example
+ * 
+ *      @Delete("/api/products")
+ *      async deleteProduct(
+ *          @Body product: Product
+ *      ): Promise<Product> {
+ *      }
+ * 
+ * @export
+ * @function Delete
+ * @param {url} - Url for the operation
+ */
 var Delete = methodBuilder("Delete");
+
+/**
+ * Http Put method
+ * @example
+ * 
+ *      @Put("/api/products")
+ *      async saveProduct(
+ *          @Body product: Product
+ *      ): Promise<Product> {
+ *      }
+ * 
+ * @export
+ * @function Put
+ * @param {url} - Url for the operation
+ */
 var Put = methodBuilder("Put");
 
+
+
+/**
+ * Cancellation token
+ * @example
+ * 
+ *      @Put("/api/products")
+ *      async saveProduct(
+ *          @Body product: Product
+ *          @Cancel cancel: CancelToken
+ *      ): Promise<Product> {
+ *      }
+ * 
+ * @export
+ * @function Put
+ * @param {url} - Url for the operation
+ */
 var Cancel = function(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number){
     if(!target.methods){
         target.methods = {};
@@ -145,6 +270,14 @@ namespace WebAtoms.Rest{
 
     var AtomPromise = window["AtomPromise"];
 
+    /**
+     * 
+     * 
+     * @export
+     * @class CancellablePromise
+     * @implements {Promise<T>}
+     * @template T 
+     */
     export class CancellablePromise<T> implements Promise<T>{
 
         [Symbol.toStringTag]: "Promise"
