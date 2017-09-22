@@ -201,6 +201,7 @@ declare namespace WebAtoms {
         private disposables;
         constructor();
         private privateInit();
+        private registerWatchers();
         private validations;
         /**
          * Internal method, do not use, instead use errors.hasErrors()
@@ -213,8 +214,8 @@ declare namespace WebAtoms {
          *
          * `target` must always be set to `this`.
          *
-         *      this.addValidation(this, x => {
-         *          x.errors.nameError = x.data.firstName ? "" : "Name cannot be empty";
+         *      this.addValidation(() => {
+         *          this.errors.nameError = this.data.firstName ? "" : "Name cannot be empty";
          *      });
          *
          * Only difference here is, validation will not kick in first time, where else watch will
@@ -226,32 +227,30 @@ declare namespace WebAtoms {
          *
          * @protected
          * @template T
-         * @param {T} target
-         * @param {(x:T) => any} ft
+         * @param {() => any} ft
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        protected addValidation<T extends AtomViewModel>(target: T, ft: (x: T) => any): AtomDisposable;
+        protected addValidation(ft: () => any): AtomDisposable;
         /**
          * Execute given expression whenever any bindable expression changes
          * in the expression.
          *
          * For correct generic type resolution, target must always be `this`.
          *
-         *      this.watch(this, x => {
-         *          if(!x.data.fullName){
-         *              x.data.fullName = `${x.data.firstName} ${x.data.lastName}`;
+         *      this.watch(() => {
+         *          if(!this.data.fullName){
+         *              this.data.fullName = `${this.data.firstName} ${this.data.lastName}`;
          *          }
          *      });
          *
          * @protected
          * @template T
-         * @param {T} target
-         * @param {(x:T) => any} ft
+         * @param {() => any} ft
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        protected watch<T extends AtomViewModel>(target: T, ft: (x: T) => any): AtomDisposable;
+        protected watch(ft: () => any): AtomDisposable;
         /**
          * Register a disposable to be disposed when view model will be disposed.
          *
@@ -347,6 +346,8 @@ declare namespace WebAtoms {
         cancel(): void;
     }
 }
+declare function watch(target: WebAtoms.AtomViewModel, key: string | symbol, descriptor: any): void;
+declare function validate(target: WebAtoms.AtomViewModel, key: string | symbol, descriptor: any): void;
 declare namespace WebAtoms {
     /**
      * AtomErrors class holds all validation errors registered in view model.

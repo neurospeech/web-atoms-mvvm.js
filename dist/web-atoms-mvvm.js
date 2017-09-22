@@ -533,13 +533,37 @@ var WebAtoms;
                         case 1:
                             // this is necessary for derived class initialization
                             _a.sent();
-                            return [4 /*yield*/, this.init()];
+                            _a.label = 2;
                         case 2:
+                            _a.trys.push([2, , 4, 5]);
+                            return [4 /*yield*/, this.init()];
+                        case 3:
                             _a.sent();
-                            return [2 /*return*/];
+                            return [3 /*break*/, 5];
+                        case 4:
+                            this.registerWatchers();
+                            return [7 /*endfinally*/];
+                        case 5: return [2 /*return*/];
                     }
                 });
             });
+        };
+        AtomViewModel.prototype.registerWatchers = function () {
+            var v = this.constructor.prototype;
+            if (v && v._$_autoWatchers) {
+                var aw = v._$_autoWatchers;
+                for (var key in aw) {
+                    if (!aw.hasOwnProperty(key))
+                        continue;
+                    var vf = aw[key];
+                    if (vf.validate) {
+                        this.addValidation(vf.method);
+                    }
+                    else {
+                        this.watch(vf.method);
+                    }
+                }
+            }
         };
         /**
          * Internal method, do not use, instead use errors.hasErrors()
@@ -557,8 +581,8 @@ var WebAtoms;
          *
          * `target` must always be set to `this`.
          *
-         *      this.addValidation(this, x => {
-         *          x.errors.nameError = x.data.firstName ? "" : "Name cannot be empty";
+         *      this.addValidation(() => {
+         *          this.errors.nameError = this.data.firstName ? "" : "Name cannot be empty";
          *      });
          *
          * Only difference here is, validation will not kick in first time, where else watch will
@@ -570,17 +594,13 @@ var WebAtoms;
          *
          * @protected
          * @template T
-         * @param {T} target
-         * @param {(x:T) => any} ft
+         * @param {() => any} ft
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        AtomViewModel.prototype.addValidation = function (target, ft) {
+        AtomViewModel.prototype.addValidation = function (ft) {
             var _this = this;
-            if (target !== this) {
-                throw new Error("watch must only be called with this");
-            }
-            var d = new WebAtoms.AtomWatcher(target, ft, true);
+            var d = new WebAtoms.AtomWatcher(this, ft, true);
             this.validations.push(d);
             this.registerDisposable(d);
             return new WebAtoms.DisposableAction(function () {
@@ -593,25 +613,21 @@ var WebAtoms;
          *
          * For correct generic type resolution, target must always be `this`.
          *
-         *      this.watch(this, x => {
-         *          if(!x.data.fullName){
-         *              x.data.fullName = `${x.data.firstName} ${x.data.lastName}`;
+         *      this.watch(() => {
+         *          if(!this.data.fullName){
+         *              this.data.fullName = `${this.data.firstName} ${this.data.lastName}`;
          *          }
          *      });
          *
          * @protected
          * @template T
-         * @param {T} target
-         * @param {(x:T) => any} ft
+         * @param {() => any} ft
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        AtomViewModel.prototype.watch = function (target, ft) {
+        AtomViewModel.prototype.watch = function (ft) {
             var _this = this;
-            if (target !== this) {
-                throw new Error("watch must only be called with this");
-            }
-            var d = new WebAtoms.AtomWatcher(target, ft);
+            var d = new WebAtoms.AtomWatcher(this, ft);
             this.registerDisposable(d);
             return new WebAtoms.DisposableAction(function () {
                 _this.disposables = _this.disposables.filter(function (f) { return f != d; });
@@ -737,6 +753,22 @@ var WebAtoms;
     }(AtomViewModel));
     WebAtoms.AtomWindowViewModel = AtomWindowViewModel;
 })(WebAtoms || (WebAtoms = {}));
+function watch(target, key, descriptor) {
+    var v = target;
+    v._$_autoWatchers = v._$_autoWatchers || {};
+    v._$_autoWatchers[key] = {
+        method: descriptor.value
+    };
+}
+function validate(target, key, descriptor) {
+    var v = target;
+    v._$_autoWatchers = v._$_autoWatchers || {};
+    v._$_autoWatchers[key] = descriptor.value;
+    v._$_autoWatchers[key] = {
+        method: descriptor.value,
+        validate: true
+    };
+}
 var WebAtoms;
 (function (WebAtoms) {
     function parsePath(f) {
@@ -751,15 +783,27 @@ var WebAtoms;
         if (str.startsWith("function(")) {
             str = str.substr("function(".length);
         }
+        str = str.trim();
         var index = str.indexOf(")");
-        var p = str.substr(0, index);
+        var isThis = index == 0;
+        var p = index == 0 ? "(\_this|this)" : str.substr(0, index);
         str = str.substr(index + 1);
         var regExp = "(?:(" + p + ")(?:.[a-zA-Z_][a-zA-Z_0-9.]*)+)";
         var re = new RegExp(regExp, "gi");
         var path = [];
         var ms = str.replace(re, function (m) {
             //console.log(`m: ${m}`);
-            var px = m.substr(p.length + 1);
+            var px = m;
+            if (px.startsWith("this.")) {
+                px = px.substr(5);
+            }
+            else if (px.startsWith("_this.")) {
+                px = px.substr(6);
+            }
+            else {
+                px = px.substr(p.length + 1);
+            }
+            //console.log(px);
             if (!path.find(function (y) { return y == px; })) {
                 path.push(px);
             }
@@ -878,6 +922,7 @@ var WebAtoms;
                 this.func = f;
             }
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
+            debugger;
             if (e) {
                 this.evaluate();
             }
@@ -910,6 +955,7 @@ var WebAtoms;
                         if (tx) {
                             if (!op.watcher) {
                                 op.watcher = Atom.watch(tx, op.name, function () {
+                                    debugger;
                                     _this.evaluate();
                                 });
                             }
