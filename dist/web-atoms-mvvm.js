@@ -519,10 +519,18 @@ var WebAtoms;
         __extends(AtomViewModel, _super);
         function AtomViewModel() {
             var _this = _super.call(this) || this;
+            _this._isReady = false;
             _this.validations = [];
             WebAtoms.AtomDevice.instance.runAsync(function () { return _this.privateInit(); });
             return _this;
         }
+        Object.defineProperty(AtomViewModel.prototype, "isReady", {
+            get: function () {
+                return this._isReady;
+            },
+            enumerable: true,
+            configurable: true
+        });
         AtomViewModel.prototype.privateInit = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -543,27 +551,38 @@ var WebAtoms;
                         case 4:
                             this.registerWatchers();
                             return [7 /*endfinally*/];
-                        case 5: return [2 /*return*/];
+                        case 5:
+                            this.onReady();
+                            return [2 /*return*/];
                     }
                 });
             });
         };
+        AtomViewModel.prototype.onReady = function () {
+        };
         AtomViewModel.prototype.registerWatchers = function () {
-            var v = this.constructor.prototype;
-            if (v && v._$_autoWatchers) {
-                var aw = v._$_autoWatchers;
-                for (var key in aw) {
-                    if (!aw.hasOwnProperty(key))
-                        continue;
-                    var vf = aw[key];
-                    if (vf.validate) {
-                        this.addValidation(vf.method);
-                    }
-                    else {
-                        this.watch(vf.method);
+            try {
+                var v = this.constructor.prototype;
+                if (v && v._$_autoWatchers) {
+                    var aw = v._$_autoWatchers;
+                    for (var key in aw) {
+                        if (!aw.hasOwnProperty(key))
+                            continue;
+                        var vf = aw[key];
+                        if (vf.validate) {
+                            this.addValidation(vf.method);
+                        }
+                        else {
+                            this.watch(vf.method);
+                        }
                     }
                 }
             }
+            catch (e) {
+                console.error("View Model watcher registration failed");
+                console.error(e);
+            }
+            this._isReady = true;
         };
         /**
          * Internal method, do not use, instead use errors.hasErrors()
@@ -786,7 +805,7 @@ var WebAtoms;
         str = str.trim();
         var index = str.indexOf(")");
         var isThis = index == 0;
-        var p = index == 0 ? "(\_this|this)" : str.substr(0, index);
+        var p = index == 0 ? "\_this|this" : str.substr(0, index);
         str = str.substr(index + 1);
         var regExp = "(?:(" + p + ")(?:.[a-zA-Z_][a-zA-Z_0-9.]*)+)";
         var re = new RegExp(regExp, "gi");
@@ -922,7 +941,6 @@ var WebAtoms;
                 this.func = f;
             }
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
-            debugger;
             if (e) {
                 this.evaluate();
             }
@@ -955,7 +973,6 @@ var WebAtoms;
                         if (tx) {
                             if (!op.watcher) {
                                 op.watcher = Atom.watch(tx, op.name, function () {
-                                    debugger;
                                     _this.evaluate();
                                 });
                             }
@@ -980,6 +997,7 @@ var WebAtoms;
                     this.func.call(this.target, this.target);
                 }
                 catch (e) {
+                    console.warn(e);
                 }
             }
             finally {

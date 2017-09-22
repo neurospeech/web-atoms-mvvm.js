@@ -199,8 +199,11 @@ declare namespace WebAtoms {
      */
     class AtomViewModel extends AtomModel {
         private disposables;
+        private _isReady;
+        readonly isReady: boolean;
         constructor();
         private privateInit();
+        protected onReady(): void;
         private registerWatchers();
         private validations;
         /**

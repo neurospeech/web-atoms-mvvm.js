@@ -14,6 +14,12 @@ namespace WebAtoms{
         
         private disposables: Array<AtomDisposable>;
 
+        private _isReady:boolean = false;
+
+        public get isReady(){
+            return this._isReady;
+        }
+
         constructor() {
             super();
 
@@ -23,29 +29,41 @@ namespace WebAtoms{
 
         private async privateInit(){
             // this is necessary for derived class initialization
+
             await Atom.delay(1);
             try{
             await this.init();
             }finally{
                 this.registerWatchers();
             }
+            this.onReady();
+        }
+
+        protected onReady(){
+
         }
 
         private registerWatchers(){
-            var v = this.constructor.prototype;
-            if(v && v._$_autoWatchers){
-                var aw = v._$_autoWatchers;
-                for(var key in aw){
-                    if(!aw.hasOwnProperty(key)) 
-                        continue;
-                    var vf = aw[key];
-                    if(vf.validate){
-                        this.addValidation(vf.method);
-                    }else{
-                        this.watch(vf.method);
+            try{
+                var v = this.constructor.prototype;
+                if(v && v._$_autoWatchers){
+                    var aw = v._$_autoWatchers;
+                    for(var key in aw){
+                        if(!aw.hasOwnProperty(key)) 
+                            continue;
+                        var vf = aw[key];
+                        if(vf.validate){
+                            this.addValidation(vf.method);
+                        }else{
+                            this.watch(vf.method);
+                        }
                     }
                 }
+            }catch(e){
+                console.error(`View Model watcher registration failed`);
+                console.error(e);
             }
+            this._isReady = true;
         }
 
         private validations:AtomWatcher<AtomViewModel>[] = [];

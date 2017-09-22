@@ -110,12 +110,6 @@ var SampleViewModel = /** @class */ (function (_super) {
         _this.data = {};
         _this.errors = new SampleViewModelErrors();
         return _this;
-        // this.watch(this, x => { 
-        //     x.errors.name = x.data.firstName ? "" : "Name cannot be empty";
-        // });
-        // this.watch(()=>{
-        //     this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
-        // });
     }
     SampleViewModel.prototype.watchName = function () {
         this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
@@ -127,7 +121,7 @@ var SampleViewModel = /** @class */ (function (_super) {
                     case 0:
                         initCalled = true;
                         this.broadcast("ui-alert", "Model is ready");
-                        return [4 /*yield*/, Atom.delay(100)];
+                        return [4 /*yield*/, Atom.delay(10)];
                     case 1:
                         _a.sent();
                         this.list.add({

@@ -26,7 +26,7 @@ namespace WebAtoms{
 
         var isThis = index == 0;
         
-        var p = index == 0 ? "(\_this|this)" : str.substr(0,index);
+        var p = index == 0 ? "\_this|this" : str.substr(0,index);
 
         str = str.substr(index+1);
 
@@ -190,7 +190,6 @@ namespace WebAtoms{
                         if(tx){
                             if(!op.watcher){
                                 op.watcher = Atom.watch(tx,op.name, ()=> {
-                                    debugger;
                                     this.evaluate();
                                 });
                             }
@@ -218,7 +217,8 @@ namespace WebAtoms{
 
                 try{
                     this.func.call(this.target,this.target);
-                }catch(e){
+                }catch(e){                    
+                    console.warn(e);
                 }
             }finally{
                 this._isExecuting = false;
@@ -266,7 +266,6 @@ namespace WebAtoms{
                 this.func = f;
             }
             this.path = path.map( x => x.split(".").map( y => new ObjectProperty(y) ) );
-            debugger;
             if(e){
                 this.evaluate();
             }
