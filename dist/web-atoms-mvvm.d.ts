@@ -405,6 +405,7 @@ declare namespace WebAtoms {
         name: string;
         watcher: AtomDisposable;
         constructor(name: string);
+        toString(): string;
     }
     /**
      *

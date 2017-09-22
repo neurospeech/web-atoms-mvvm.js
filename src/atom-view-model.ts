@@ -103,7 +103,7 @@ namespace WebAtoms{
          */
         protected addValidation(...fts:(() => any)[]): AtomDisposable{
 
-            var ds = [];
+            var ds: Array<AtomDisposable> = [];
 
             for(var ft of fts){
                 var d = new AtomWatcher<any>(this,ft, true);
@@ -113,6 +113,9 @@ namespace WebAtoms{
             }
             return new DisposableAction(()=>{
                 this.disposables = this.disposables.filter( f => !ds.find(fd => f == fd) );
+                for(var dispsoable of ds){
+                    dispsoable.dispose();
+                }
             });
         }
 
@@ -144,6 +147,9 @@ namespace WebAtoms{
             }
             return new DisposableAction(()=>{
                 this.disposables = this.disposables.filter( f => ! dfd.find(fd => f == fd) );
+                for(var disposable of dfd){
+                    disposable.dispose();
+                }
             });
         }
 

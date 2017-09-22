@@ -126,8 +126,13 @@ namespace WebAtoms{
         name: string;
         watcher: AtomDisposable;
 
+
         constructor(name:string){
             this.name = name;
+        }
+
+        toString(){
+            return this.name;
         }
 
     }
@@ -189,9 +194,12 @@ namespace WebAtoms{
                         }
                         if(tx){
                             if(!op.watcher){
-                                op.watcher = Atom.watch(tx,op.name, ()=> {
-                                    this.evaluate();
-                                });
+                                if(typeof tx == "object"){
+                                    op.watcher = Atom.watch(tx,op.name, ()=> {
+                                        //console.log(`${op.name} modified`);
+                                        this.evaluate();
+                                    });
+                                }
                             }
                         }
                     return t;

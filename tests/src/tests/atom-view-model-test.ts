@@ -54,9 +54,11 @@ class SampleViewModel extends AtomViewModel{
     }
 
     watchFullName():WebAtoms.AtomDisposable{
+        debugger;
         return this.watch(
             () => {
                 this.data.fullName = `${ this.data.firstName } ${ this.data.lastName }`.trim()
+                //console.log(this.data.fullName);
             } 
         );
     }
@@ -68,8 +70,8 @@ class AtomViewModelTest extends TestItem{
 
 
     
-    @Test("watch")
-    async watch (){
+    @Test("validation")
+    async validation (){
         var sm: SampleViewModel = new SampleViewModel();
 
         await this.delay(100);
@@ -82,11 +84,20 @@ class AtomViewModelTest extends TestItem{
         
         Assert.isTrue(sm.errors.name != "", `Error is empty ${sm.errors.name}`);
 
+    }
+
+    @Test("watch")
+    async watch (){
+        var sm: SampleViewModel = new SampleViewModel();
+
+        await this.delay(100);
 
         var fullName = "";
         Atom.set(sm,"data.lastName","");
 
         var d = sm.watchFullName();
+
+        debugger;
 
         Atom.set(sm,"data.firstName","Akash");
 

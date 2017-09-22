@@ -633,6 +633,10 @@ var WebAtoms;
             }
             return new WebAtoms.DisposableAction(function () {
                 _this.disposables = _this.disposables.filter(function (f) { return !ds.find(function (fd) { return f == fd; }); });
+                for (var _i = 0, ds_1 = ds; _i < ds_1.length; _i++) {
+                    var dispsoable = ds_1[_i];
+                    dispsoable.dispose();
+                }
             });
         };
         /**
@@ -668,6 +672,10 @@ var WebAtoms;
             }
             return new WebAtoms.DisposableAction(function () {
                 _this.disposables = _this.disposables.filter(function (f) { return !dfd.find(function (fd) { return f == fd; }); });
+                for (var _i = 0, dfd_1 = dfd; _i < dfd_1.length; _i++) {
+                    var disposable = dfd_1[_i];
+                    disposable.dispose();
+                }
             });
         };
         /**
@@ -926,6 +934,9 @@ var WebAtoms;
         function ObjectProperty(name) {
             this.name = name;
         }
+        ObjectProperty.prototype.toString = function () {
+            return this.name;
+        };
         return ObjectProperty;
     }());
     WebAtoms.ObjectProperty = ObjectProperty;
@@ -1007,9 +1018,12 @@ var WebAtoms;
                         }
                         if (tx) {
                             if (!op.watcher) {
-                                op.watcher = Atom.watch(tx, op.name, function () {
-                                    _this.evaluate();
-                                });
+                                if (typeof tx == "object") {
+                                    op.watcher = Atom.watch(tx, op.name, function () {
+                                        //console.log(`${op.name} modified`);
+                                        _this.evaluate();
+                                    });
+                                }
                             }
                         }
                         return t;
