@@ -92,13 +92,17 @@ For unit testing, please see
 
     class Task{
         id: number;
-        label:String;
+        label: string;
+        status: string;
     }
 
     class TaskViewModelErrors extends AtomErrors{
 
         @bindableProperty
         label: string;
+
+        @bindableProperty
+        status: string;
     }
 
     class TaskViewModel extends AtomViewModel{
@@ -133,9 +137,10 @@ For unit testing, please see
             // setup validation
             this.errors = new TaskViewModelErrors();
 
-            this.addValidation(this, x => {
-                x.errors.label = x.newItem.label ? "" : "Task cannot be empty";
-            });
+            this.addValidation(
+                () => this.errors.label = this.newItem.label ? "" : "Task cannot be empty",
+                () => this.errors.status = this.newItem.status ? "" : "Status cannot be empty"
+            );
         }
 
         async init():Promise<any>{
@@ -400,7 +405,9 @@ binds to `enabled` property.
         // registers watch for item
         // and it will automatically call dispose on subscription
         // when View Model will be disposed
-        watch(item:any, property:string, f:()=>void);
+        watch(...f:(()=>any)[]);
+
+        addValidation(...f:(()=>any)[]);
 
         // you can register a disposable which will
         // be disposed when View Model will be disposed by the UI service
