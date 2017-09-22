@@ -112,9 +112,7 @@ namespace WebAtoms{
                 ds.push(d);
             }
             return new DisposableAction(()=>{
-                for(var dsd of ds){
-                    this.disposables = this.disposables.filter( f => f != dsd );
-                }
+                this.disposables = this.disposables.filter( f => !ds.find(fd => f == fd) );
             });
         }
 
@@ -136,12 +134,16 @@ namespace WebAtoms{
          * @returns {AtomDisposable} 
          * @memberof AtomViewModel
          */
-        protected watch(ft:() => any): AtomDisposable{
+        protected watch(...fts:(() => any)[]): AtomDisposable{
 
-            var d = new AtomWatcher<any>(this,ft);
-            this.registerDisposable(d);
+            var dfd:AtomDisposable[] = [];
+            for(var ft of fts){
+                var d = new AtomWatcher<any>(this,ft);
+                this.registerDisposable(d);
+                dfd.push(d);
+            }
             return new DisposableAction(()=>{
-                this.disposables = this.disposables.filter( f => f != d );
+                this.disposables = this.disposables.filter( f => ! dfd.find(fd => f == fd) );
             });
         }
 
@@ -225,16 +227,33 @@ namespace WebAtoms{
      * close the window and will resolve the given result in promise. `cancel` 
      * will reject the given promise.
      * 
+     * @example
+     * 
      *      var windowService = WebAtoms.DI.resolve(WindowService);
      *      var result = await 
      *          windowService.openWindow(
      *              "Namespace.WindowName",
      *              new WindowNameViewModel());
      * 
-     * @export
-     * @class AtomWindowViewModel
-     * @extends {AtomViewModel}
-     */
+     * 
+     * 
+    *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+    * 
+    *          ....
+    *          save(){
+    * 
+    *              // close and send result
+    *              this.close(task);
+    * 
+    *          }
+    *          ....
+    * 
+    *      }
+    * 
+    * @export
+    * @class AtomWindowViewModel
+    * @extends {AtomViewModel}
+    */
     export class AtomWindowViewModel extends AtomViewModel {
 
         /**

@@ -132,6 +132,12 @@ var SampleViewModel = /** @class */ (function (_super) {
             });
         });
     };
+    SampleViewModel.prototype.watchFullName = function () {
+        var _this = this;
+        return this.watch(function () {
+            _this.data.fullName = (_this.data.firstName + " " + _this.data.lastName).trim();
+        });
+    };
     __decorate([
         bindableProperty
     ], SampleViewModel.prototype, "data", void 0);
@@ -153,7 +159,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     }
     AtomViewModelTest.prototype.watch = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var sm;
+            var sm, fullName, d;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -165,6 +171,16 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         Assert.isTrue(sm.errors.name == "", "Error is not empty " + sm.errors.name);
                         Atom.set(sm, "data.firstName", "");
                         Assert.isTrue(sm.errors.name != "", "Error is empty " + sm.errors.name);
+                        fullName = "";
+                        Atom.set(sm, "data.lastName", "");
+                        d = sm.watchFullName();
+                        Atom.set(sm, "data.firstName", "Akash");
+                        Assert.equals("Akash", sm.data.fullName);
+                        Atom.set(sm, "data.lastName", "Kava");
+                        Assert.equals("Akash Kava", sm.data.fullName);
+                        d.dispose();
+                        Atom.set(sm, "data.lastName", "Kav");
+                        Assert.equals(sm.data.fullName, "Akash Kava");
                         return [2 /*return*/];
                 }
             });

@@ -632,10 +632,7 @@ var WebAtoms;
                 ds.push(d);
             }
             return new WebAtoms.DisposableAction(function () {
-                for (var _i = 0, ds_1 = ds; _i < ds_1.length; _i++) {
-                    var dsd = ds_1[_i];
-                    _this.disposables = _this.disposables.filter(function (f) { return f != dsd; });
-                }
+                _this.disposables = _this.disposables.filter(function (f) { return !ds.find(function (fd) { return f == fd; }); });
             });
         };
         /**
@@ -656,12 +653,21 @@ var WebAtoms;
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        AtomViewModel.prototype.watch = function (ft) {
+        AtomViewModel.prototype.watch = function () {
             var _this = this;
-            var d = new WebAtoms.AtomWatcher(this, ft);
-            this.registerDisposable(d);
+            var fts = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                fts[_i] = arguments[_i];
+            }
+            var dfd = [];
+            for (var _a = 0, fts_2 = fts; _a < fts_2.length; _a++) {
+                var ft = fts_2[_a];
+                var d = new WebAtoms.AtomWatcher(this, ft);
+                this.registerDisposable(d);
+                dfd.push(d);
+            }
             return new WebAtoms.DisposableAction(function () {
-                _this.disposables = _this.disposables.filter(function (f) { return f != d; });
+                _this.disposables = _this.disposables.filter(function (f) { return !dfd.find(function (fd) { return f == fd; }); });
             });
         };
         /**
@@ -740,16 +746,33 @@ var WebAtoms;
      * close the window and will resolve the given result in promise. `cancel`
      * will reject the given promise.
      *
+     * @example
+     *
      *      var windowService = WebAtoms.DI.resolve(WindowService);
      *      var result = await
      *          windowService.openWindow(
      *              "Namespace.WindowName",
      *              new WindowNameViewModel());
      *
-     * @export
-     * @class AtomWindowViewModel
-     * @extends {AtomViewModel}
-     */
+     *
+     *
+    *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+    *
+    *          ....
+    *          save(){
+    *
+    *              // close and send result
+    *              this.close(task);
+    *
+    *          }
+    *          ....
+    *
+    *      }
+    *
+    * @export
+    * @class AtomWindowViewModel
+    * @extends {AtomViewModel}
+    */
     var AtomWindowViewModel = /** @class */ (function (_super) {
         __extends(AtomWindowViewModel, _super);
         function AtomWindowViewModel() {
@@ -1596,7 +1619,7 @@ var WebAtoms;
             this.lastWindowID = 1;
         }
         /**
-         *
+         * Display an alert, and method will continue after alert is closed.
          *
          * @param {string} msg
          * @param {string} [title]
@@ -1607,7 +1630,8 @@ var WebAtoms;
             return this.showAlert(msg, title || "Message", false);
         };
         /**
-         *
+         * Display a confirm window with promise that will resolve when yes or no
+         * is clicked.
          *
          * @param {string} msg
          * @param {string} [title]
@@ -1650,11 +1674,31 @@ var WebAtoms;
             });
         };
         /**
+         * This method will open a new window identified by name of the window or class of window.
+         * Supplied view model has to be derived from AtomWindowViewModel.
          *
+         * By default this window has a localScope, so it does not corrupt scope.
+         *
+         * @example
+         *
+         *     var result = await windowService.openWindow<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
          *
          * @template T
          * @param {(string | {new(e)})} windowType
-         * @param {*} [viewModel]
+         * @param {AtomWindowViewModel} [viewModel]
          * @returns {Promise<T>}
          * @memberof WindowService
          */
@@ -1663,9 +1707,6 @@ var WebAtoms;
                 var _this = this;
                 return __generator(this, function (_a) {
                     return [2 /*return*/, new Promise(function (resolve, reject) {
-                            // if(modal === undefined){
-                            //     modal = true;
-                            // }
                             var windowDiv = document.createElement("div");
                             windowDiv.id = "atom_window_" + _this.lastWindowID++;
                             var atomApplication = window["atomApplication"];

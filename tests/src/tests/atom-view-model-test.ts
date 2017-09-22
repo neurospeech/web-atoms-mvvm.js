@@ -52,6 +52,14 @@ class SampleViewModel extends AtomViewModel{
             name: "Sample"
         });
     }
+
+    watchFullName():WebAtoms.AtomDisposable{
+        return this.watch(
+            () => {
+                this.data.fullName = `${ this.data.firstName } ${ this.data.lastName }`.trim()
+            } 
+        );
+    }
 }
 
 @Category("AtomViewModel")
@@ -73,6 +81,27 @@ class AtomViewModelTest extends TestItem{
         Atom.set(sm,"data.firstName","");
         
         Assert.isTrue(sm.errors.name != "", `Error is empty ${sm.errors.name}`);
+
+
+        var fullName = "";
+        Atom.set(sm,"data.lastName","");
+
+        var d = sm.watchFullName();
+
+        Atom.set(sm,"data.firstName","Akash");
+
+        Assert.equals("Akash",sm.data.fullName);
+
+        Atom.set(sm,"data.lastName","Kava");
+
+        Assert.equals("Akash Kava",sm.data.fullName);
+
+        d.dispose();
+
+        Atom.set(sm,"data.lastName","Kav");
+
+        Assert.equals(sm.data.fullName,"Akash Kava");
+
         
     }
 

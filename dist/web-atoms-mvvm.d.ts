@@ -253,7 +253,7 @@ declare namespace WebAtoms {
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        protected watch(ft: () => any): AtomDisposable;
+        protected watch(...fts: (() => any)[]): AtomDisposable;
         /**
          * Register a disposable to be disposed when view model will be disposed.
          *
@@ -303,16 +303,33 @@ declare namespace WebAtoms {
      * close the window and will resolve the given result in promise. `cancel`
      * will reject the given promise.
      *
+     * @example
+     *
      *      var windowService = WebAtoms.DI.resolve(WindowService);
      *      var result = await
      *          windowService.openWindow(
      *              "Namespace.WindowName",
      *              new WindowNameViewModel());
      *
-     * @export
-     * @class AtomWindowViewModel
-     * @extends {AtomViewModel}
-     */
+     *
+     *
+    *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+    *
+    *          ....
+    *          save(){
+    *
+    *              // close and send result
+    *              this.close(task);
+    *
+    *          }
+    *          ....
+    *
+    *      }
+    *
+    * @export
+    * @class AtomWindowViewModel
+    * @extends {AtomViewModel}
+    */
     class AtomWindowViewModel extends AtomViewModel {
         /**
          * windowName will be set to generated html tag id, you can use this
@@ -737,7 +754,7 @@ declare namespace WebAtoms {
     class WindowService {
         private lastWindowID;
         /**
-         *
+         * Display an alert, and method will continue after alert is closed.
          *
          * @param {string} msg
          * @param {string} [title]
@@ -746,7 +763,8 @@ declare namespace WebAtoms {
          */
         alert(msg: string, title?: string): Promise<any>;
         /**
-         *
+         * Display a confirm window with promise that will resolve when yes or no
+         * is clicked.
          *
          * @param {string} msg
          * @param {string} [title]
@@ -756,17 +774,37 @@ declare namespace WebAtoms {
         confirm(msg: string, title?: string): Promise<boolean>;
         private showAlert(msg, title, confirm);
         /**
+         * This method will open a new window identified by name of the window or class of window.
+         * Supplied view model has to be derived from AtomWindowViewModel.
          *
+         * By default this window has a localScope, so it does not corrupt scope.
+         *
+         * @example
+         *
+         *     var result = await windowService.openWindow<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
          *
          * @template T
          * @param {(string | {new(e)})} windowType
-         * @param {*} [viewModel]
+         * @param {AtomWindowViewModel} [viewModel]
          * @returns {Promise<T>}
          * @memberof WindowService
          */
         openWindow<T>(windowType: string | {
             new (e);
-        }, viewModel?: any): Promise<T>;
+        }, viewModel?: AtomWindowViewModel): Promise<T>;
     }
 }
 declare var WindowService: typeof WebAtoms.WindowService;
