@@ -1,6 +1,7 @@
 /// <reference path="atom-device.ts"/>
 /// <reference path="atom-command.ts"/>
 
+
 namespace WebAtoms{
     /**
      * 
@@ -13,6 +14,12 @@ namespace WebAtoms{
         
         private disposables: Array<AtomDisposable>;
 
+        private _isReady:boolean = false;
+
+        public get isReady(){
+            return this._isReady;
+        }
+
         constructor() {
             super();
 
@@ -22,8 +29,41 @@ namespace WebAtoms{
 
         private async privateInit(){
             // this is necessary for derived class initialization
+
             await Atom.delay(1);
+            try{
             await this.init();
+            }finally{
+                this.registerWatchers();
+            }
+            this.onReady();
+        }
+
+        protected onReady(){
+
+        }
+
+        private registerWatchers(){
+            try{
+                var v = this.constructor.prototype;
+                if(v && v._$_autoWatchers){
+                    var aw = v._$_autoWatchers;
+                    for(var key in aw){
+                        if(!aw.hasOwnProperty(key)) 
+                            continue;
+                        var vf = aw[key];
+                        if(vf.validate){
+                            this.addValidation(vf.method);
+                        }else{
+                            this.watch(vf.method);
+                        }
+                    }
+                }
+            }catch(e){
+                console.error(`View Model watcher registration failed`);
+                console.error(e);
+            }
+            this._isReady = true;
         }
 
         private validations:AtomWatcher<AtomViewModel>[] = [];
@@ -44,8 +84,8 @@ namespace WebAtoms{
          * 
          * `target` must always be set to `this`.
          * 
-         *      this.addValidation(this, x => {
-         *          x.errors.nameError = x.data.firstName ? "" : "Name cannot be empty";
+         *      this.addValidation(() => {
+         *          this.errors.nameError = this.data.firstName ? "" : "Name cannot be empty";
          *      });
          * 
          * Only difference here is, validation will not kick in first time, where else watch will 
@@ -57,22 +97,24 @@ namespace WebAtoms{
          * 
          * @protected
          * @template T 
-         * @param {T} target 
-         * @param {(x:T) => any} ft 
+         * @param {() => any} ft 
          * @returns {AtomDisposable} 
          * @memberof AtomViewModel
          */
-        protected addValidation<T extends AtomViewModel>(target:T, ft:(x:T) => any): AtomDisposable{
+        protected addValidation(...fts:(() => any)[]): AtomDisposable{
 
-            if(target as any !== this){
-                throw new Error("watch must only be called with this");
+            var ds = [];
+
+            for(var ft of fts){
+                var d = new AtomWatcher<any>(this,ft, true);
+                this.validations.push(d);
+                this.registerDisposable(d);
+                ds.push(d);
             }
-
-            var d = new AtomWatcher<T>(target,ft, true);
-            this.validations.push(d);
-            this.registerDisposable(d);
             return new DisposableAction(()=>{
-                this.disposables = this.disposables.filter( f => f != d );
+                for(var dsd of ds){
+                    this.disposables = this.disposables.filter( f => f != dsd );
+                }
             });
         }
 
@@ -82,31 +124,27 @@ namespace WebAtoms{
          * 
          * For correct generic type resolution, target must always be `this`.
          * 
-         *      this.watch(this, x => {
-         *          if(!x.data.fullName){
-         *              x.data.fullName = `${x.data.firstName} ${x.data.lastName}`;
+         *      this.watch(() => {
+         *          if(!this.data.fullName){
+         *              this.data.fullName = `${this.data.firstName} ${this.data.lastName}`;
          *          }
          *      });
          * 
          * @protected
          * @template T 
-         * @param {T} target 
-         * @param {(x:T) => any} ft 
+         * @param {() => any} ft 
          * @returns {AtomDisposable} 
          * @memberof AtomViewModel
          */
-        protected watch<T extends AtomViewModel>(target:T, ft:(x:T) => any): AtomDisposable{
+        protected watch(ft:() => any): AtomDisposable{
 
-            if(target as any !== this){
-                throw new Error("watch must only be called with this");
-            }
-
-            var d = new AtomWatcher<T>(target,ft);
+            var d = new AtomWatcher<any>(this,ft);
             this.registerDisposable(d);
             return new DisposableAction(()=>{
                 this.disposables = this.disposables.filter( f => f != d );
             });
         }
+
 
         /**
          * Register a disposable to be disposed when view model will be disposed.
@@ -242,3 +280,26 @@ namespace WebAtoms{
     }
 
 }
+
+
+function watch(target:WebAtoms.AtomViewModel, key: string | symbol, descriptor:any){
+    var v = target as any;
+    v._$_autoWatchers = v._$_autoWatchers || {};
+    v._$_autoWatchers[key] = { 
+        method: descriptor.value 
+    };
+}
+
+    
+
+function validate(target:WebAtoms.AtomViewModel, key: string | symbol, descriptor:any){
+    var v = target as any;
+    v._$_autoWatchers = v._$_autoWatchers || {};
+    v._$_autoWatchers[key] = descriptor.value;
+    v._$_autoWatchers[key] = { 
+        method: descriptor.value ,
+        validate: true
+    };
+}
+
+    

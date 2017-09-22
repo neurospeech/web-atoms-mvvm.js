@@ -6,6 +6,8 @@ namespace WebAtoms{
         
         // remove last }
 
+        
+
         if(str.endsWith("}")){
             str = str.substr(0,str.length-1);
         }
@@ -18,8 +20,13 @@ namespace WebAtoms{
             str = str.substr("function(".length);
         }
 
+        str = str.trim();
+
         var index = str.indexOf(")");
-        var p = str.substr(0,index);
+
+        var isThis = index == 0;
+        
+        var p = index == 0 ? "\_this|this" : str.substr(0,index);
 
         str = str.substr(index+1);
 
@@ -31,7 +38,15 @@ namespace WebAtoms{
 
         var ms = str.replace(re, m => {
             //console.log(`m: ${m}`);
-            var px = m.substr(p.length + 1);
+            var px = m;
+            if(px.startsWith("this.")){
+                px = px.substr(5);
+            } else if(px.startsWith("_this.")){
+                px = px.substr(6);
+            } else {
+                px = px.substr(p.length + 1);
+            }
+            //console.log(px);
             if(!path.find(y => y == px)){
                 path.push(px);
             }
@@ -202,7 +217,8 @@ namespace WebAtoms{
 
                 try{
                     this.func.call(this.target,this.target);
-                }catch(e){
+                }catch(e){                    
+                    console.warn(e);
                 }
             }finally{
                 this._isExecuting = false;

@@ -109,11 +109,11 @@ var SampleViewModel = /** @class */ (function (_super) {
         _this.list = new WebAtoms.AtomList();
         _this.data = {};
         _this.errors = new SampleViewModelErrors();
-        _this.watch(_this, function (x) {
-            x.errors.name = x.data.firstName ? "" : "Name cannot be empty";
-        });
         return _this;
     }
+    SampleViewModel.prototype.watchName = function () {
+        this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
+    };
     SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -121,7 +121,7 @@ var SampleViewModel = /** @class */ (function (_super) {
                     case 0:
                         initCalled = true;
                         this.broadcast("ui-alert", "Model is ready");
-                        return [4 /*yield*/, Atom.delay(100)];
+                        return [4 /*yield*/, Atom.delay(10)];
                     case 1:
                         _a.sent();
                         this.list.add({
@@ -141,6 +141,9 @@ var SampleViewModel = /** @class */ (function (_super) {
     __decorate([
         bindableProperty
     ], SampleViewModel.prototype, "list", void 0);
+    __decorate([
+        watch
+    ], SampleViewModel.prototype, "watchName", null);
     return SampleViewModel;
 }(AtomViewModel));
 var AtomViewModelTest = /** @class */ (function (_super) {

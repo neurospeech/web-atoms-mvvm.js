@@ -34,11 +34,11 @@ class SampleViewModel extends AtomViewModel{
 
 
         this.errors = new SampleViewModelErrors();
+    }
 
-        this.watch(this, x => { 
-            x.errors.name = x.data.firstName ? "" : "Name cannot be empty";
-        });
-
+    @watch
+    watchName(){
+        this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
     }
 
     async init(){
@@ -46,7 +46,7 @@ class SampleViewModel extends AtomViewModel{
 
         this.broadcast("ui-alert","Model is ready");
 
-        await Atom.delay(100);
+        await Atom.delay(10);
 
         this.list.add({
             name: "Sample"
