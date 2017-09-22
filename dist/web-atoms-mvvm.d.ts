@@ -234,7 +234,7 @@ declare namespace WebAtoms {
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        protected addValidation(ft: () => any): AtomDisposable;
+        protected addValidation(...fts: (() => any)[]): AtomDisposable;
         /**
          * Execute given expression whenever any bindable expression changes
          * in the expression.

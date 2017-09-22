@@ -101,13 +101,20 @@ namespace WebAtoms{
          * @returns {AtomDisposable} 
          * @memberof AtomViewModel
          */
-        protected addValidation(ft:() => any): AtomDisposable{
+        protected addValidation(...fts:(() => any)[]): AtomDisposable{
 
-            var d = new AtomWatcher<any>(this,ft, true);
-            this.validations.push(d);
-            this.registerDisposable(d);
+            var ds = [];
+
+            for(var ft of fts){
+                var d = new AtomWatcher<any>(this,ft, true);
+                this.validations.push(d);
+                this.registerDisposable(d);
+                ds.push(d);
+            }
             return new DisposableAction(()=>{
-                this.disposables = this.disposables.filter( f => f != d );
+                for(var dsd of ds){
+                    this.disposables = this.disposables.filter( f => f != dsd );
+                }
             });
         }
 

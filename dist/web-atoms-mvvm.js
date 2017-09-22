@@ -617,13 +617,25 @@ var WebAtoms;
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        AtomViewModel.prototype.addValidation = function (ft) {
+        AtomViewModel.prototype.addValidation = function () {
             var _this = this;
-            var d = new WebAtoms.AtomWatcher(this, ft, true);
-            this.validations.push(d);
-            this.registerDisposable(d);
+            var fts = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                fts[_i] = arguments[_i];
+            }
+            var ds = [];
+            for (var _a = 0, fts_1 = fts; _a < fts_1.length; _a++) {
+                var ft = fts_1[_a];
+                var d = new WebAtoms.AtomWatcher(this, ft, true);
+                this.validations.push(d);
+                this.registerDisposable(d);
+                ds.push(d);
+            }
             return new WebAtoms.DisposableAction(function () {
-                _this.disposables = _this.disposables.filter(function (f) { return f != d; });
+                for (var _i = 0, ds_1 = ds; _i < ds_1.length; _i++) {
+                    var dsd = ds_1[_i];
+                    _this.disposables = _this.disposables.filter(function (f) { return f != dsd; });
+                }
             });
         };
         /**
