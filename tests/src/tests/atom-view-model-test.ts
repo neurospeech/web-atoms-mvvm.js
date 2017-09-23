@@ -54,7 +54,6 @@ class SampleViewModel extends AtomViewModel{
     }
 
     watchFullName():WebAtoms.AtomDisposable{
-        debugger;
         return this.watch(
             () => {
                 this.data.fullName = `${ this.data.firstName } ${ this.data.lastName }`.trim()

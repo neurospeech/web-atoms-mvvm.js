@@ -985,6 +985,7 @@ var WebAtoms;
                 path = parsePath(path);
                 e = true;
                 this.func = f;
+                this.funcText = f.toString();
             }
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
             if (e) {
@@ -1004,9 +1005,16 @@ var WebAtoms;
                 return;
             this._isExecuting = true;
             try {
-                var values = this.path.map(function (p) {
-                    var t = _this.target;
-                    return p.map(function (op) {
+                var values = [];
+                var logs = [];
+                for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
+                    var p = _a[_i];
+                    var t = this.target;
+                    var r = [];
+                    var lp = [];
+                    logs.push(lp);
+                    for (var _b = 0, p_1 = p; _b < p_1.length; _b++) {
+                        var op = p_1[_b];
                         var tx = t;
                         t = Atom.get(t, op.name);
                         if (t !== op.target) {
@@ -1019,6 +1027,7 @@ var WebAtoms;
                         if (tx) {
                             if (!op.watcher) {
                                 if (typeof tx == "object") {
+                                    lp.push(op.name);
                                     op.watcher = Atom.watch(tx, op.name, function () {
                                         //console.log(`${op.name} modified`);
                                         _this.evaluate();
@@ -1026,9 +1035,11 @@ var WebAtoms;
                                 }
                             }
                         }
-                        return t;
-                    });
-                });
+                        r.push(t);
+                    }
+                    values.push(r);
+                }
+                //console.log(`Setting watch for ${JSON.stringify(logs,undefined,2)}`);
                 values = values.map(function (op) { return op[op.length - 1]; });
                 if (force === true) {
                     this.forValidation = false;
@@ -1053,6 +1064,9 @@ var WebAtoms;
                 this._isExecuting = false;
             }
         };
+        AtomWatcher.prototype.toString = function () {
+            return this.func.toString();
+        };
         /**
          * This will dispose and unregister all watchers
          *
@@ -1061,11 +1075,12 @@ var WebAtoms;
         AtomWatcher.prototype.dispose = function () {
             for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
                 var p = _a[_i];
-                for (var _b = 0, p_1 = p; _b < p_1.length; _b++) {
-                    var op = p_1[_b];
+                for (var _b = 0, p_2 = p; _b < p_2.length; _b++) {
+                    var op = p_2[_b];
                     if (op.watcher) {
                         op.watcher.dispose();
                         op.watcher = null;
+                        op.target = null;
                     }
                 }
             }

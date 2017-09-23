@@ -427,6 +427,7 @@ declare namespace WebAtoms {
          */
         func: (t: T) => any;
         private _isExecuting;
+        funcText: string;
         /**
          *
          *
@@ -462,6 +463,7 @@ declare namespace WebAtoms {
          * @memberof AtomWatcher
          */
         constructor(target: T, path: string[] | ((x: T) => any), forValidation?: boolean);
+        toString(): string;
         /**
          * This will dispose and unregister all watchers
          *

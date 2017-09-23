@@ -134,7 +134,6 @@ var SampleViewModel = /** @class */ (function (_super) {
     };
     SampleViewModel.prototype.watchFullName = function () {
         var _this = this;
-        debugger;
         return this.watch(function () {
             _this.data.fullName = (_this.data.firstName + " " + _this.data.lastName).trim();
             //console.log(this.data.fullName);

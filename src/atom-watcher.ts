@@ -160,6 +160,8 @@ namespace WebAtoms{
 
         private _isExecuting:boolean = false;
 
+        public funcText: string;
+
         /**
          * 
          * 
@@ -176,11 +178,20 @@ namespace WebAtoms{
 
             try{
 
-                var values = this.path.map( p => {
+                var values = [];
+
+                var logs = [];
+
+                for(var p of this.path){
 
                     var t = this.target;
 
-                    return  p.map( op => {
+                    var r = [];
+
+                    var lp = [];
+                    logs.push(lp);
+
+                    for(var op of p){
 
                         var tx = t;
 
@@ -195,6 +206,7 @@ namespace WebAtoms{
                         if(tx){
                             if(!op.watcher){
                                 if(typeof tx == "object"){
+                                    lp.push(op.name);
                                     op.watcher = Atom.watch(tx,op.name, ()=> {
                                         //console.log(`${op.name} modified`);
                                         this.evaluate();
@@ -202,9 +214,14 @@ namespace WebAtoms{
                                 }
                             }
                         }
-                    return t;
-                    }) 
-                });
+
+                        r.push(t);
+                    } 
+
+                    values.push(r);
+                }
+
+                //console.log(`Setting watch for ${JSON.stringify(logs,undefined,2)}`);
 
 
 
@@ -272,11 +289,16 @@ namespace WebAtoms{
                 path = parsePath(path);
                 e = true;
                 this.func = f;
+                this.funcText = f.toString();
             }
             this.path = path.map( x => x.split(".").map( y => new ObjectProperty(y) ) );
             if(e){
                 this.evaluate();
             }
+        }
+
+        toString(){
+            return this.func.toString();
         }
 
 
@@ -292,6 +314,7 @@ namespace WebAtoms{
                     if(op.watcher){
                         op.watcher.dispose();
                         op.watcher = null;
+                        op.target = null;
                     }
                 }
             }
