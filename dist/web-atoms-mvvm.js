@@ -558,16 +558,16 @@ var WebAtoms;
                 });
             });
         };
-        AtomViewModel.prototype.onReady = function () {
-        };
+        AtomViewModel.prototype.onReady = function () { };
         AtomViewModel.prototype.registerWatchers = function () {
             try {
                 var v = this.constructor.prototype;
                 if (v && v._$_autoWatchers) {
                     var aw = v._$_autoWatchers;
                     for (var key in aw) {
-                        if (!aw.hasOwnProperty(key))
+                        if (!aw.hasOwnProperty(key)) {
                             continue;
+                        }
                         var vf = aw[key];
                         if (vf.validate) {
                             this.addValidation(vf.method);
@@ -632,7 +632,7 @@ var WebAtoms;
                 ds.push(d);
             }
             return new WebAtoms.DisposableAction(function () {
-                _this.disposables = _this.disposables.filter(function (f) { return !ds.find(function (fd) { return f == fd; }); });
+                _this.disposables = _this.disposables.filter(function (f) { return !ds.find(function (fd) { return f === fd; }); });
                 for (var _i = 0, ds_1 = ds; _i < ds_1.length; _i++) {
                     var dispsoable = ds_1[_i];
                     dispsoable.dispose();
@@ -667,11 +667,12 @@ var WebAtoms;
             for (var _a = 0, fts_2 = fts; _a < fts_2.length; _a++) {
                 var ft = fts_2[_a];
                 var d = new WebAtoms.AtomWatcher(this, ft);
+                //debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
             }
             return new WebAtoms.DisposableAction(function () {
-                _this.disposables = _this.disposables.filter(function (f) { return !dfd.find(function (fd) { return f == fd; }); });
+                _this.disposables = _this.disposables.filter(function (f) { return !dfd.find(function (fd) { return f === fd; }); });
                 for (var _i = 0, dfd_1 = dfd; _i < dfd_1.length; _i++) {
                     var disposable = dfd_1[_i];
                     disposable.dispose();
@@ -689,8 +690,7 @@ var WebAtoms;
             this.disposables = this.disposables || [];
             this.disposables.push(d);
         };
-        AtomViewModel.prototype.onPropertyChanged = function (name) {
-        };
+        AtomViewModel.prototype.onPropertyChanged = function (name) { };
         /**
          * Register listener for given message.
          *

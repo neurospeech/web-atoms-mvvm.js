@@ -158,25 +158,16 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     function AtomViewModelTest() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    AtomViewModelTest.prototype.validation = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var sm;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        sm = new SampleViewModel();
-                        return [4 /*yield*/, this.delay(100)];
-                    case 1:
-                        _a.sent();
-                        Atom.set(sm, "data.firstName", "something");
-                        Assert.isTrue(sm.errors.name == "", "Error is not empty " + sm.errors.name);
-                        Atom.set(sm, "data.firstName", "");
-                        Assert.isTrue(sm.errors.name != "", "Error is empty " + sm.errors.name);
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
+    // @Test("validation")
+    // async validation (){
+    //     var sm: SampleViewModel = new SampleViewModel();
+    //     await this.delay(100);
+    //     Atom.set(sm,"data.firstName","something");
+    //     Assert.isTrue(sm.errors.name == "", `Error is not empty ${sm.errors.name}`);
+    //     Atom.set(sm,"data.firstName","");
+    //     Assert.isTrue(sm.errors.name != "", `Error is empty ${sm.errors.name}`);
+    //     sm.dispose();
+    // }
     AtomViewModelTest.prototype.watch = function () {
         return __awaiter(this, void 0, void 0, function () {
             var sm, fullName, d;
@@ -198,6 +189,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         d.dispose();
                         Atom.set(sm, "data.lastName", "Kav");
                         Assert.equals(sm.data.fullName, "Akash Kava");
+                        sm.dispose();
                         return [2 /*return*/];
                 }
             });
@@ -274,9 +266,6 @@ var AtomViewModelTest = /** @class */ (function (_super) {
             });
         });
     };
-    __decorate([
-        Test("validation")
-    ], AtomViewModelTest.prototype, "validation", null);
     __decorate([
         Test("watch")
     ], AtomViewModelTest.prototype, "watch", null);

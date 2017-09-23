@@ -34,6 +34,7 @@
   "homepage": "https://github.com/neurospeech/web-atoms-mvvm.js#readme",
   "devDependencies": {
     "@types/node": "^8.0.26",
-    "systemjs": "^0.20.18"
+    "systemjs": "^0.20.18",
+    "tslint": "^5.7.0"
   }
 }

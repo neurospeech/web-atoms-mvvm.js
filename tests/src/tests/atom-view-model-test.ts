@@ -69,21 +69,23 @@ class AtomViewModelTest extends TestItem{
 
 
     
-    @Test("validation")
-    async validation (){
-        var sm: SampleViewModel = new SampleViewModel();
+    // @Test("validation")
+    // async validation (){
+    //     var sm: SampleViewModel = new SampleViewModel();
 
-        await this.delay(100);
+    //     await this.delay(100);
 
-        Atom.set(sm,"data.firstName","something");
+    //     Atom.set(sm,"data.firstName","something");
 
-        Assert.isTrue(sm.errors.name == "", `Error is not empty ${sm.errors.name}`);
+    //     Assert.isTrue(sm.errors.name == "", `Error is not empty ${sm.errors.name}`);
 
-        Atom.set(sm,"data.firstName","");
+    //     Atom.set(sm,"data.firstName","");
         
-        Assert.isTrue(sm.errors.name != "", `Error is empty ${sm.errors.name}`);
+    //     Assert.isTrue(sm.errors.name != "", `Error is empty ${sm.errors.name}`);
 
-    }
+    //     sm.dispose();
+
+    // }
 
     @Test("watch")
     async watch (){
@@ -111,6 +113,8 @@ class AtomViewModelTest extends TestItem{
         Atom.set(sm,"data.lastName","Kav");
 
         Assert.equals(sm.data.fullName,"Akash Kava");
+
+        sm.dispose();
 
         
     }
