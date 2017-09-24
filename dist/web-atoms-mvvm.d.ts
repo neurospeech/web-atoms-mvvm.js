@@ -109,7 +109,7 @@ declare namespace WebAtoms {
      * @interface AtomDisposable
      */
     interface AtomDisposable {
-        dispose(): any;
+        dispose(): void;
     }
     type AtomAction = (msg: string, data: any) => void;
     class AtomMessageAction {
@@ -185,7 +185,7 @@ declare namespace WebAtoms {
         addAll(items: Array<T>): void;
         insert(i: number, item: T): void;
         removeAt(i: number): void;
-        remove(item: T): void;
+        remove(item: T): boolean;
         clear(): void;
         refresh(): void;
         watch(f: () => void): AtomDisposable;
@@ -315,23 +315,23 @@ declare namespace WebAtoms {
      *
      *
      *
-    *      class NewTaskWindowViewModel extends AtomWindowViewModel{
-    *
-    *          ....
-    *          save(){
-    *
-    *              // close and send result
-    *              this.close(task);
-    *
-    *          }
-    *          ....
-    *
-    *      }
-    *
-    * @export
-    * @class AtomWindowViewModel
-    * @extends {AtomViewModel}
-    */
+     *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+     *
+     *          ....
+     *          save(){
+     *
+     *              // close and send result
+     *              this.close(task);
+     *
+     *          }
+     *          ....
+     *
+     *      }
+     *
+     * @export
+     * @class AtomWindowViewModel
+     * @extends {AtomViewModel}
+     */
     class AtomWindowViewModel extends AtomViewModel {
         /**
          * windowName will be set to generated html tag id, you can use this
@@ -761,6 +761,17 @@ declare namespace WebAtoms {
      * @class WindowService
      */
     class WindowService {
+        /**
+         * Resolves current Window Service, you can use this method
+         * to resolve service using DI, internally it calls
+         * DI.resolve(WindowService).
+         *
+         * @readonly
+         * @static
+         * @type {WindowService}
+         * @memberof WindowService
+         */
+        static readonly instance: WindowService;
         private lastWindowID;
         /**
          * Display an alert, and method will continue after alert is closed.
@@ -812,7 +823,7 @@ declare namespace WebAtoms {
          * @memberof WindowService
          */
         openWindow<T>(windowType: string | {
-            new (e);
+            new (e: any);
         }, viewModel?: AtomWindowViewModel): Promise<T>;
     }
 }

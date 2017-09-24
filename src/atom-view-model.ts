@@ -2,10 +2,10 @@
 /// <reference path="atom-command.ts"/>
 
 
-namespace WebAtoms{
+namespace WebAtoms {
     /**
-     * 
-     * 
+     *
+     *
      * @export
      * @class AtomViewModel
      * @extends {AtomModel}
@@ -39,14 +39,15 @@ namespace WebAtoms{
             this.onReady();
         }
 
+        // tslint:disable-next-line:no-empty
         protected onReady():void {}
 
         private registerWatchers():void {
-            try{
+            try {
                 var v:any = this.constructor.prototype;
-                if(v && v._$_autoWatchers){
+                if(v && v._$_autoWatchers) {
                     var aw:any = v._$_autoWatchers;
-                    for(var key in aw){
+                    for(var key in aw) {
                         if(!aw.hasOwnProperty(key)) {
                             continue;
                         }
@@ -58,7 +59,7 @@ namespace WebAtoms{
                         }
                     }
                 }
-            }catch(e){
+            }catch(e) {
                 console.error(`View Model watcher registration failed`);
                 console.error(e);
             }
@@ -69,7 +70,7 @@ namespace WebAtoms{
 
         /**
          * Internal method, do not use, instead use errors.hasErrors()
-         * 
+         *
          * @memberof AtomViewModel
          */
         validate():void {
@@ -80,27 +81,27 @@ namespace WebAtoms{
 
         /**
          * Adds validation expression to be executed when any bindable expression is updated.
-         * 
+         *
          * `target` must always be set to `this`.
-         * 
+         *
          *      this.addValidation(() => {
          *          this.errors.nameError = this.data.firstName ? "" : "Name cannot be empty";
          *      });
-         * 
-         * Only difference here is, validation will not kick in first time, where else watch will 
-         * be invoked as soon as it is setup. 
-         * 
+         *
+         * Only difference here is, validation will not kick in first time, where else watch will
+         * be invoked as soon as it is setup.
+         *
          * Validation will be invoked when any bindable property in given expression is updated.
-         * 
+         *
          * Validation can be invoked explicitly only by calling `errors.hasErrors()`.
-         * 
+         *
          * @protected
-         * @template T 
-         * @param {() => any} ft 
-         * @returns {AtomDisposable} 
+         * @template T
+         * @param {() => any} ft
+         * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        protected addValidation(...fts:(() => any)[]): AtomDisposable{
+        protected addValidation(...fts:(() => any)[]): AtomDisposable {
 
             var ds: Array<AtomDisposable> = [];
 
@@ -110,7 +111,7 @@ namespace WebAtoms{
                 this.registerDisposable(d);
                 ds.push(d);
             }
-            return new DisposableAction(()=>{
+            return new DisposableAction(()=> {
                 this.disposables = this.disposables.filter( f => !ds.find(fd => f === fd) );
                 for(var dispsoable of ds){
                     dispsoable.dispose();
@@ -121,9 +122,9 @@ namespace WebAtoms{
         /**
          * Execute given expression whenever any bindable expression changes
          * in the expression.
-         * 
+         *
          * For correct generic type resolution, target must always be `this`.
-         * 
+         *
          *      this.watch(() => {
          *          if(!this.data.fullName){
          *              this.data.fullName = `${this.data.firstName} ${this.data.lastName}`;
@@ -156,7 +157,7 @@ namespace WebAtoms{
 
         /**
          * Register a disposable to be disposed when view model will be disposed.
-         * 
+         *
          * @protected
          * @param {AtomDisposable} d
          * @memberof AtomViewModel
@@ -166,6 +167,7 @@ namespace WebAtoms{
             this.disposables.push(d);
         }
 
+        // tslint:disable-next-line:no-empty
         protected onPropertyChanged(name:string): void {}
 
         /**
@@ -199,17 +201,18 @@ namespace WebAtoms{
 
         /**
          * Put your asynchronous initializations here
-         * 
-         * @returns {Promise<any>} 
+         *
+         * @returns {Promise<any>}
          * @memberof AtomViewModel
          */
+        // tslint:disable-next-line:no-empty
         public async init(): Promise<any> {
         }
 
         /**
-         * dispose method will becalled when attached view will be disposed or 
+         * dispose method will becalled when attached view will be disposed or
          * when a new view model will be assigned to view, old view model will be disposed.
-         * 
+         *
          * @memberof AtomViewModel
          */
         public dispose():void {
@@ -223,63 +226,63 @@ namespace WebAtoms{
     }
 
 
-    
+
     /**
-     * This view model should be used with WindowService to create and open window.     
-     * 
+     * This view model should be used with WindowService to create and open window.
+     *
      * This view model has `close` and `cancel` methods. `close` method will
-     * close the window and will resolve the given result in promise. `cancel` 
+     * close the window and will resolve the given result in promise. `cancel`
      * will reject the given promise.
-     * 
+     *
      * @example
-     * 
+     *
      *      var windowService = WebAtoms.DI.resolve(WindowService);
-     *      var result = await 
+     *      var result = await
      *          windowService.openWindow(
      *              "Namespace.WindowName",
      *              new WindowNameViewModel());
-     * 
-     * 
-     * 
-    *      class NewTaskWindowViewModel extends AtomWindowViewModel{
-    * 
-    *          ....
-    *          save(){
-    * 
-    *              // close and send result
-    *              this.close(task);
-    * 
-    *          }
-    *          ....
-    * 
-    *      }
-    * 
-    * @export
-    * @class AtomWindowViewModel
-    * @extends {AtomViewModel}
-    */
+     *
+     *
+     *
+     *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+     *
+     *          ....
+     *          save(){
+     *
+     *              // close and send result
+     *              this.close(task);
+     *
+     *          }
+     *          ....
+     *
+     *      }
+     *
+     * @export
+     * @class AtomWindowViewModel
+     * @extends {AtomViewModel}
+     */
     export class AtomWindowViewModel extends AtomViewModel {
 
         /**
          * windowName will be set to generated html tag id, you can use this
          * to mock AtomWindowViewModel in testing.
-         * 
+         *
          * When window is closed or cancelled, view model only broadcasts
          * `atom-window-close:${this.windowName}`, you can listen for
          * such message.
-         * 
+         *
          * @type {string}
          * @memberof AtomWindowViewModel
          */
         windowName: string;
-        
+
         /**
          * This will broadcast `atom-window-close:windowName`.
          * WindowService will close the window on receipt of such message and
          * it will resolve the promise with given result.
-         * 
+         *
          *      this.close(someResult);
-         * 
+         *
          * @param {*} [result]
          * @memberof AtomWindowViewModel
          */
