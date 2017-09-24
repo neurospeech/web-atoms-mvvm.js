@@ -241,8 +241,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var WebAtoms;
 (function (WebAtoms) {
+    // tslint:disable-next-line
     var Atom = window["Atom"];
+    // tslint:disable-next-line
     var AtomBinder = window["AtomBinder"];
+    // tslint:disable-next-line
     var AtomPromise = window["AtomPromise"];
     /**
      * DisposableAction holds an action that
@@ -277,11 +280,14 @@ var WebAtoms;
         return DisposableAction;
     }());
     WebAtoms.DisposableAction = DisposableAction;
+    // tslint:disable-next-line
     var AtomUI = window["AtomUI"];
+    // tslint:disable-next-line
     var oldCreateControl = AtomUI.createControl;
+    // tslint:disable-next-line
     AtomUI.createControl = function (element, type, data, newScope) {
         if (type) {
-            if (type.constructor === String || (typeof type) === 'string') {
+            if (type.constructor === String || (typeof type) === "string") {
                 var t = WebAtoms[type] || Atom.get(window, type);
                 if (t) {
                     type = t;
@@ -376,6 +382,7 @@ var WebAtoms;
                 console.error(error);
                 Atom.showError(error);
             });
+            // tslint:disable-next-line
             task.then(function () { });
         };
         /**
@@ -388,8 +395,9 @@ var WebAtoms;
          */
         AtomDevice.prototype.broadcast = function (channel, data) {
             var ary = this.bag[channel];
-            if (!ary)
+            if (!ary) {
                 return;
+            }
             for (var _i = 0, _a = ary.list; _i < _a.length; _i++) {
                 var entry = _a[_i];
                 entry.call(this, channel, data);
@@ -437,7 +445,9 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
+    // tslint:disable-next-line
     var AtomBinder = window["AtomBinder"];
+    // tslint:disable-next-line
     var AtomPromise = window["AtomPromise"];
     /**
      *
@@ -451,6 +461,7 @@ var WebAtoms;
         __extends(AtomList, _super);
         function AtomList() {
             var _this = _super.call(this) || this;
+            // tslint:disable-next-line
             _this["__proto__"] = AtomList.prototype;
             return _this;
         }
@@ -483,9 +494,11 @@ var WebAtoms;
         };
         AtomList.prototype.remove = function (item) {
             var n = this.indexOf(item);
-            if (n != -1) {
+            if (n !== -1) {
                 this.removeAt(n);
+                return true;
             }
+            return false;
         };
         AtomList.prototype.clear = function () {
             this.length = 0;
@@ -560,6 +573,7 @@ var WebAtoms;
                 });
             });
         };
+        // tslint:disable-next-line:no-empty
         AtomViewModel.prototype.onReady = function () { };
         AtomViewModel.prototype.registerWatchers = function () {
             try {
@@ -692,6 +706,7 @@ var WebAtoms;
             this.disposables = this.disposables || [];
             this.disposables.push(d);
         };
+        // tslint:disable-next-line:no-empty
         AtomViewModel.prototype.onPropertyChanged = function (name) { };
         /**
          * Register listener for given message.
@@ -725,6 +740,7 @@ var WebAtoms;
          * @returns {Promise<any>}
          * @memberof AtomViewModel
          */
+        // tslint:disable-next-line:no-empty
         AtomViewModel.prototype.init = function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -766,23 +782,23 @@ var WebAtoms;
      *
      *
      *
-    *      class NewTaskWindowViewModel extends AtomWindowViewModel{
-    *
-    *          ....
-    *          save(){
-    *
-    *              // close and send result
-    *              this.close(task);
-    *
-    *          }
-    *          ....
-    *
-    *      }
-    *
-    * @export
-    * @class AtomWindowViewModel
-    * @extends {AtomViewModel}
-    */
+     *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+     *
+     *          ....
+     *          save(){
+     *
+     *              // close and send result
+     *              this.close(task);
+     *
+     *          }
+     *          ....
+     *
+     *      }
+     *
+     * @export
+     * @class AtomWindowViewModel
+     * @extends {AtomViewModel}
+     */
     var AtomWindowViewModel = /** @class */ (function (_super) {
         __extends(AtomWindowViewModel, _super);
         function AtomWindowViewModel() {
@@ -1258,12 +1274,16 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var DIGlobal = WebAtoms.DIGlobal;
 var DIAlwaysNew = WebAtoms.DIAlwaysNew;
+// tslint:disable-next-line
 function methodBuilder(method) {
+    // tslint:disable-next-line
     return function (url) {
+        // tslint:disable-next-line
         return function (target, propertyKey, descriptor) {
             target.methods = target.methods || {};
             var a = target.methods[propertyKey];
             var oldFunction = descriptor.value;
+            // tslint:disable-next-line:typedef
             descriptor.value = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
@@ -1283,12 +1303,14 @@ function methodBuilder(method) {
                 var r = this.invoke(url, method, a, args, rn);
                 return r;
             };
-            //console.log("methodBuilder called");
-            //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
+            // console.log("methodBuilder called");
+            // console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
         };
     };
 }
+// tslint:disable-next-line
 function Return(type) {
+    // tslint:disable-next-line
     return function (target, propertyKey, descriptor) {
         if (!target.methodReturns) {
             target.methodReturns = {};
@@ -1296,13 +1318,16 @@ function Return(type) {
         target.methodReturns[propertyKey] = type;
     };
 }
+// tslint:disable-next-line
 function parameterBuilder(paramName) {
+    // tslint:disable-next-line
     return function (key) {
-        //console.log("Declaration");
-        //console.log({ key:key});
+        // console.log("Declaration");
+        // console.log({ key:key});
+        // tslint:disable-next-line
         return function (target, propertyKey, parameterIndex) {
-            //console.log("Instance");
-            //console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
+            // console.log("Instance");
+            // console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
             target.methods = target.methods || {};
             var a = target.methods[propertyKey];
             if (!a) {
@@ -1656,6 +1681,24 @@ var WebAtoms;
         function WindowService() {
             this.lastWindowID = 1;
         }
+        WindowService_1 = WindowService;
+        Object.defineProperty(WindowService, "instance", {
+            /**
+             * Resolves current Window Service, you can use this method
+             * to resolve service using DI, internally it calls
+             * DI.resolve(WindowService).
+             *
+             * @readonly
+             * @static
+             * @type {WindowService}
+             * @memberof WindowService
+             */
+            get: function () {
+                return WebAtoms.DI.resolve(WindowService_1);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Display an alert, and method will continue after alert is closed.
          *
@@ -1681,7 +1724,9 @@ var WebAtoms;
         };
         WindowService.prototype.showAlert = function (msg, title, confirm) {
             return new Promise(function (resolve, reject) {
+                // tslint:disable-next-line:no-string-literal
                 var AtomUI = window["AtomUI"];
+                // tslint:disable-next-line:no-string-literal
                 var AtomWindow = window["WebAtoms"]["AtomWindow"];
                 var d = { Message: msg, ConfirmValue: false, Confirm: confirm };
                 var e = document.createElement("DIV");
@@ -1693,7 +1738,7 @@ var WebAtoms;
                 w.set_title(title);
                 w.set_next(function () {
                     w.dispose();
-                    //$(e).remove();
+                    // $(e).remove();
                     e.remove();
                     if (d.ConfirmValue) {
                         resolve(true);
@@ -1704,7 +1749,7 @@ var WebAtoms;
                 });
                 w.set_cancelNext(function () {
                     w.dispose();
-                    //$(e).remove();
+                    // $(e).remove();
                     e.remove();
                     resolve(false);
                 });
@@ -1747,7 +1792,9 @@ var WebAtoms;
                     return [2 /*return*/, new Promise(function (resolve, reject) {
                             var windowDiv = document.createElement("div");
                             windowDiv.id = "atom_window_" + _this.lastWindowID++;
+                            // tslint:disable-next-line:no-string-literal
                             var atomApplication = window["atomApplication"];
+                            // tslint:disable-next-line:no-string-literal
                             var AtomUI = window["AtomUI"];
                             atomApplication._element.appendChild(windowDiv);
                             if (windowType instanceof String) {
@@ -1765,6 +1812,7 @@ var WebAtoms;
                             });
                             windowDiv.setAttribute("atom-local-scope", "true");
                             windowCtrl.init();
+                            // tslint:disable-next-line:no-string-literal
                             var dispatcher = WebAtoms["dispatcher"];
                             if (viewModel !== undefined) {
                                 Atom.set(windowCtrl, "viewModel", viewModel);
@@ -1809,12 +1857,14 @@ var WebAtoms;
                 });
             });
         };
-        WindowService = __decorate([
+        WindowService = WindowService_1 = __decorate([
             WebAtoms.DIGlobal
         ], WindowService);
         return WindowService;
+        var WindowService_1;
     }());
     WebAtoms.WindowService = WindowService;
 })(WebAtoms || (WebAtoms = {}));
+// tslint:disable-next-line:typedef
 var WindowService = WebAtoms.WindowService;
 //# sourceMappingURL=web-atoms-mvvm.js.map
