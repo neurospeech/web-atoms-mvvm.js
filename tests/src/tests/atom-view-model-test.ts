@@ -1,3 +1,5 @@
+// tslint:disable
+
 var AtomViewModel = WebAtoms.AtomViewModel;
 var Category = WebAtoms.Unit.Category;
 var Test = WebAtoms.Unit.Test;
@@ -27,7 +29,7 @@ class SampleViewModel extends AtomViewModel{
 
     @bindableProperty
     public list:WebAtoms.AtomList<any> = new WebAtoms.AtomList();
- 
+
     constructor(){
         super();
         this.data = {};
@@ -56,9 +58,9 @@ class SampleViewModel extends AtomViewModel{
     watchFullName():WebAtoms.AtomDisposable{
         return this.watch(
             () => {
-                this.data.fullName = `${ this.data.firstName } ${ this.data.lastName }`.trim()
-                //console.log(this.data.fullName);
-            } 
+                this.data.fullName = `${ this.data.firstName } ${ this.data.lastName }`.trim();
+                // console.log(this.data.fullName);
+            }
         );
     }
 }
@@ -68,27 +70,27 @@ class AtomViewModelTest extends TestItem{
 
 
 
-    
-    // @Test("validation")
-    // async validation (){
-    //     var sm: SampleViewModel = new SampleViewModel();
+  
+    @Test("validation")
+    async validation (){
+        var sm: SampleViewModel = new SampleViewModel();
 
-    //     await this.delay(100);
+        await this.delay(100);
 
-    //     Atom.set(sm,"data.firstName","something");
+        Atom.set(sm,"data.firstName","something");
 
-    //     Assert.isTrue(sm.errors.name == "", `Error is not empty ${sm.errors.name}`);
+        Assert.isTrue(sm.errors.name == "", `Error is not empty ${sm.errors.name}`);
 
-    //     Atom.set(sm,"data.firstName","");
-        
-    //     Assert.isTrue(sm.errors.name != "", `Error is empty ${sm.errors.name}`);
+        Atom.set(sm,"data.firstName","");
+      
+        Assert.isTrue(sm.errors.name != "", `Error is empty ${sm.errors.name}`);
 
-    //     sm.dispose();
+        sm.dispose();
 
-    // }
+    }
 
     @Test("watch")
-    async watch (){
+    async watch () {
         var sm: SampleViewModel = new SampleViewModel();
 
         await this.delay(100);
@@ -116,7 +118,7 @@ class AtomViewModelTest extends TestItem{
 
         sm.dispose();
 
-        
+      
     }
 
 
@@ -164,7 +166,7 @@ class AtomViewModelTest extends TestItem{
         Assert.equals(msg.data,"Model is ready");
 
         subscription.dispose();
-        
+      
     }
 
     @Test("Atom List")

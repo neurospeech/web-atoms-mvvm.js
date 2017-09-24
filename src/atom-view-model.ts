@@ -33,7 +33,7 @@ namespace WebAtoms{
             await Atom.delay(1);
             try {
             await this.init();
-            }finally{
+            }finally {
                 this.registerWatchers();
             }
             this.onReady();
@@ -51,9 +51,9 @@ namespace WebAtoms{
                             continue;
                         }
                         var vf:any = aw[key];
-                        if(vf.validate){
+                        if(vf.validate) {
                             this.addValidation(vf.method);
-                        }else{
+                        }else {
                             this.watch(vf.method);
                         }
                     }
@@ -129,23 +129,23 @@ namespace WebAtoms{
          *              this.data.fullName = `${this.data.firstName} ${this.data.lastName}`;
          *          }
          *      });
-         * 
+         *
          * @protected
-         * @template T 
-         * @param {() => any} ft 
-         * @returns {AtomDisposable} 
+         * @template T
+         * @param {() => any} ft
+         * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        protected watch(...fts:(() => any)[]): AtomDisposable{
+        protected watch(...fts:(() => any)[]): AtomDisposable {
 
             var dfd:AtomDisposable[] = [];
             for(var ft of fts){
                 var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft);
-                //debugger;
+                // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
             }
-            return new DisposableAction(()=>{
+            return new DisposableAction(()=> {
                 this.disposables = this.disposables.filter( f => ! dfd.find(fd => f === fd) );
                 for(var disposable of dfd){
                     disposable.dispose();
@@ -158,7 +158,7 @@ namespace WebAtoms{
          * Register a disposable to be disposed when view model will be disposed.
          * 
          * @protected
-         * @param {AtomDisposable} d 
+         * @param {AtomDisposable} d
          * @memberof AtomViewModel
          */
         protected registerDisposable(d:AtomDisposable):void {
@@ -170,11 +170,11 @@ namespace WebAtoms{
 
         /**
          * Register listener for given message.
-         * 
+         *
          * @protected
-         * @template T 
-         * @param {string} msg 
-         * @param {(data: T) => void} a 
+         * @template T
+         * @param {string} msg
+         * @param {(data: T) => void} a
          * @memberof AtomViewModel
          */
         protected onMessage<T>(msg: string, a: (data: T) => void):void {

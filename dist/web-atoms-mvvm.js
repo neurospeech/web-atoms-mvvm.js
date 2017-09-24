@@ -8,6 +8,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+// tslint:disable-next-line:no-string-literal
+var Atom = window["Atom"];
+// tslint:disable-next-line:no-string-literal
+var AtomBinder = window["AtomBinder"];
 /**
  * This decorator will mark given property as bindable, it will define
  * getter and setter, and in the setter, it will refresh the property.
@@ -23,30 +27,29 @@ var __extends = (this && this.__extends) || (function () {
  * @param {string} key
  */
 function bindableProperty(target, key) {
-    var Atom = window["Atom"];
     // property value
     var _val = this[key];
     var keyName = "_" + key;
     this[keyName] = _val;
-    //debugger;
+    // debugger
     // property getter
     var getter = function () {
-        //console.log(`Get: ${key} => ${_val}`);
+        // console.log(`Get: ${key} => ${_val}`);
         return this[keyName];
     };
     // property setter
     var setter = function (newVal) {
-        //console.log(`Set: ${key} => ${newVal}`);
-        //debugger;
+        // console.log(`Set: ${key} => ${newVal}`);
+        // debugger;
         this[keyName] = newVal;
         Atom.refresh(this, key);
         if (this.onPropertyChanged) {
             this.onPropertyChanged(key);
         }
     };
-    // Delete property.
+    // delete property
     if (delete this[key]) {
-        // Create new property with getter and setter
+        // create new property with getter and setter
         Object.defineProperty(target, key, {
             get: getter,
             set: setter,
@@ -57,7 +60,6 @@ function bindableProperty(target, key) {
 }
 var WebAtoms;
 (function (WebAtoms) {
-    var Atom = window["Atom"];
     /**
      *
      *
@@ -130,7 +132,6 @@ var WebAtoms;
             _this._enabled = true;
             _this._busy = false;
             _this.action = action;
-            var self = _this;
             _this.execute = function (p) {
                 if (_this.enabled) {
                     _this.executeAction(p);
@@ -174,15 +175,16 @@ var WebAtoms;
         });
         AtomCommand.prototype.executeAction = function (p) {
             var _this = this;
-            if (this._busy)
+            if (this._busy) {
                 return;
+            }
             this.busy = true;
             var result = this.action(p);
             if (result) {
                 if (result.catch) {
                     result.catch(function (error) {
                         _this.busy = false;
-                        if (error !== 'cancelled') {
+                        if (error !== "cancelled") {
                             console.error(error);
                             Atom.showError(error);
                         }
@@ -667,7 +669,7 @@ var WebAtoms;
             for (var _a = 0, fts_2 = fts; _a < fts_2.length; _a++) {
                 var ft = fts_2[_a];
                 var d = new WebAtoms.AtomWatcher(this, ft);
-                //debugger;
+                // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
             }
@@ -847,14 +849,14 @@ var WebAtoms;
         }
         str = str.trim();
         var index = str.indexOf(")");
-        var isThis = index == 0;
-        var p = index == 0 ? "\_this|this" : str.substr(0, index);
+        var isThis = index === 0;
+        var p = isThis ? "\_this|this" : str.substr(0, index);
         str = str.substr(index + 1);
         var regExp = "(?:(" + p + ")(?:.[a-zA-Z_][a-zA-Z_0-9.]*)+)";
         var re = new RegExp(regExp, "gi");
         var path = [];
         var ms = str.replace(re, function (m) {
-            //console.log(`m: ${m}`);
+            // console.log(`m: ${m}`);
             var px = m;
             if (px.startsWith("this.")) {
                 px = px.substr(5);
@@ -865,13 +867,13 @@ var WebAtoms;
             else {
                 px = px.substr(p.length + 1);
             }
-            //console.log(px);
-            if (!path.find(function (y) { return y == px; })) {
+            // console.log(px);
+            if (!path.find(function (y) { return y === px; })) {
                 path.push(px);
             }
             return m;
         });
-        //debugger;
+        // debugger;
         return path;
     }
     /**
@@ -902,11 +904,13 @@ var WebAtoms;
                 this.__target.validate();
             }
             for (var k in this) {
-                if (AtomErrors.isInternal.test(k))
+                if (AtomErrors.isInternal.test(k)) {
                     continue;
+                }
                 if (this.hasOwnProperty(k)) {
-                    if (this[k])
+                    if (this[k]) {
                         return true;
+                    }
                 }
             }
             return false;
@@ -918,8 +922,9 @@ var WebAtoms;
          */
         AtomErrors.prototype.clear = function () {
             for (var k in this) {
-                if (AtomErrors.isInternal.test(k))
+                if (AtomErrors.isInternal.test(k)) {
                     continue;
+                }
                 if (this.hasOwnProperty(k)) {
                     this[k] = null;
                     Atom.refresh(this, k);
@@ -969,11 +974,14 @@ var WebAtoms;
          *                  });
          *
          * @param {T} target - Target on which watch will be set to observe given set of properties
-         * @param {(string[] | ((x:T) => any))} path - Path is either lambda expression or array of property path to watch, if path was lambda, it will be executed when any of members will modify
+         * @param {(string[] | ((x:T) => any))} path - Path is either lambda expression or array of
+         *                      property path to watch, if path was lambda, it will be executed when any of
+         *                      members will modify
          * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
          * @memberof AtomWatcher
          */
         function AtomWatcher(target, path, forValidation) {
+            var _this = this;
             this._isExecuting = false;
             this.target = target;
             var e = false;
@@ -987,11 +995,37 @@ var WebAtoms;
                 this.func = f;
                 this.funcText = f.toString();
             }
+            this.runEvaluate = function () {
+                _this.evaluate();
+            };
+            this.runEvaluate.watcher = this;
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
             if (e) {
                 this.evaluate();
             }
         }
+        AtomWatcher.prototype.evaluatePath = function (target, path) {
+            var newTarget = null;
+            for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
+                var p = path_1[_i];
+                newTarget = AtomBinder.getValue(target, p.name);
+                if (!p.target) {
+                    p.watcher = Atom.watch(target, p.name, this.runEvaluate);
+                }
+                else if (p.target !== target) {
+                    if (p.watcher) {
+                        p.watcher.dispose();
+                    }
+                    p.watcher = Atom.watch(target, p.name, this.runEvaluate);
+                }
+                p.target = target;
+                target = newTarget;
+                if (newTarget === undefined || newTarget === null) {
+                    break;
+                }
+            }
+            return newTarget;
+        };
         /**
          *
          *
@@ -1000,47 +1034,18 @@ var WebAtoms;
          * @memberof AtomWatcher
          */
         AtomWatcher.prototype.evaluate = function (force) {
-            var _this = this;
-            if (this._isExecuting)
+            if (this._isExecuting) {
                 return;
+            }
+            var disposeWatchers = [];
             this._isExecuting = true;
             try {
                 var values = [];
                 var logs = [];
                 for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
                     var p = _a[_i];
-                    var t = this.target;
-                    var r = [];
-                    var lp = [];
-                    logs.push(lp);
-                    for (var _b = 0, p_1 = p; _b < p_1.length; _b++) {
-                        var op = p_1[_b];
-                        var tx = t;
-                        t = Atom.get(t, op.name);
-                        if (t !== op.target) {
-                            if (op.watcher) {
-                                op.watcher.dispose();
-                                op.watcher = null;
-                            }
-                            op.target = t;
-                        }
-                        if (tx) {
-                            if (!op.watcher) {
-                                if (typeof tx == "object") {
-                                    lp.push(op.name);
-                                    op.watcher = Atom.watch(tx, op.name, function () {
-                                        //console.log(`${op.name} modified`);
-                                        _this.evaluate();
-                                    });
-                                }
-                            }
-                        }
-                        r.push(t);
-                    }
-                    values.push(r);
+                    values.push(this.evaluatePath(this.target, p));
                 }
-                //console.log(`Setting watch for ${JSON.stringify(logs,undefined,2)}`);
-                values = values.map(function (op) { return op[op.length - 1]; });
                 if (force === true) {
                     this.forValidation = false;
                 }
@@ -1062,6 +1067,10 @@ var WebAtoms;
             }
             finally {
                 this._isExecuting = false;
+                for (var _b = 0, disposeWatchers_1 = disposeWatchers; _b < disposeWatchers_1.length; _b++) {
+                    var d = disposeWatchers_1[_b];
+                    d.dispose();
+                }
             }
         };
         AtomWatcher.prototype.toString = function () {
@@ -1075,8 +1084,8 @@ var WebAtoms;
         AtomWatcher.prototype.dispose = function () {
             for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
                 var p = _a[_i];
-                for (var _b = 0, p_2 = p; _b < p_2.length; _b++) {
-                    var op = p_2[_b];
+                for (var _b = 0, p_1 = p; _b < p_1.length; _b++) {
+                    var op = p_1[_b];
                     if (op.watcher) {
                         op.watcher.dispose();
                         op.watcher = null;

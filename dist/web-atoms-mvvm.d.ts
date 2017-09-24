@@ -1,3 +1,5 @@
+declare var Atom: any;
+declare var AtomBinder: any;
 /**
  * This decorator will mark given property as bindable, it will define
  * getter and setter, and in the setter, it will refresh the property.
@@ -428,6 +430,7 @@ declare namespace WebAtoms {
         func: (t: T) => any;
         private _isExecuting;
         funcText: string;
+        private evaluatePath(target, path);
         /**
          *
          *
@@ -458,11 +461,14 @@ declare namespace WebAtoms {
          *                  });
          *
          * @param {T} target - Target on which watch will be set to observe given set of properties
-         * @param {(string[] | ((x:T) => any))} path - Path is either lambda expression or array of property path to watch, if path was lambda, it will be executed when any of members will modify
+         * @param {(string[] | ((x:T) => any))} path - Path is either lambda expression or array of
+         *                      property path to watch, if path was lambda, it will be executed when any of
+         *                      members will modify
          * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
          * @memberof AtomWatcher
          */
-        constructor(target: T, path: string[] | ((x: T) => any), forValidation?: boolean);
+        constructor(target: T, path: string[] | (() => any), forValidation?: boolean);
+        runEvaluate: () => any;
         toString(): string;
         /**
          * This will dispose and unregister all watchers
