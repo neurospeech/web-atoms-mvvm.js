@@ -1274,12 +1274,16 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var DIGlobal = WebAtoms.DIGlobal;
 var DIAlwaysNew = WebAtoms.DIAlwaysNew;
+// tslint:disable-next-line
 function methodBuilder(method) {
+    // tslint:disable-next-line
     return function (url) {
+        // tslint:disable-next-line
         return function (target, propertyKey, descriptor) {
             target.methods = target.methods || {};
             var a = target.methods[propertyKey];
             var oldFunction = descriptor.value;
+            // tslint:disable-next-line:typedef
             descriptor.value = function () {
                 var args = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
@@ -1299,12 +1303,14 @@ function methodBuilder(method) {
                 var r = this.invoke(url, method, a, args, rn);
                 return r;
             };
-            //console.log("methodBuilder called");
-            //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
+            // console.log("methodBuilder called");
+            // console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
         };
     };
 }
+// tslint:disable-next-line
 function Return(type) {
+    // tslint:disable-next-line
     return function (target, propertyKey, descriptor) {
         if (!target.methodReturns) {
             target.methodReturns = {};
@@ -1312,13 +1318,16 @@ function Return(type) {
         target.methodReturns[propertyKey] = type;
     };
 }
+// tslint:disable-next-line
 function parameterBuilder(paramName) {
+    // tslint:disable-next-line
     return function (key) {
-        //console.log("Declaration");
-        //console.log({ key:key});
+        // console.log("Declaration");
+        // console.log({ key:key});
+        // tslint:disable-next-line
         return function (target, propertyKey, parameterIndex) {
-            //console.log("Instance");
-            //console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
+            // console.log("Instance");
+            // console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
             target.methods = target.methods || {};
             var a = target.methods[propertyKey];
             if (!a) {

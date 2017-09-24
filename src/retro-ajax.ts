@@ -1,40 +1,46 @@
-function methodBuilder(method:string){
+// tslint:disable-next-line
+function methodBuilder(method:string) {
+    // tslint:disable-next-line
     return function(url:string){
+        // tslint:disable-next-line
         return function(target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any){
 
             target.methods = target.methods || {};
-            
-            var a = target.methods[propertyKey] as Array<WebAtoms.Rest.ServiceParameter>;
 
-            var oldFunction = descriptor.value;
+            var a:any = target.methods[propertyKey] as Array<WebAtoms.Rest.ServiceParameter>;
 
+            var oldFunction:any = descriptor.value;
+
+            // tslint:disable-next-line:typedef
             descriptor.value = function(... args:any[]){
 
                 if(this.testMode || Atom.designMode ){
 
                     console.log(`Test\Design Mode: ${url} .. ${args.join(",")}`);
 
-                    var ro = oldFunction.apply(this, args);
-                    if(ro){
+                    var ro:any = oldFunction.apply(this, args);
+                    if(ro) {
                         return ro;
                     }
                 }
 
-                var rn = null;
+                var rn:any = null;
                 if(target.methodReturns){
                     rn = target.methodReturns[propertyKey];
-                }                
-                var r = this.invoke(url, method ,a, args,rn);
+                }
+                var r:any = this.invoke(url, method ,a, args,rn);
                 return r;
             };
 
-            //console.log("methodBuilder called");
-            //console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
+            // console.log("methodBuilder called");
+            // console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
         }
     }
 }
 
-function Return(type: {new()}){
+// tslint:disable-next-line
+function Return(type: {new()}) {
+    // tslint:disable-next-line
     return function(target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any){
         if(!target.methodReturns){
             target.methodReturns = {};
@@ -43,18 +49,22 @@ function Return(type: {new()}){
     }
 }
 
+// tslint:disable-next-line
 function parameterBuilder(paramName:string){
+
+    // tslint:disable-next-line
     return function(key:string){
-        //console.log("Declaration");
-        //console.log({ key:key});
+        // console.log("Declaration");
+        // console.log({ key:key});
+        // tslint:disable-next-line
         return function(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number){
-            //console.log("Instance");
-            //console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
+            // console.log("Instance");
+            // console.log({ key:key, propertyKey: propertyKey,parameterIndex: parameterIndex });
 
             target.methods = target.methods || {};
 
-            var a = target.methods[propertyKey];
-            if(!a){
+            var a:any = target.methods[propertyKey];
+            if(!a) {
                 a = [];
                 target.methods[propertyKey] = a;
             }
@@ -70,15 +80,15 @@ declare var Atom:any;
 
 /**
  * This will register Url path fragment on parameter.
- * 
+ *
  * @example
- * 
+ *
  *      @Get("/api/products/{category}")
  *      async getProducts(
  *          @Path("category")  category: number
  *      ): Promise<Product[]> {
  *      }
- * 
+ *
  * @export
  * @function Path
  * @param {name} - Name of the parameter
@@ -87,15 +97,15 @@ var Path = parameterBuilder("Path");
 
 /**
  * This will register Url query fragment on parameter.
- * 
+ *
  * @example
- * 
+ *
  *      @Get("/api/products")
  *      async getProducts(
  *          @Query("category")  category: number
  *      ): Promise<Product[]> {
  *      }
- * 
+ *
  * @export
  * @function Query
  * @param {name} - Name of the parameter
@@ -104,16 +114,16 @@ var Query = parameterBuilder("Query");
 
 /**
  * This will register data fragment on ajax.
- * 
+ *
  * @example
- * 
+ *
  *      @Post("/api/products")
  *      async getProducts(
  *          @Query("id")  id: number,
  *          @Body product: Product
  *      ): Promise<Product[]> {
  *      }
- * 
+ *
  * @export
  * @function Body
  */
@@ -122,13 +132,13 @@ var Body = parameterBuilder("Body")("");
 /**
  * Http Post method
  * @example
- * 
+ *
  *      @Post("/api/products")
  *      async saveProduct(
  *          @Body product: Product
  *      ): Promise<Product> {
  *      }
- * 
+ *
  * @export
  * @function Post
  * @param {url} - Url for the operation
@@ -138,15 +148,15 @@ var Post = methodBuilder("Post");
 
 /**
  * Http Get Method
- * 
+ *
  * @example
- * 
+ *
  *      @Get("/api/products/{category}")
  *      async getProducts(
  *          @Path("category") category?:string
  *      ): Promise<Product[]> {
  *      }
- * 
+ *
  * @export
  * @function Body
  */
@@ -155,13 +165,13 @@ var Get = methodBuilder("Get");
 /**
  * Http Delete method
  * @example
- * 
+ *
  *      @Delete("/api/products")
  *      async deleteProduct(
  *          @Body product: Product
  *      ): Promise<Product> {
  *      }
- * 
+ *
  * @export
  * @function Delete
  * @param {url} - Url for the operation
@@ -171,13 +181,13 @@ var Delete = methodBuilder("Delete");
 /**
  * Http Put method
  * @example
- * 
+ *
  *      @Put("/api/products")
  *      async saveProduct(
  *          @Body product: Product
  *      ): Promise<Product> {
  *      }
- * 
+ *
  * @export
  * @function Put
  * @param {url} - Url for the operation
@@ -188,13 +198,13 @@ var Put = methodBuilder("Put");
 /**
  * Http Patch method
  * @example
- * 
+ *
  *      @Patch("/api/products")
  *      async saveProduct(
  *          @Body product: any
  *      ): Promise<Product> {
  *      }
- * 
+ *
  * @export
  * @function Patch
  * @param {url} - Url for the operation
@@ -204,14 +214,14 @@ var Patch = methodBuilder("Patch");
 /**
  * Cancellation token
  * @example
- * 
+ *
  *      @Put("/api/products")
  *      async saveProduct(
  *          @Body product: Product
  *          @Cancel cancel: CancelToken
  *      ): Promise<Product> {
  *      }
- * 
+ *
  * @export
  * @function Put
  * @param {url} - Url for the operation
@@ -286,12 +296,12 @@ namespace WebAtoms.Rest{
     var AtomPromise = window["AtomPromise"];
 
     /**
-     * 
-     * 
+     *
+     *
      * @export
      * @class CancellablePromise
      * @implements {Promise<T>}
-     * @template T 
+     * @template T
      */
     export class CancellablePromise<T> implements Promise<T>{
 
@@ -319,8 +329,8 @@ namespace WebAtoms.Rest{
     }
 
     /**
-     * 
-     * 
+     *
+     *
      * @export
      * @class BaseService
      */
@@ -330,7 +340,7 @@ namespace WebAtoms.Rest{
         public testMode: boolean  = false;
 
         public showProgress: boolean = true;
-        
+
         public showError: boolean = true;
 
         //bs
@@ -360,7 +370,7 @@ namespace WebAtoms.Rest{
 
         async invoke(
             url:string,
-            method:string, 
+            method:string,
             bag:Array<ServiceParameter>,
             values:Array<any>, returns: {new ()}):Promise<any>{
 
@@ -374,7 +384,7 @@ namespace WebAtoms.Rest{
                         case 'path':
                             url = url.replace(`{${p.key}}`,encodeURIComponent(v));
                         break;
-                        case 'query': 
+                        case 'query':
                             if(url.indexOf('?')===-1){
                                 url += "?";
                             }
@@ -390,7 +400,7 @@ namespace WebAtoms.Rest{
                     }
                 }
             }
-            options.url = url;            
+            options.url = url;
 
             var pr = AtomPromise.json(url,null,options);
 
@@ -423,10 +433,10 @@ namespace WebAtoms.Rest{
                     reject(pr.error.msg);
                 });
 
-                
+
                 pr.showError(this.showError);
                 pr.showProgress(this.showProgress);
-                pr.invoke("Ok");                 
+                pr.invoke("Ok");
             });
 
             return new CancellablePromise(rp, ()=>{
