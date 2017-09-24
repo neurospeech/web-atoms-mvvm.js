@@ -1,51 +1,55 @@
+// tslint:disable-next-line:no-string-literal
+var Atom:any = window["Atom"];
+// tslint:disable-next-line:no-string-literal
+var AtomBinder:any = window["AtomBinder"];
+
+
 /**
  * This decorator will mark given property as bindable, it will define
  * getter and setter, and in the setter, it will refresh the property.
- * 
+ *
  *      class Customer{
- *          
+ *
  *          @bindableProperty
  *          firstName:string;
- * 
+ *
  *      }
- * 
- * @param {*} target 
- * @param {string} key 
+ *
+ * @param {*} target
+ * @param {string} key
  */
-function bindableProperty(target: any, key: string) {
-    
-        var Atom = window["Atom"];
-    
+function bindableProperty(target: any, key: string):void {
+
         // property value
-        var _val = this[key];
-    
-        var keyName = "_" + key;
-    
+        var _val:any = this[key];
+
+        var keyName:string = "_" + key;
+
         this[keyName] = _val;
-        //debugger;
-    
+        // debugger
+
         // property getter
-        var getter = function () {
-            //console.log(`Get: ${key} => ${_val}`);
+        var getter:()=>any = function ():any {
+            // console.log(`Get: ${key} => ${_val}`);
             return this[keyName];
         };
-    
+
         // property setter
-        var setter = function (newVal) {
-            //console.log(`Set: ${key} => ${newVal}`);
-            //debugger;
+        var setter:(v:any) => void = function (newVal:any):void {
+            // console.log(`Set: ${key} => ${newVal}`);
+            // debugger;
             this[keyName] = newVal;
             Atom.refresh(this, key);
 
-            if(this.onPropertyChanged){
+            if(this.onPropertyChanged) {
                 this.onPropertyChanged(key);
             }
         };
-    
-        // Delete property.
+
+        // delete property
         if (delete this[key]) {
-    
-            // Create new property with getter and setter
+
+            // create new property with getter and setter
             Object.defineProperty(target, key, {
                 get: getter,
                 set: setter,
@@ -55,17 +59,15 @@ function bindableProperty(target: any, key: string) {
         }
     }
 
-namespace WebAtoms{
-
-    var Atom = window["Atom"];
+namespace WebAtoms {
 
     /**
-     * 
-     * 
+     *
+     *
      * @export
      * @class CancelToken
      */
-    export class CancelToken{
+    export class CancelToken {
 
         listeners:Array<()=>void> = [];
 
@@ -74,20 +76,20 @@ namespace WebAtoms{
             return this._cancelled;
         }
 
-        cancel(){
+        cancel():void {
             this._cancelled = true;
             for(var fx of this.listeners){
                 fx();
             }
         }
 
-        reset(){
+        reset():void {
             this._cancelled = false;
             this.listeners.length = 0;
         }
 
-        registerForCancel(f:()=>void){
-            if(this._cancelled){
+        registerForCancel(f:()=>void):void {
+            if(this._cancelled) {
                 f();
                 this.cancel();
                 return;
@@ -106,20 +108,20 @@ namespace WebAtoms{
 
 
     /**
-     * Though you can directly call methods of view model in binding expression, 
+     * Though you can directly call methods of view model in binding expression,
      * but we recommend using AtomCommand for two reasons.
-     * 
+     *
      * First one, it has enabled bindable property, which can be used to enable/disable UI.
      * AtomButton already has `command` and `commandParameter` property which automatically
      * binds execution and disabling the UI.
-     * 
+     *
      * Second one, it has busy bindable property, which can be used to display a busy indicator
      * when corresponding action is a promise and it is yet not resolved.
-     * 
+     *
      * @export
      * @class AtomCommand
      * @extends {AtomModel}
-     * @template T 
+     * @template T
      */
     export class AtomCommand<T> extends AtomModel {
 
@@ -128,8 +130,8 @@ namespace WebAtoms{
 
         private _enabled: boolean = true;
         /**
-         * 
-         * 
+         *
+         *
          * @type {boolean}
          * @memberof AtomCommand
          */
@@ -143,8 +145,8 @@ namespace WebAtoms{
 
         private _busy: boolean = false;
         /**
-         * 
-         * 
+         *
+         *
          * @type {boolean}
          * @memberof AtomCommand
          */
@@ -163,16 +165,17 @@ namespace WebAtoms{
 
         private executeAction(p:T): any {
 
-            if(this._busy)
+            if(this._busy) {
                 return;
+            }
             this.busy = true;
-            var result = this.action(p);
+            var result:any = this.action(p);
 
             if (result) {
-                if(result.catch){
+                if(result.catch) {
                     result.catch((error) => {
                         this.busy = false;
-                        if(error !== 'cancelled'){
+                        if(error !== "cancelled") {
                             console.error(error);
                             Atom.showError(error);
                         }
@@ -180,8 +183,8 @@ namespace WebAtoms{
                     return;
                 }
 
-                if(result.then){
-                    result.then(()=>{
+                if(result.then) {
+                    result.then(()=> {
                         this.busy = false;
                     });
                     return;
@@ -196,7 +199,6 @@ namespace WebAtoms{
             super();
             this.action = action;
 
-            var self = this;
             this.execute = (p:T) => {
                 if (this.enabled) {
                     this.executeAction(p);

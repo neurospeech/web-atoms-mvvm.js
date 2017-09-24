@@ -11,12 +11,12 @@ namespace WebAtoms{
      * @extends {AtomModel}
      */
     export class AtomViewModel extends AtomModel {
-        
+
         private disposables: Array<AtomDisposable>;
 
         private _isReady:boolean = false;
 
-        public get isReady(){
+        public get isReady():boolean {
             return this._isReady;
         }
 
@@ -27,34 +27,33 @@ namespace WebAtoms{
 
         }
 
-        private async privateInit(){
+        private async privateInit():Promise<any> {
             // this is necessary for derived class initialization
 
             await Atom.delay(1);
-            try{
+            try {
             await this.init();
-            }finally{
+            }finally {
                 this.registerWatchers();
             }
             this.onReady();
         }
 
-        protected onReady(){
+        protected onReady():void {}
 
-        }
-
-        private registerWatchers(){
+        private registerWatchers():void {
             try{
-                var v = this.constructor.prototype;
+                var v:any = this.constructor.prototype;
                 if(v && v._$_autoWatchers){
-                    var aw = v._$_autoWatchers;
+                    var aw:any = v._$_autoWatchers;
                     for(var key in aw){
-                        if(!aw.hasOwnProperty(key)) 
+                        if(!aw.hasOwnProperty(key)) {
                             continue;
-                        var vf = aw[key];
-                        if(vf.validate){
+                        }
+                        var vf:any = aw[key];
+                        if(vf.validate) {
                             this.addValidation(vf.method);
-                        }else{
+                        }else {
                             this.watch(vf.method);
                         }
                     }
@@ -73,7 +72,7 @@ namespace WebAtoms{
          * 
          * @memberof AtomViewModel
          */
-        validate(){
+        validate():void {
             for(var v of this.validations){
                 v.evaluate(true);
             }
@@ -103,17 +102,18 @@ namespace WebAtoms{
          */
         protected addValidation(...fts:(() => any)[]): AtomDisposable{
 
-            var ds = [];
+            var ds: Array<AtomDisposable> = [];
 
             for(var ft of fts){
-                var d = new AtomWatcher<any>(this,ft, true);
+                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, true);
                 this.validations.push(d);
                 this.registerDisposable(d);
                 ds.push(d);
             }
             return new DisposableAction(()=>{
-                for(var dsd of ds){
-                    this.disposables = this.disposables.filter( f => f != dsd );
+                this.disposables = this.disposables.filter( f => !ds.find(fd => f === fd) );
+                for(var dispsoable of ds){
+                    dispsoable.dispose();
                 }
             });
         }
@@ -129,19 +129,27 @@ namespace WebAtoms{
          *              this.data.fullName = `${this.data.firstName} ${this.data.lastName}`;
          *          }
          *      });
-         * 
+         *
          * @protected
-         * @template T 
-         * @param {() => any} ft 
-         * @returns {AtomDisposable} 
+         * @template T
+         * @param {() => any} ft
+         * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        protected watch(ft:() => any): AtomDisposable{
+        protected watch(...fts:(() => any)[]): AtomDisposable {
 
-            var d = new AtomWatcher<any>(this,ft);
-            this.registerDisposable(d);
-            return new DisposableAction(()=>{
-                this.disposables = this.disposables.filter( f => f != d );
+            var dfd:AtomDisposable[] = [];
+            for(var ft of fts){
+                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft);
+                // debugger;
+                this.registerDisposable(d);
+                dfd.push(d);
+            }
+            return new DisposableAction(()=> {
+                this.disposables = this.disposables.filter( f => ! dfd.find(fd => f === fd) );
+                for(var disposable of dfd){
+                    disposable.dispose();
+                }
             });
         }
 
@@ -150,44 +158,42 @@ namespace WebAtoms{
          * Register a disposable to be disposed when view model will be disposed.
          * 
          * @protected
-         * @param {AtomDisposable} d 
+         * @param {AtomDisposable} d
          * @memberof AtomViewModel
          */
-        protected registerDisposable(d:AtomDisposable){
+        protected registerDisposable(d:AtomDisposable):void {
             this.disposables = this.disposables || [];
             this.disposables.push(d);
         }
 
-        protected onPropertyChanged(name:string){
-            
-        }
+        protected onPropertyChanged(name:string): void {}
 
         /**
          * Register listener for given message.
-         * 
+         *
          * @protected
-         * @template T 
-         * @param {string} msg 
-         * @param {(data: T) => void} a 
+         * @template T
+         * @param {string} msg
+         * @param {(data: T) => void} a
          * @memberof AtomViewModel
          */
-        protected onMessage<T>(msg: string, a: (data: T) => void) {
+        protected onMessage<T>(msg: string, a: (data: T) => void):void {
 
             var action: AtomAction = (m, d) => {
                 a(d as T);
             };
-            var sub = AtomDevice.instance.subscribe(msg, action);
+            var sub:AtomDisposable = AtomDevice.instance.subscribe(msg, action);
             this.registerDisposable(sub);
         }
 
         /**
-         * Broadcast given data to channel (msg)  
-         * 
-         * @param {string} msg 
-         * @param {*} data 
+         * Broadcast given data to channel (msg)
+         *
+         * @param {string} msg
+         * @param {*} data
          * @memberof AtomViewModel
          */
-        public broadcast(msg: string, data: any) {
+        public broadcast(msg: string, data: any):void {
             AtomDevice.instance.broadcast(msg, data);
         }
 
@@ -206,8 +212,8 @@ namespace WebAtoms{
          * 
          * @memberof AtomViewModel
          */
-        public dispose() {
-            if(this.disposables){
+        public dispose():void {
+            if(this.disposables) {
                 for(let d of this.disposables){
                     d.dispose();
                 }
@@ -225,16 +231,33 @@ namespace WebAtoms{
      * close the window and will resolve the given result in promise. `cancel` 
      * will reject the given promise.
      * 
+     * @example
+     * 
      *      var windowService = WebAtoms.DI.resolve(WindowService);
      *      var result = await 
      *          windowService.openWindow(
      *              "Namespace.WindowName",
      *              new WindowNameViewModel());
      * 
-     * @export
-     * @class AtomWindowViewModel
-     * @extends {AtomViewModel}
-     */
+     * 
+     * 
+    *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+    * 
+    *          ....
+    *          save(){
+    * 
+    *              // close and send result
+    *              this.close(task);
+    * 
+    *          }
+    *          ....
+    * 
+    *      }
+    * 
+    * @export
+    * @class AtomWindowViewModel
+    * @extends {AtomViewModel}
+    */
     export class AtomWindowViewModel extends AtomViewModel {
 
         /**
@@ -257,10 +280,10 @@ namespace WebAtoms{
          * 
          *      this.close(someResult);
          * 
-         * @param {*} [result] 
+         * @param {*} [result]
          * @memberof AtomWindowViewModel
          */
-        close(result?:any):void{
+        close(result?:any):void {
             this.broadcast(`atom-window-close:${this.windowName}`,result);
         }
 
@@ -268,12 +291,12 @@ namespace WebAtoms{
          * This will broadcast `atom-window-cancel:windowName`
          * WindowService will cancel the window on receipt of such message and
          * it will reject the promise with "cancelled" message.
-         * 
+         *
          *      this.cancel();
-         * 
+         *
          * @memberof AtomWindowViewModel
          */
-        cancel():void{
+        cancel():void {
             this.broadcast(`atom-window-cancel:${this.windowName}`,null);
         }
 
@@ -282,24 +305,22 @@ namespace WebAtoms{
 }
 
 
-function watch(target:WebAtoms.AtomViewModel, key: string | symbol, descriptor:any){
-    var v = target as any;
+function watch(target:WebAtoms.AtomViewModel, key: string | symbol, descriptor:any):void {
+    var v:any = target as any;
     v._$_autoWatchers = v._$_autoWatchers || {};
-    v._$_autoWatchers[key] = { 
-        method: descriptor.value 
+    v._$_autoWatchers[key] = {
+        method: descriptor.value
     };
 }
 
-    
 
-function validate(target:WebAtoms.AtomViewModel, key: string | symbol, descriptor:any){
-    var v = target as any;
+
+function validate(target:WebAtoms.AtomViewModel, key: string | symbol, descriptor:any):void {
+    var v:any = target as any;
     v._$_autoWatchers = v._$_autoWatchers || {};
     v._$_autoWatchers[key] = descriptor.value;
-    v._$_autoWatchers[key] = { 
+    v._$_autoWatchers[key] = {
         method: descriptor.value ,
         validate: true
     };
 }
-
-    

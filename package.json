@@ -1,6 +1,6 @@
 {
   "name": "web-atoms-mvvm",
-  "version": "1.1.50",
+  "version": "1.1.51",
   "description": "MVVM, REST Json Service, Message Subscriptions for Web Atoms",
   "main": "web-atoms-mvvm.js",
   "directories": {
@@ -11,7 +11,7 @@
     "manakin": "^0.5.1",
     "ts-promise": "^0.3.4",
     "typescript": "^2.4.2",
-    "web-atoms-unit": "^1.0.14"
+    "web-atoms-unit": "^1.0.15"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -34,6 +34,7 @@
   "homepage": "https://github.com/neurospeech/web-atoms-mvvm.js#readme",
   "devDependencies": {
     "@types/node": "^8.0.26",
-    "systemjs": "^0.20.18"
+    "systemjs": "^0.20.18",
+    "tslint": "^5.7.0"
   }
 }

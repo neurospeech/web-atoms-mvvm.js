@@ -8,6 +8,10 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+// tslint:disable-next-line:no-string-literal
+var Atom = window["Atom"];
+// tslint:disable-next-line:no-string-literal
+var AtomBinder = window["AtomBinder"];
 /**
  * This decorator will mark given property as bindable, it will define
  * getter and setter, and in the setter, it will refresh the property.
@@ -23,30 +27,29 @@ var __extends = (this && this.__extends) || (function () {
  * @param {string} key
  */
 function bindableProperty(target, key) {
-    var Atom = window["Atom"];
     // property value
     var _val = this[key];
     var keyName = "_" + key;
     this[keyName] = _val;
-    //debugger;
+    // debugger
     // property getter
     var getter = function () {
-        //console.log(`Get: ${key} => ${_val}`);
+        // console.log(`Get: ${key} => ${_val}`);
         return this[keyName];
     };
     // property setter
     var setter = function (newVal) {
-        //console.log(`Set: ${key} => ${newVal}`);
-        //debugger;
+        // console.log(`Set: ${key} => ${newVal}`);
+        // debugger;
         this[keyName] = newVal;
         Atom.refresh(this, key);
         if (this.onPropertyChanged) {
             this.onPropertyChanged(key);
         }
     };
-    // Delete property.
+    // delete property
     if (delete this[key]) {
-        // Create new property with getter and setter
+        // create new property with getter and setter
         Object.defineProperty(target, key, {
             get: getter,
             set: setter,
@@ -57,7 +60,6 @@ function bindableProperty(target, key) {
 }
 var WebAtoms;
 (function (WebAtoms) {
-    var Atom = window["Atom"];
     /**
      *
      *
@@ -130,7 +132,6 @@ var WebAtoms;
             _this._enabled = true;
             _this._busy = false;
             _this.action = action;
-            var self = _this;
             _this.execute = function (p) {
                 if (_this.enabled) {
                     _this.executeAction(p);
@@ -174,15 +175,16 @@ var WebAtoms;
         });
         AtomCommand.prototype.executeAction = function (p) {
             var _this = this;
-            if (this._busy)
+            if (this._busy) {
                 return;
+            }
             this.busy = true;
             var result = this.action(p);
             if (result) {
                 if (result.catch) {
                     result.catch(function (error) {
                         _this.busy = false;
-                        if (error !== 'cancelled') {
+                        if (error !== "cancelled") {
                             console.error(error);
                             Atom.showError(error);
                         }
@@ -558,16 +560,16 @@ var WebAtoms;
                 });
             });
         };
-        AtomViewModel.prototype.onReady = function () {
-        };
+        AtomViewModel.prototype.onReady = function () { };
         AtomViewModel.prototype.registerWatchers = function () {
             try {
                 var v = this.constructor.prototype;
                 if (v && v._$_autoWatchers) {
                     var aw = v._$_autoWatchers;
                     for (var key in aw) {
-                        if (!aw.hasOwnProperty(key))
+                        if (!aw.hasOwnProperty(key)) {
                             continue;
+                        }
                         var vf = aw[key];
                         if (vf.validate) {
                             this.addValidation(vf.method);
@@ -632,9 +634,10 @@ var WebAtoms;
                 ds.push(d);
             }
             return new WebAtoms.DisposableAction(function () {
+                _this.disposables = _this.disposables.filter(function (f) { return !ds.find(function (fd) { return f === fd; }); });
                 for (var _i = 0, ds_1 = ds; _i < ds_1.length; _i++) {
-                    var dsd = ds_1[_i];
-                    _this.disposables = _this.disposables.filter(function (f) { return f != dsd; });
+                    var dispsoable = ds_1[_i];
+                    dispsoable.dispose();
                 }
             });
         };
@@ -656,12 +659,26 @@ var WebAtoms;
          * @returns {AtomDisposable}
          * @memberof AtomViewModel
          */
-        AtomViewModel.prototype.watch = function (ft) {
+        AtomViewModel.prototype.watch = function () {
             var _this = this;
-            var d = new WebAtoms.AtomWatcher(this, ft);
-            this.registerDisposable(d);
+            var fts = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                fts[_i] = arguments[_i];
+            }
+            var dfd = [];
+            for (var _a = 0, fts_2 = fts; _a < fts_2.length; _a++) {
+                var ft = fts_2[_a];
+                var d = new WebAtoms.AtomWatcher(this, ft);
+                // debugger;
+                this.registerDisposable(d);
+                dfd.push(d);
+            }
             return new WebAtoms.DisposableAction(function () {
-                _this.disposables = _this.disposables.filter(function (f) { return f != d; });
+                _this.disposables = _this.disposables.filter(function (f) { return !dfd.find(function (fd) { return f === fd; }); });
+                for (var _i = 0, dfd_1 = dfd; _i < dfd_1.length; _i++) {
+                    var disposable = dfd_1[_i];
+                    disposable.dispose();
+                }
             });
         };
         /**
@@ -675,8 +692,7 @@ var WebAtoms;
             this.disposables = this.disposables || [];
             this.disposables.push(d);
         };
-        AtomViewModel.prototype.onPropertyChanged = function (name) {
-        };
+        AtomViewModel.prototype.onPropertyChanged = function (name) { };
         /**
          * Register listener for given message.
          *
@@ -740,16 +756,33 @@ var WebAtoms;
      * close the window and will resolve the given result in promise. `cancel`
      * will reject the given promise.
      *
+     * @example
+     *
      *      var windowService = WebAtoms.DI.resolve(WindowService);
      *      var result = await
      *          windowService.openWindow(
      *              "Namespace.WindowName",
      *              new WindowNameViewModel());
      *
-     * @export
-     * @class AtomWindowViewModel
-     * @extends {AtomViewModel}
-     */
+     *
+     *
+    *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+    *
+    *          ....
+    *          save(){
+    *
+    *              // close and send result
+    *              this.close(task);
+    *
+    *          }
+    *          ....
+    *
+    *      }
+    *
+    * @export
+    * @class AtomWindowViewModel
+    * @extends {AtomViewModel}
+    */
     var AtomWindowViewModel = /** @class */ (function (_super) {
         __extends(AtomWindowViewModel, _super);
         function AtomWindowViewModel() {
@@ -816,14 +849,14 @@ var WebAtoms;
         }
         str = str.trim();
         var index = str.indexOf(")");
-        var isThis = index == 0;
-        var p = index == 0 ? "\_this|this" : str.substr(0, index);
+        var isThis = index === 0;
+        var p = isThis ? "\_this|this" : str.substr(0, index);
         str = str.substr(index + 1);
         var regExp = "(?:(" + p + ")(?:.[a-zA-Z_][a-zA-Z_0-9.]*)+)";
         var re = new RegExp(regExp, "gi");
         var path = [];
         var ms = str.replace(re, function (m) {
-            //console.log(`m: ${m}`);
+            // console.log(`m: ${m}`);
             var px = m;
             if (px.startsWith("this.")) {
                 px = px.substr(5);
@@ -834,13 +867,13 @@ var WebAtoms;
             else {
                 px = px.substr(p.length + 1);
             }
-            //console.log(px);
-            if (!path.find(function (y) { return y == px; })) {
+            // console.log(px);
+            if (!path.find(function (y) { return y === px; })) {
                 path.push(px);
             }
             return m;
         });
-        //debugger;
+        // debugger;
         return path;
     }
     /**
@@ -871,11 +904,13 @@ var WebAtoms;
                 this.__target.validate();
             }
             for (var k in this) {
-                if (AtomErrors.isInternal.test(k))
+                if (AtomErrors.isInternal.test(k)) {
                     continue;
+                }
                 if (this.hasOwnProperty(k)) {
-                    if (this[k])
+                    if (this[k]) {
                         return true;
+                    }
                 }
             }
             return false;
@@ -887,8 +922,9 @@ var WebAtoms;
          */
         AtomErrors.prototype.clear = function () {
             for (var k in this) {
-                if (AtomErrors.isInternal.test(k))
+                if (AtomErrors.isInternal.test(k)) {
                     continue;
+                }
                 if (this.hasOwnProperty(k)) {
                     this[k] = null;
                     Atom.refresh(this, k);
@@ -903,6 +939,9 @@ var WebAtoms;
         function ObjectProperty(name) {
             this.name = name;
         }
+        ObjectProperty.prototype.toString = function () {
+            return this.name;
+        };
         return ObjectProperty;
     }());
     WebAtoms.ObjectProperty = ObjectProperty;
@@ -935,11 +974,14 @@ var WebAtoms;
          *                  });
          *
          * @param {T} target - Target on which watch will be set to observe given set of properties
-         * @param {(string[] | ((x:T) => any))} path - Path is either lambda expression or array of property path to watch, if path was lambda, it will be executed when any of members will modify
+         * @param {(string[] | ((x:T) => any))} path - Path is either lambda expression or array of
+         *                      property path to watch, if path was lambda, it will be executed when any of
+         *                      members will modify
          * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
          * @memberof AtomWatcher
          */
         function AtomWatcher(target, path, forValidation) {
+            var _this = this;
             this._isExecuting = false;
             this.target = target;
             var e = false;
@@ -951,12 +993,39 @@ var WebAtoms;
                 path = parsePath(path);
                 e = true;
                 this.func = f;
+                this.funcText = f.toString();
             }
+            this.runEvaluate = function () {
+                _this.evaluate();
+            };
+            this.runEvaluate.watcher = this;
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
             if (e) {
                 this.evaluate();
             }
         }
+        AtomWatcher.prototype.evaluatePath = function (target, path) {
+            var newTarget = null;
+            for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
+                var p = path_1[_i];
+                newTarget = AtomBinder.getValue(target, p.name);
+                if (!p.target) {
+                    p.watcher = Atom.watch(target, p.name, this.runEvaluate);
+                }
+                else if (p.target !== target) {
+                    if (p.watcher) {
+                        p.watcher.dispose();
+                    }
+                    p.watcher = Atom.watch(target, p.name, this.runEvaluate);
+                }
+                p.target = target;
+                target = newTarget;
+                if (newTarget === undefined || newTarget === null) {
+                    break;
+                }
+            }
+            return newTarget;
+        };
         /**
          *
          *
@@ -965,34 +1034,18 @@ var WebAtoms;
          * @memberof AtomWatcher
          */
         AtomWatcher.prototype.evaluate = function (force) {
-            var _this = this;
-            if (this._isExecuting)
+            if (this._isExecuting) {
                 return;
+            }
+            var disposeWatchers = [];
             this._isExecuting = true;
             try {
-                var values = this.path.map(function (p) {
-                    var t = _this.target;
-                    return p.map(function (op) {
-                        var tx = t;
-                        t = Atom.get(t, op.name);
-                        if (t !== op.target) {
-                            if (op.watcher) {
-                                op.watcher.dispose();
-                                op.watcher = null;
-                            }
-                            op.target = t;
-                        }
-                        if (tx) {
-                            if (!op.watcher) {
-                                op.watcher = Atom.watch(tx, op.name, function () {
-                                    _this.evaluate();
-                                });
-                            }
-                        }
-                        return t;
-                    });
-                });
-                values = values.map(function (op) { return op[op.length - 1]; });
+                var values = [];
+                var logs = [];
+                for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
+                    var p = _a[_i];
+                    values.push(this.evaluatePath(this.target, p));
+                }
                 if (force === true) {
                     this.forValidation = false;
                 }
@@ -1014,7 +1067,14 @@ var WebAtoms;
             }
             finally {
                 this._isExecuting = false;
+                for (var _b = 0, disposeWatchers_1 = disposeWatchers; _b < disposeWatchers_1.length; _b++) {
+                    var d = disposeWatchers_1[_b];
+                    d.dispose();
+                }
             }
+        };
+        AtomWatcher.prototype.toString = function () {
+            return this.func.toString();
         };
         /**
          * This will dispose and unregister all watchers
@@ -1029,6 +1089,7 @@ var WebAtoms;
                     if (op.watcher) {
                         op.watcher.dispose();
                         op.watcher = null;
+                        op.target = null;
                     }
                 }
             }
@@ -1596,7 +1657,7 @@ var WebAtoms;
             this.lastWindowID = 1;
         }
         /**
-         *
+         * Display an alert, and method will continue after alert is closed.
          *
          * @param {string} msg
          * @param {string} [title]
@@ -1607,7 +1668,8 @@ var WebAtoms;
             return this.showAlert(msg, title || "Message", false);
         };
         /**
-         *
+         * Display a confirm window with promise that will resolve when yes or no
+         * is clicked.
          *
          * @param {string} msg
          * @param {string} [title]
@@ -1650,11 +1712,31 @@ var WebAtoms;
             });
         };
         /**
+         * This method will open a new window identified by name of the window or class of window.
+         * Supplied view model has to be derived from AtomWindowViewModel.
          *
+         * By default this window has a localScope, so it does not corrupt scope.
+         *
+         * @example
+         *
+         *     var result = await windowService.openWindow<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
          *
          * @template T
          * @param {(string | {new(e)})} windowType
-         * @param {*} [viewModel]
+         * @param {AtomWindowViewModel} [viewModel]
          * @returns {Promise<T>}
          * @memberof WindowService
          */
@@ -1663,9 +1745,6 @@ var WebAtoms;
                 var _this = this;
                 return __generator(this, function (_a) {
                     return [2 /*return*/, new Promise(function (resolve, reject) {
-                            // if(modal === undefined){
-                            //     modal = true;
-                            // }
                             var windowDiv = document.createElement("div");
                             windowDiv.id = "atom_window_" + _this.lastWindowID++;
                             var atomApplication = window["atomApplication"];

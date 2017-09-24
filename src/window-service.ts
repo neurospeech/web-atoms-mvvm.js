@@ -12,7 +12,7 @@ namespace WebAtoms{
         private lastWindowID:number = 1;
 
         /**
-         * 
+         * Display an alert, and method will continue after alert is closed.
          * 
          * @param {string} msg 
          * @param {string} [title] 
@@ -24,7 +24,8 @@ namespace WebAtoms{
         }
 
         /**
-         * 
+         * Display a confirm window with promise that will resolve when yes or no
+         * is clicked.
          * 
          * @param {string} msg 
          * @param {string} [title] 
@@ -79,24 +80,37 @@ namespace WebAtoms{
 
 
         /**
+         * This method will open a new window identified by name of the window or class of window.
+         * Supplied view model has to be derived from AtomWindowViewModel.
          * 
+         * By default this window has a localScope, so it does not corrupt scope.
+         * 
+         * @example
+         * 
+         *     var result = await windowService.openWindow<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         * 
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         * 
+         *          ....
+         *          save(){
+         * 
+         *              // close and send result
+         *              this.close(task);
+         * 
+         *          }
+         *          ....
+         * 
+         *      }
          * 
          * @template T 
          * @param {(string | {new(e)})} windowType 
-         * @param {*} [viewModel] 
+         * @param {AtomWindowViewModel} [viewModel] 
          * @returns {Promise<T>} 
          * @memberof WindowService
          */
-        async openWindow<T>(windowType: string | {new(e)}, viewModel?: any):Promise<T>{
+        async openWindow<T>(windowType: string | {new(e)}, viewModel?: AtomWindowViewModel):Promise<T>{
 
             return new  Promise<T>((resolve,reject)=>{
-
-
-                // if(modal === undefined){
-                //     modal = true;
-                // }
-
-                
 
                 var windowDiv = document.createElement("div");
 
