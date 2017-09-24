@@ -543,7 +543,7 @@ declare namespace WebAtoms {
      * @param {new () => any} c
      * @returns
      */
-    function DIGlobal<T>(c: new () => T): (new () => T);
+    function DIGlobal(c: any): any;
     /**
      * This decorator will register given class as transient instance on DI.
      *
@@ -555,10 +555,10 @@ declare namespace WebAtoms {
      * @param {new () => any} c
      * @returns
      */
-    function DIAlwaysNew<T>(c: new () => T): (new () => T);
+    function DIAlwaysNew(c: any): any;
 }
-declare var DIGlobal: <T>(c: new () => T) => (new () => T);
-declare var DIAlwaysNew: <T>(c: new () => T) => (new () => T);
+declare var DIGlobal: any;
+declare var DIAlwaysNew: any;
 declare function methodBuilder(method: string): (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function Return(type: {
     new ();
