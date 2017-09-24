@@ -157,7 +157,7 @@
      * @param {new () => any} c 
      * @returns 
      */
-    export function DIGlobal (c: new () => any){
+    export function DIGlobal<T> (c: new () => T): (new ()=>T) {
         DI.register(c,()=> new c());
         return c;
     };
@@ -173,7 +173,7 @@
      * @param {new () => any} c 
      * @returns 
      */
-    export function DIAlwaysNew(c: new () => any){
+    export function DIAlwaysNew<T>(c: new () => T): (new () => T) {
         DI.register(c,()=> new c(), true);
         return c;
     };
@@ -182,6 +182,6 @@
 
 }
 
-var DIGlobal = WebAtoms.DIGlobal;
-var DIAlwaysNew = WebAtoms.DIAlwaysNew;
+var DIGlobal: <T>(c:new ()=> T) => (new () => T) = WebAtoms.DIGlobal;
+var DIAlwaysNew: <T>(c:new ()=> T) => (new () => T) = WebAtoms.DIAlwaysNew;
 
