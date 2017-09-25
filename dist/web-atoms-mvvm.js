@@ -1117,6 +1117,113 @@ var WebAtoms;
     }());
     WebAtoms.AtomWatcher = AtomWatcher;
 })(WebAtoms || (WebAtoms = {}));
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var WebAtoms;
+(function (WebAtoms) {
+    /**
+     * BrowserService provides access to browser attributes
+     * such as title of current window, location etc.
+     *
+     * @export
+     * @class BrowserService
+     */
+    var BrowserService = /** @class */ (function () {
+        function BrowserService() {
+        }
+        BrowserService_1 = BrowserService;
+        Object.defineProperty(BrowserService, "instance", {
+            /**
+             * DI Resolved instance
+             *
+             * @readonly
+             * @static
+             * @type {BrowserService}
+             * @memberof BrowserService
+             */
+            get: function () {
+                return WebAtoms.DI.resolve(BrowserService_1);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BrowserService.prototype, "title", {
+            /**
+             * Get current window title
+             *
+             * @type {string}
+             * @memberof BrowserService
+             */
+            get: function () {
+                return window.document.title;
+            },
+            /**
+             * Set current window title
+             * @memberof BrowserService
+             */
+            set: function (v) {
+                window.document.title = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BrowserService.prototype, "location", {
+            /**
+             * Gets current location of browser, this does not return
+             * actual location but it returns values of browser location.
+             * This is done to provide mocking behaviour for unit testing.
+             *
+             * @readonly
+             * @type {AtomLocation}
+             * @memberof BrowserService
+             */
+            get: function () {
+                return {
+                    href: location.href,
+                    hash: location.hash,
+                    host: location.host,
+                    hostName: location.hostname,
+                    port: location.port,
+                    protocol: location.protocol
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Navigate current browser to given url.
+         * @param {string} url
+         * @memberof BrowserService
+         */
+        BrowserService.prototype.navigate = function (url) {
+            location.href = url;
+        };
+        Object.defineProperty(BrowserService.prototype, "appScope", {
+            /**
+             * Get access to available appScope from Web Atoms.
+             * @readonly
+             * @type {*}
+             * @memberof BrowserService
+             */
+            get: function () {
+                // tslint:disable-next-line:no-string-literal
+                return window["appScope"];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        BrowserService = BrowserService_1 = __decorate([
+            WebAtoms.DIGlobal
+        ], BrowserService);
+        return BrowserService;
+        var BrowserService_1;
+    }());
+    WebAtoms.BrowserService = BrowserService;
+})(WebAtoms || (WebAtoms = {}));
 /**
  * Easy and Simple Dependency Injection
  */
@@ -1663,12 +1770,6 @@ var WebAtoms;
         Rest.BaseService = BaseService;
     })(Rest = WebAtoms.Rest || (WebAtoms.Rest = {}));
 })(WebAtoms || (WebAtoms = {}));
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var WebAtoms;
 (function (WebAtoms) {
     /**

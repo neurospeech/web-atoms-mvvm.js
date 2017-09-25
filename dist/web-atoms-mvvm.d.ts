@@ -478,6 +478,68 @@ declare namespace WebAtoms {
         dispose(): void;
     }
 }
+declare namespace WebAtoms {
+    type AtomLocation = {
+        href?: string;
+        hash?: string;
+        host?: string;
+        hostName?: string;
+        port?: string;
+        protocol?: string;
+    };
+    /**
+     * BrowserService provides access to browser attributes
+     * such as title of current window, location etc.
+     *
+     * @export
+     * @class BrowserService
+     */
+    class BrowserService {
+        /**
+         * DI Resolved instance
+         *
+         * @readonly
+         * @static
+         * @type {BrowserService}
+         * @memberof BrowserService
+         */
+        static readonly instance: BrowserService;
+        /**
+         * Get current window title
+         *
+         * @type {string}
+         * @memberof BrowserService
+         */
+        /**
+         * Set current window title
+         * @memberof BrowserService
+         */
+        title: string;
+        /**
+         * Gets current location of browser, this does not return
+         * actual location but it returns values of browser location.
+         * This is done to provide mocking behaviour for unit testing.
+         *
+         * @readonly
+         * @type {AtomLocation}
+         * @memberof BrowserService
+         */
+        readonly location: AtomLocation;
+        /**
+         * Navigate current browser to given url.
+         * @param {string} url
+         * @memberof BrowserService
+         */
+        navigate(url: string): void;
+        /**
+         * Get access to available appScope from Web Atoms.
+         * @readonly
+         * @type {*}
+         * @memberof BrowserService
+         */
+        readonly appScope: any;
+    }
+}
 /**
  * Easy and Simple Dependency Injection
  */
