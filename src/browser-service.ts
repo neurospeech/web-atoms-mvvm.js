@@ -17,7 +17,7 @@ namespace WebAtoms {
 	 * @export
 	 * @class BrowserService
 	 */
-	@DIGlobal
+	@WebAtoms.DIGlobal
 	export class BrowserService {
 
 		/**

@@ -6,7 +6,7 @@ namespace WebAtoms {
      * @export
      * @class WindowService
      */
-    @DIGlobal
+    @WebAtoms.DIGlobal
     export class WindowService {
 
         /**

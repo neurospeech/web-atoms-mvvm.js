@@ -1,3 +1,84 @@
+/**
+ * Easy and Simple Dependency Injection
+ */
+declare namespace WebAtoms {
+    /**
+     *
+     *
+     * @export
+     * @class DI
+     */
+    class DI {
+        private static factory;
+        /**
+         *
+         *
+         * @static
+         * @template T
+         * @param {new () => T} key
+         * @param {() => T} factory
+         * @param {boolean} [transient=false] - If true, always new instance will be created
+         * @memberof DI
+         */
+        static register<T>(key: new () => T, factory: () => T, transient?: boolean): void;
+        /**
+         *
+         *
+         * @static
+         * @template T
+         * @param {new () => T} c
+         * @returns {T}
+         * @memberof DI
+         */
+        static resolve<T>(c: new () => T): T;
+        /**
+         * Use this for unit testing, this will push existing
+         * DI factory and all instances will be resolved with
+         * given instance
+         *
+         * @static
+         * @param {*} key
+         * @param {*} instance
+         * @memberof DI
+         */
+        static push(key: any, instance: any): void;
+        /**
+         *
+         *
+         * @static
+         * @param {*} key
+         * @memberof DI
+         */
+        static pop(key: any): void;
+    }
+    /**
+     * This decorator will register given class as singleton instance on DI.
+     *
+     *      @DIGlobal
+     *      class BackendService{
+     *      }
+     *
+     *
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIGlobal(c: any): any;
+    /**
+     * This decorator will register given class as transient instance on DI.
+     *
+     *      @DIAlwaysNew
+     *      class StringHelper{
+     *      }
+     *
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIAlwaysNew(c: any): any;
+}
+declare var DIGlobal: any;
+declare var DIAlwaysNew: any;
 declare var Atom: any;
 declare var AtomBinder: any;
 /**
@@ -540,87 +621,6 @@ declare namespace WebAtoms {
         readonly appScope: any;
     }
 }
-/**
- * Easy and Simple Dependency Injection
- */
-declare namespace WebAtoms {
-    /**
-     *
-     *
-     * @export
-     * @class DI
-     */
-    class DI {
-        private static factory;
-        /**
-         *
-         *
-         * @static
-         * @template T
-         * @param {new () => T} key
-         * @param {() => T} factory
-         * @param {boolean} [transient=false] - If true, always new instance will be created
-         * @memberof DI
-         */
-        static register<T>(key: new () => T, factory: () => T, transient?: boolean): void;
-        /**
-         *
-         *
-         * @static
-         * @template T
-         * @param {new () => T} c
-         * @returns {T}
-         * @memberof DI
-         */
-        static resolve<T>(c: new () => T): T;
-        /**
-         * Use this for unit testing, this will push existing
-         * DI factory and all instances will be resolved with
-         * given instance
-         *
-         * @static
-         * @param {*} key
-         * @param {*} instance
-         * @memberof DI
-         */
-        static push(key: any, instance: any): void;
-        /**
-         *
-         *
-         * @static
-         * @param {*} key
-         * @memberof DI
-         */
-        static pop(key: any): void;
-    }
-    /**
-     * This decorator will register given class as singleton instance on DI.
-     *
-     *      @DIGlobal
-     *      class BackendService{
-     *      }
-     *
-     *
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIGlobal(c: any): any;
-    /**
-     * This decorator will register given class as transient instance on DI.
-     *
-     *      @DIAlwaysNew
-     *      class StringHelper{
-     *      }
-     *
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIAlwaysNew(c: any): any;
-}
-declare var DIGlobal: any;
-declare var DIAlwaysNew: any;
 declare function methodBuilder(method: string): (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function Return(type: {
     new ();
