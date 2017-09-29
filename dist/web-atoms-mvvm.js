@@ -1,3 +1,160 @@
+/**
+ * Easy and Simple Dependency Injection
+ */
+var WebAtoms;
+(function (WebAtoms) {
+    var DIFactory = /** @class */ (function () {
+        function DIFactory(key, factory, transient) {
+            this.transient = transient;
+            this.factory = factory;
+            this.key = key;
+        }
+        DIFactory.prototype.resolve = function () {
+            if (this.transient) {
+                return this.factory();
+            }
+            return this.instance || (this.instance = this.factory());
+        };
+        DIFactory.prototype.push = function (factory, transient) {
+            this.stack = this.stack || [];
+            this.stack.push({
+                factory: this.factory,
+                instance: this.instance,
+                transient: this.transient
+            });
+            this.transient = transient;
+            this.instance = undefined;
+            this.factory = factory;
+        };
+        DIFactory.prototype.pop = function () {
+            if (!(this.stack && this.stack.length)) {
+                throw new Error("Stack in DIFactory is empty");
+            }
+            var obj = this.stack.pop();
+            this.factory = obj.factory;
+            this.transient = obj.transient;
+            this.instance = obj.instance;
+        };
+        return DIFactory;
+    }());
+    /**
+     *
+     *
+     * @export
+     * @class DI
+     */
+    var DI = /** @class */ (function () {
+        function DI() {
+        }
+        /**
+         *
+         *
+         * @static
+         * @template T
+         * @param {new () => T} key
+         * @param {() => T} factory
+         * @param {boolean} [transient=false] - If true, always new instance will be created
+         * @memberof DI
+         */
+        DI.register = function (key, factory, transient) {
+            if (transient === void 0) { transient = false; }
+            var k = key;
+            var existing = DI.factory[k];
+            if (existing) {
+                throw new Error("Factory for " + key.name + " is already registered");
+            }
+            DI.factory[k] = new DIFactory(key, factory, transient);
+        };
+        /**
+         *
+         *
+         * @static
+         * @template T
+         * @param {new () => T} c
+         * @returns {T}
+         * @memberof DI
+         */
+        DI.resolve = function (c) {
+            var f = DI.factory[c];
+            if (!f) {
+                throw new Error("No factory registered for " + c);
+            }
+            return f.resolve();
+        };
+        /**
+         * Use this for unit testing, this will push existing
+         * DI factory and all instances will be resolved with
+         * given instance
+         *
+         * @static
+         * @param {*} key
+         * @param {*} instance
+         * @memberof DI
+         */
+        DI.push = function (key, instance) {
+            var f = DI.factory[key];
+            if (!f) {
+                DI.register(key, function () { return instance; });
+            }
+            else {
+                f.push(function () { return instance; }, true);
+            }
+        };
+        /**
+         *
+         *
+         * @static
+         * @param {*} key
+         * @memberof DI
+         */
+        DI.pop = function (key) {
+            var f = DI.factory[key];
+            if (f) {
+                f.pop();
+            }
+        };
+        DI.factory = {};
+        return DI;
+    }());
+    WebAtoms.DI = DI;
+    /**
+     * This decorator will register given class as singleton instance on DI.
+     *
+     *      @DIGlobal
+     *      class BackendService{
+     *      }
+     *
+     *
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIGlobal(c) {
+        DI.register(c, function () { return new c(); });
+        return c;
+    }
+    WebAtoms.DIGlobal = DIGlobal;
+    ;
+    /**
+     * This decorator will register given class as transient instance on DI.
+     *
+     *      @DIAlwaysNew
+     *      class StringHelper{
+     *      }
+     *
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIAlwaysNew(c) {
+        DI.register(c, function () { return new c(); }, true);
+        return c;
+    }
+    WebAtoms.DIAlwaysNew = DIAlwaysNew;
+    ;
+})(WebAtoms || (WebAtoms = {}));
+var DIGlobal = WebAtoms.DIGlobal;
+var DIAlwaysNew = WebAtoms.DIAlwaysNew;
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -465,6 +622,12 @@ var WebAtoms;
             _this["__proto__"] = AtomList.prototype;
             return _this;
         }
+        /**
+         * Adds the item in the list and refresh bindings
+         * @param {T} item
+         * @returns {number}
+         * @memberof AtomList
+         */
         AtomList.prototype.add = function (item) {
             var i = this.length;
             var n = this.push(item);
@@ -472,6 +635,11 @@ var WebAtoms;
             Atom.refresh(this, "length");
             return n;
         };
+        /**
+         * Add given items in the list and refresh bindings
+         * @param {Array<T>} items
+         * @memberof AtomList
+         */
         AtomList.prototype.addAll = function (items) {
             for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
                 var item = items_1[_i];
@@ -481,18 +649,50 @@ var WebAtoms;
                 Atom.refresh(this, "length");
             }
         };
+        /**
+         * Inserts given number in the list at position `i`
+         * and refreshes the bindings.
+         * @param {number} i
+         * @param {T} item
+         * @memberof AtomList
+         */
         AtomList.prototype.insert = function (i, item) {
             var n = this.splice(i, 0, item);
             AtomBinder.invokeItemsEvent(this, "add", i, item);
             Atom.refresh(this, "length");
         };
+        /**
+         * Removes item at given index i and refresh the bindings
+         * @param {number} i
+         * @memberof AtomList
+         */
         AtomList.prototype.removeAt = function (i) {
             var item = this[i];
             this.splice(i, 1);
             AtomBinder.invokeItemsEvent(this, "remove", i, item);
             Atom.refresh(this, "length");
         };
+        /**
+         * Removes given item or removes all items that match
+         * given lambda as true and refresh the bindings
+         * @param {(T | ((i:T) => boolean))} item
+         * @returns {boolean} `true` if any item was removed
+         * @memberof AtomList
+         */
         AtomList.prototype.remove = function (item) {
+            if (item instanceof Function) {
+                var index = 0;
+                var removed = false;
+                for (var _i = 0, _a = this; _i < _a.length; _i++) {
+                    var it = _a[_i];
+                    if (item(it)) {
+                        this.removeAt(index);
+                        removed = true;
+                    }
+                    index++;
+                }
+                return removed;
+            }
             var n = this.indexOf(item);
             if (n !== -1) {
                 this.removeAt(n);
@@ -500,6 +700,10 @@ var WebAtoms;
             }
             return false;
         };
+        /**
+         * Removes all items from the list and refreshes the bindings
+         * @memberof AtomList
+         */
         AtomList.prototype.clear = function () {
             this.length = 0;
             this.refresh();
@@ -1117,163 +1321,113 @@ var WebAtoms;
     }());
     WebAtoms.AtomWatcher = AtomWatcher;
 })(WebAtoms || (WebAtoms = {}));
-/**
- * Easy and Simple Dependency Injection
- */
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var WebAtoms;
 (function (WebAtoms) {
-    var DIFactory = /** @class */ (function () {
-        function DIFactory(key, factory, transient) {
-            this.transient = transient;
-            this.factory = factory;
-            this.key = key;
+    /**
+     * BrowserService provides access to browser attributes
+     * such as title of current window, location etc.
+     *
+     * @export
+     * @class BrowserService
+     */
+    var BrowserService = /** @class */ (function () {
+        function BrowserService() {
         }
-        DIFactory.prototype.resolve = function () {
-            if (this.transient) {
-                return this.factory();
-            }
-            return this.instance || (this.instance = this.factory());
+        BrowserService_1 = BrowserService;
+        Object.defineProperty(BrowserService, "instance", {
+            /**
+             * DI Resolved instance
+             *
+             * @readonly
+             * @static
+             * @type {BrowserService}
+             * @memberof BrowserService
+             */
+            get: function () {
+                return WebAtoms.DI.resolve(BrowserService_1);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BrowserService.prototype, "title", {
+            /**
+             * Get current window title
+             *
+             * @type {string}
+             * @memberof BrowserService
+             */
+            get: function () {
+                return window.document.title;
+            },
+            /**
+             * Set current window title
+             * @memberof BrowserService
+             */
+            set: function (v) {
+                window.document.title = v;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BrowserService.prototype, "location", {
+            /**
+             * Gets current location of browser, this does not return
+             * actual location but it returns values of browser location.
+             * This is done to provide mocking behaviour for unit testing.
+             *
+             * @readonly
+             * @type {AtomLocation}
+             * @memberof BrowserService
+             */
+            get: function () {
+                return {
+                    href: location.href,
+                    hash: location.hash,
+                    host: location.host,
+                    hostName: location.hostname,
+                    port: location.port,
+                    protocol: location.protocol
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Navigate current browser to given url.
+         * @param {string} url
+         * @memberof BrowserService
+         */
+        BrowserService.prototype.navigate = function (url) {
+            location.href = url;
         };
-        DIFactory.prototype.push = function (factory, transient) {
-            this.stack = this.stack || [];
-            this.stack.push({
-                factory: this.factory,
-                instance: this.instance,
-                transient: this.transient
-            });
-            this.transient = transient;
-            this.instance = undefined;
-            this.factory = factory;
-        };
-        DIFactory.prototype.pop = function () {
-            if (!(this.stack && this.stack.length)) {
-                throw new Error("Stack in DIFactory is empty");
-            }
-            var obj = this.stack.pop();
-            this.factory = obj.factory;
-            this.transient = obj.transient;
-            this.instance = obj.instance;
-        };
-        return DIFactory;
+        Object.defineProperty(BrowserService.prototype, "appScope", {
+            /**
+             * Get access to available appScope from Web Atoms.
+             * @readonly
+             * @type {*}
+             * @memberof BrowserService
+             */
+            get: function () {
+                // tslint:disable-next-line:no-string-literal
+                return window["appScope"];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        BrowserService = BrowserService_1 = __decorate([
+            WebAtoms.DIGlobal
+        ], BrowserService);
+        return BrowserService;
+        var BrowserService_1;
     }());
-    /**
-     *
-     *
-     * @export
-     * @class DI
-     */
-    var DI = /** @class */ (function () {
-        function DI() {
-        }
-        /**
-         *
-         *
-         * @static
-         * @template T
-         * @param {new () => T} key
-         * @param {() => T} factory
-         * @param {boolean} [transient=false] - If true, always new instance will be created
-         * @memberof DI
-         */
-        DI.register = function (key, factory, transient) {
-            if (transient === void 0) { transient = false; }
-            var k = key;
-            var existing = DI.factory[k];
-            if (existing) {
-                throw new Error("Factory for " + key.name + " is already registered");
-            }
-            DI.factory[k] = new DIFactory(key, factory, transient);
-        };
-        /**
-         *
-         *
-         * @static
-         * @template T
-         * @param {new () => T} c
-         * @returns {T}
-         * @memberof DI
-         */
-        DI.resolve = function (c) {
-            var f = DI.factory[c];
-            if (!f) {
-                throw new Error("No factory registered for " + c);
-            }
-            return f.resolve();
-        };
-        /**
-         * Use this for unit testing, this will push existing
-         * DI factory and all instances will be resolved with
-         * given instance
-         *
-         * @static
-         * @param {*} key
-         * @param {*} instance
-         * @memberof DI
-         */
-        DI.push = function (key, instance) {
-            var f = DI.factory[key];
-            if (!f) {
-                DI.register(key, function () { return instance; });
-            }
-            else {
-                f.push(function () { return instance; }, true);
-            }
-        };
-        /**
-         *
-         *
-         * @static
-         * @param {*} key
-         * @memberof DI
-         */
-        DI.pop = function (key) {
-            var f = DI.factory[key];
-            if (f) {
-                f.pop();
-            }
-        };
-        DI.factory = {};
-        return DI;
-    }());
-    WebAtoms.DI = DI;
-    /**
-     * This decorator will register given class as singleton instance on DI.
-     *
-     *      @DIGlobal
-     *      class BackendService{
-     *      }
-     *
-     *
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIGlobal(c) {
-        DI.register(c, function () { return new c(); });
-        return c;
-    }
-    WebAtoms.DIGlobal = DIGlobal;
-    ;
-    /**
-     * This decorator will register given class as transient instance on DI.
-     *
-     *      @DIAlwaysNew
-     *      class StringHelper{
-     *      }
-     *
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIAlwaysNew(c) {
-        DI.register(c, function () { return new c(); }, true);
-        return c;
-    }
-    WebAtoms.DIAlwaysNew = DIAlwaysNew;
-    ;
+    WebAtoms.BrowserService = BrowserService;
 })(WebAtoms || (WebAtoms = {}));
-var DIGlobal = WebAtoms.DIGlobal;
-var DIAlwaysNew = WebAtoms.DIAlwaysNew;
 // tslint:disable-next-line
 function methodBuilder(method) {
     // tslint:disable-next-line
@@ -1663,12 +1817,6 @@ var WebAtoms;
         Rest.BaseService = BaseService;
     })(Rest = WebAtoms.Rest || (WebAtoms.Rest = {}));
 })(WebAtoms || (WebAtoms = {}));
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var WebAtoms;
 (function (WebAtoms) {
     /**

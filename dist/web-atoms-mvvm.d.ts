@@ -1,3 +1,84 @@
+/**
+ * Easy and Simple Dependency Injection
+ */
+declare namespace WebAtoms {
+    /**
+     *
+     *
+     * @export
+     * @class DI
+     */
+    class DI {
+        private static factory;
+        /**
+         *
+         *
+         * @static
+         * @template T
+         * @param {new () => T} key
+         * @param {() => T} factory
+         * @param {boolean} [transient=false] - If true, always new instance will be created
+         * @memberof DI
+         */
+        static register<T>(key: new () => T, factory: () => T, transient?: boolean): void;
+        /**
+         *
+         *
+         * @static
+         * @template T
+         * @param {new () => T} c
+         * @returns {T}
+         * @memberof DI
+         */
+        static resolve<T>(c: new () => T): T;
+        /**
+         * Use this for unit testing, this will push existing
+         * DI factory and all instances will be resolved with
+         * given instance
+         *
+         * @static
+         * @param {*} key
+         * @param {*} instance
+         * @memberof DI
+         */
+        static push(key: any, instance: any): void;
+        /**
+         *
+         *
+         * @static
+         * @param {*} key
+         * @memberof DI
+         */
+        static pop(key: any): void;
+    }
+    /**
+     * This decorator will register given class as singleton instance on DI.
+     *
+     *      @DIGlobal
+     *      class BackendService{
+     *      }
+     *
+     *
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIGlobal(c: any): any;
+    /**
+     * This decorator will register given class as transient instance on DI.
+     *
+     *      @DIAlwaysNew
+     *      class StringHelper{
+     *      }
+     *
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIAlwaysNew(c: any): any;
+}
+declare var DIGlobal: any;
+declare var DIAlwaysNew: any;
 declare var Atom: any;
 declare var AtomBinder: any;
 /**
@@ -181,11 +262,45 @@ declare namespace WebAtoms {
      */
     class AtomList<T> extends Array<T> {
         constructor();
+        /**
+         * Adds the item in the list and refresh bindings
+         * @param {T} item
+         * @returns {number}
+         * @memberof AtomList
+         */
         add(item: T): number;
+        /**
+         * Add given items in the list and refresh bindings
+         * @param {Array<T>} items
+         * @memberof AtomList
+         */
         addAll(items: Array<T>): void;
+        /**
+         * Inserts given number in the list at position `i`
+         * and refreshes the bindings.
+         * @param {number} i
+         * @param {T} item
+         * @memberof AtomList
+         */
         insert(i: number, item: T): void;
+        /**
+         * Removes item at given index i and refresh the bindings
+         * @param {number} i
+         * @memberof AtomList
+         */
         removeAt(i: number): void;
-        remove(item: T): boolean;
+        /**
+         * Removes given item or removes all items that match
+         * given lambda as true and refresh the bindings
+         * @param {(T | ((i:T) => boolean))} item
+         * @returns {boolean} `true` if any item was removed
+         * @memberof AtomList
+         */
+        remove(item: T | ((i: T) => boolean)): boolean;
+        /**
+         * Removes all items from the list and refreshes the bindings
+         * @memberof AtomList
+         */
         clear(): void;
         refresh(): void;
         watch(f: () => void): AtomDisposable;
@@ -478,87 +593,68 @@ declare namespace WebAtoms {
         dispose(): void;
     }
 }
-/**
- * Easy and Simple Dependency Injection
- */
 declare namespace WebAtoms {
+    type AtomLocation = {
+        href?: string;
+        hash?: string;
+        host?: string;
+        hostName?: string;
+        port?: string;
+        protocol?: string;
+    };
     /**
-     *
+     * BrowserService provides access to browser attributes
+     * such as title of current window, location etc.
      *
      * @export
-     * @class DI
+     * @class BrowserService
      */
-    class DI {
-        private static factory;
+    class BrowserService {
         /**
+         * DI Resolved instance
          *
-         *
+         * @readonly
          * @static
-         * @template T
-         * @param {new () => T} key
-         * @param {() => T} factory
-         * @param {boolean} [transient=false] - If true, always new instance will be created
-         * @memberof DI
+         * @type {BrowserService}
+         * @memberof BrowserService
          */
-        static register<T>(key: new () => T, factory: () => T, transient?: boolean): void;
+        static readonly instance: BrowserService;
         /**
+         * Get current window title
          *
-         *
-         * @static
-         * @template T
-         * @param {new () => T} c
-         * @returns {T}
-         * @memberof DI
+         * @type {string}
+         * @memberof BrowserService
          */
-        static resolve<T>(c: new () => T): T;
         /**
-         * Use this for unit testing, this will push existing
-         * DI factory and all instances will be resolved with
-         * given instance
-         *
-         * @static
-         * @param {*} key
-         * @param {*} instance
-         * @memberof DI
+         * Set current window title
+         * @memberof BrowserService
          */
-        static push(key: any, instance: any): void;
+        title: string;
         /**
+         * Gets current location of browser, this does not return
+         * actual location but it returns values of browser location.
+         * This is done to provide mocking behaviour for unit testing.
          *
-         *
-         * @static
-         * @param {*} key
-         * @memberof DI
+         * @readonly
+         * @type {AtomLocation}
+         * @memberof BrowserService
          */
-        static pop(key: any): void;
+        readonly location: AtomLocation;
+        /**
+         * Navigate current browser to given url.
+         * @param {string} url
+         * @memberof BrowserService
+         */
+        navigate(url: string): void;
+        /**
+         * Get access to available appScope from Web Atoms.
+         * @readonly
+         * @type {*}
+         * @memberof BrowserService
+         */
+        readonly appScope: any;
     }
-    /**
-     * This decorator will register given class as singleton instance on DI.
-     *
-     *      @DIGlobal
-     *      class BackendService{
-     *      }
-     *
-     *
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIGlobal(c: any): any;
-    /**
-     * This decorator will register given class as transient instance on DI.
-     *
-     *      @DIAlwaysNew
-     *      class StringHelper{
-     *      }
-     *
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIAlwaysNew(c: any): any;
 }
-declare var DIGlobal: any;
-declare var DIAlwaysNew: any;
 declare function methodBuilder(method: string): (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function Return(type: {
     new ();
