@@ -622,6 +622,12 @@ var WebAtoms;
             _this["__proto__"] = AtomList.prototype;
             return _this;
         }
+        /**
+         * Adds the item in the list and refresh bindings
+         * @param {T} item
+         * @returns {number}
+         * @memberof AtomList
+         */
         AtomList.prototype.add = function (item) {
             var i = this.length;
             var n = this.push(item);
@@ -629,6 +635,11 @@ var WebAtoms;
             Atom.refresh(this, "length");
             return n;
         };
+        /**
+         * Add given items in the list and refresh bindings
+         * @param {Array<T>} items
+         * @memberof AtomList
+         */
         AtomList.prototype.addAll = function (items) {
             for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
                 var item = items_1[_i];
@@ -638,18 +649,50 @@ var WebAtoms;
                 Atom.refresh(this, "length");
             }
         };
+        /**
+         * Inserts given number in the list at position `i`
+         * and refreshes the bindings.
+         * @param {number} i
+         * @param {T} item
+         * @memberof AtomList
+         */
         AtomList.prototype.insert = function (i, item) {
             var n = this.splice(i, 0, item);
             AtomBinder.invokeItemsEvent(this, "add", i, item);
             Atom.refresh(this, "length");
         };
+        /**
+         * Removes item at given index i and refresh the bindings
+         * @param {number} i
+         * @memberof AtomList
+         */
         AtomList.prototype.removeAt = function (i) {
             var item = this[i];
             this.splice(i, 1);
             AtomBinder.invokeItemsEvent(this, "remove", i, item);
             Atom.refresh(this, "length");
         };
+        /**
+         * Removes given item or removes all items that match
+         * given lambda as true and refresh the bindings
+         * @param {(T | ((i:T) => boolean))} item
+         * @returns {boolean} `true` if any item was removed
+         * @memberof AtomList
+         */
         AtomList.prototype.remove = function (item) {
+            if (item instanceof Function) {
+                var index = 0;
+                var removed = false;
+                for (var _i = 0, _a = this; _i < _a.length; _i++) {
+                    var it = _a[_i];
+                    if (item(it)) {
+                        this.removeAt(index);
+                        removed = true;
+                    }
+                    index++;
+                }
+                return removed;
+            }
             var n = this.indexOf(item);
             if (n !== -1) {
                 this.removeAt(n);
@@ -657,6 +700,10 @@ var WebAtoms;
             }
             return false;
         };
+        /**
+         * Removes all items from the list and refreshes the bindings
+         * @memberof AtomList
+         */
         AtomList.prototype.clear = function () {
             this.length = 0;
             this.refresh();

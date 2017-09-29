@@ -262,11 +262,45 @@ declare namespace WebAtoms {
      */
     class AtomList<T> extends Array<T> {
         constructor();
+        /**
+         * Adds the item in the list and refresh bindings
+         * @param {T} item
+         * @returns {number}
+         * @memberof AtomList
+         */
         add(item: T): number;
+        /**
+         * Add given items in the list and refresh bindings
+         * @param {Array<T>} items
+         * @memberof AtomList
+         */
         addAll(items: Array<T>): void;
+        /**
+         * Inserts given number in the list at position `i`
+         * and refreshes the bindings.
+         * @param {number} i
+         * @param {T} item
+         * @memberof AtomList
+         */
         insert(i: number, item: T): void;
+        /**
+         * Removes item at given index i and refresh the bindings
+         * @param {number} i
+         * @memberof AtomList
+         */
         removeAt(i: number): void;
-        remove(item: T): boolean;
+        /**
+         * Removes given item or removes all items that match
+         * given lambda as true and refresh the bindings
+         * @param {(T | ((i:T) => boolean))} item
+         * @returns {boolean} `true` if any item was removed
+         * @memberof AtomList
+         */
+        remove(item: T | ((i: T) => boolean)): boolean;
+        /**
+         * Removes all items from the list and refreshes the bindings
+         * @memberof AtomList
+         */
         clear(): void;
         refresh(): void;
         watch(f: () => void): AtomDisposable;
