@@ -158,7 +158,7 @@ namespace WebAtoms {
 
             var dfd:AtomDisposable[] = [];
             for(var ft of fts){
-                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft);
+                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, this._isReady );
                 // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);

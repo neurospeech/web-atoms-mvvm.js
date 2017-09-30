@@ -577,7 +577,7 @@ declare namespace WebAtoms {
          * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
          * @memberof AtomWatcher
          */
-        constructor(target: T, path: string[] | (() => any), forValidation?: boolean);
+        constructor(target: T, path: string[] | (() => any), runAfterSetup: boolean, forValidation?: boolean);
         runEvaluate: () => any;
         toString(): string;
         /**

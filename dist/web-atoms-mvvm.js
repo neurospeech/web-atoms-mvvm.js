@@ -932,7 +932,7 @@ var WebAtoms;
             var dfd = [];
             for (var _a = 0, fts_2 = fts; _a < fts_2.length; _a++) {
                 var ft = fts_2[_a];
-                var d = new WebAtoms.AtomWatcher(this, ft);
+                var d = new WebAtoms.AtomWatcher(this, ft, this._isReady);
                 // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
@@ -1247,7 +1247,7 @@ var WebAtoms;
          * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
          * @memberof AtomWatcher
          */
-        function AtomWatcher(target, path, forValidation) {
+        function AtomWatcher(target, path, runAfterSetup, forValidation) {
             var _this = this;
             this._isExecuting = false;
             this.target = target;
@@ -1267,7 +1267,7 @@ var WebAtoms;
             };
             this.runEvaluate.watcher = this;
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
-            if (e) {
+            if (e && runAfterSetup) {
                 this.evaluate();
             }
         }
