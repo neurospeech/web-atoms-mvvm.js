@@ -31,12 +31,10 @@ namespace WebAtoms {
             // this is necessary for derived class initialization
 
             await Atom.delay(1);
-            try {
+            this.registerWatchers();
             await this.init();
-            }finally {
-                this.registerWatchers();
-            }
             this.onReady();
+            this._isReady = true;
         }
 
         // tslint:disable-next-line:no-empty
@@ -82,7 +80,6 @@ namespace WebAtoms {
                 console.error(`View Model watcher registration failed`);
                 console.error(e);
             }
-            this._isReady = true;
         }
 
         private validations:AtomWatcher<AtomViewModel>[] = [];

@@ -763,18 +763,12 @@ var WebAtoms;
                         case 1:
                             // this is necessary for derived class initialization
                             _a.sent();
-                            _a.label = 2;
-                        case 2:
-                            _a.trys.push([2, , 4, 5]);
-                            return [4 /*yield*/, this.init()];
-                        case 3:
-                            _a.sent();
-                            return [3 /*break*/, 5];
-                        case 4:
                             this.registerWatchers();
-                            return [7 /*endfinally*/];
-                        case 5:
+                            return [4 /*yield*/, this.init()];
+                        case 2:
+                            _a.sent();
                             this.onReady();
+                            this._isReady = true;
                             return [2 /*return*/];
                     }
                 });
@@ -825,7 +819,6 @@ var WebAtoms;
                 console.error("View Model watcher registration failed");
                 console.error(e);
             }
-            this._isReady = true;
         };
         /**
          * Internal method, do not use, instead use errors.hasErrors()
