@@ -261,4 +261,4 @@ var WebAtoms;
     }(WebAtoms.WindowService));
     WebAtoms.MockWindowService = MockWindowService;
 })(WebAtoms || (WebAtoms = {}));
-//# sourceMappingURL=web-atoms-mock-window-service.js.map
+//# sourceMappingURL=web-atoms-mvvm-mock.js.map

@@ -23,12 +23,17 @@ global.window = {
         createControl: function(){
 
         }
+    },
+    WebAtoms:{
+
     }
 };
 
+global.WebAtoms = global.window.WebAtoms;
+
 loadScript("./node_modules/web-atoms-unit/web-atoms-mock.js")
 loadScript("./dist/web-atoms-mvvm.js");
-loadScript("./dist/web-atoms-mock-window-service.js");
+loadScript("./dist/web-atoms-mvvm-mock.js");
 loadScript("./node_modules/web-atoms-unit/index.js");
 
 // load your tests..

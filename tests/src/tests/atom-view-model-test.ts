@@ -54,8 +54,6 @@ class SampleViewModel extends AtomViewModel{
 
         this.broadcast("ui-alert","Model is ready");
 
-        await Atom.delay(10);
-
         this.list.add({
             name: "Sample"
         });
@@ -81,7 +79,7 @@ class AtomViewModelTest extends TestItem{
     async validation (){
         var sm: SampleViewModel = new SampleViewModel();
 
-        await this.delay(100);
+        await sm.waitForReady();
 
         Atom.set(sm,"data.firstName","something");
 
@@ -99,7 +97,7 @@ class AtomViewModelTest extends TestItem{
     async watch () {
         var sm: SampleViewModel = new SampleViewModel();
 
-        await this.delay(100);
+        await sm.waitForReady();
 
         var fullName = "";
         Atom.set(sm,"data.lastName","");
@@ -132,7 +130,7 @@ class AtomViewModelTest extends TestItem{
 
         var sm: SampleViewModel = new SampleViewModel();
         
-        await this.delay(100);
+        await sm.waitForReady();
 
         WebAtoms.AtomDevice.instance.broadcast("message1","message-1");
 
@@ -158,7 +156,7 @@ class AtomViewModelTest extends TestItem{
             nameUpated = true;
         });
 
-        await this.delay(100);
+        await vm.waitForReady();
 
         vm.name = "changed";
 
@@ -185,7 +183,7 @@ class AtomViewModelTest extends TestItem{
 
         var vm:SampleViewModel = new SampleViewModel();
 
-        await this.delay(1000);
+        await vm.waitForReady();
 
         Assert.equals(msg.message, "ui-alert");
         Assert.equals(msg.data,"Model is ready");
@@ -204,7 +202,7 @@ class AtomViewModelTest extends TestItem{
             eventCalled = true;
         });
 
-        await this.delay(1000);
+        await vm.waitForReady();
 
         Assert.isTrue(eventCalled);
 

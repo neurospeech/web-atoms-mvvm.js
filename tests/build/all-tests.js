@@ -122,18 +122,12 @@ var SampleViewModel = /** @class */ (function (_super) {
     SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        initCalled = true;
-                        this.broadcast("ui-alert", "Model is ready");
-                        return [4 /*yield*/, Atom.delay(10)];
-                    case 1:
-                        _a.sent();
-                        this.list.add({
-                            name: "Sample"
-                        });
-                        return [2 /*return*/];
-                }
+                initCalled = true;
+                this.broadcast("ui-alert", "Model is ready");
+                this.list.add({
+                    name: "Sample"
+                });
+                return [2 /*return*/];
             });
         });
     };
@@ -173,7 +167,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         sm = new SampleViewModel();
-                        return [4 /*yield*/, this.delay(100)];
+                        return [4 /*yield*/, sm.waitForReady()];
                     case 1:
                         _a.sent();
                         Atom.set(sm, "data.firstName", "something");
@@ -193,7 +187,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         sm = new SampleViewModel();
-                        return [4 /*yield*/, this.delay(100)];
+                        return [4 /*yield*/, sm.waitForReady()];
                     case 1:
                         _a.sent();
                         fullName = "";
@@ -220,7 +214,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         sm = new SampleViewModel();
-                        return [4 /*yield*/, this.delay(100)];
+                        return [4 /*yield*/, sm.waitForReady()];
                     case 1:
                         _a.sent();
                         WebAtoms.AtomDevice.instance.broadcast("message1", "message-1");
@@ -244,7 +238,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         subscription = Atom.watch(vm, "name", function () {
                             nameUpated = true;
                         });
-                        return [4 /*yield*/, this.delay(100)];
+                        return [4 /*yield*/, vm.waitForReady()];
                     case 1:
                         _a.sent();
                         vm.name = "changed";
@@ -270,7 +264,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                             msg.data = g;
                         });
                         vm = new SampleViewModel();
-                        return [4 /*yield*/, this.delay(1000)];
+                        return [4 /*yield*/, vm.waitForReady()];
                     case 1:
                         _a.sent();
                         Assert.equals(msg.message, "ui-alert");
@@ -292,7 +286,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         subscription = vm.list.watch(function () {
                             eventCalled = true;
                         });
-                        return [4 /*yield*/, this.delay(1000)];
+                        return [4 /*yield*/, vm.waitForReady()];
                     case 1:
                         _a.sent();
                         Assert.isTrue(eventCalled);

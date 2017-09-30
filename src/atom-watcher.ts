@@ -293,8 +293,15 @@ namespace WebAtoms {
             (this.runEvaluate as any).watcher = this;
 
             this.path = path.map( x => x.split(".").map( y => new ObjectProperty(y) ) );
-            if(e && runAfterSetup) {
-                this.evaluate();
+            if(e) {
+                if(runAfterSetup) {
+                    this.evaluate();
+                }else {
+                    // setup watcher...
+                    for(var p of this.path) {
+                        this.evaluatePath(this.target,p);
+                    }
+                }
             }
 
         }

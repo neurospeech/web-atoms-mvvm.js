@@ -4,7 +4,7 @@
         "watch": true,
         "experimentalDecorators": true,
         "module":"none",
-        "outFile": "../dist/web-atoms-mock-window-service.js",
+        "outFile": "../dist/web-atoms-mvvm-mock.js",
         "sourceMap": true,
         "declaration": true
     },

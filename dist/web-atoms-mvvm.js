@@ -460,15 +460,31 @@ var WebAtoms;
         WebAtoms.dispatcher.callLater(f);
     };
     Atom.postAsync = function (f) {
+        var _this = this;
         return new Promise(function (resolve, reject) {
-            WebAtoms.dispatcher.callLater(function () {
-                try {
-                    f();
-                }
-                finally {
-                    resolve("done");
-                }
-            });
+            WebAtoms.dispatcher.callLater(function () { return __awaiter(_this, void 0, void 0, function () {
+                var p, e_1;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 3, , 4]);
+                            p = f();
+                            if (!(p && p.then && p.catch)) return [3 /*break*/, 2];
+                            return [4 /*yield*/, p];
+                        case 1:
+                            _a.sent();
+                            _a.label = 2;
+                        case 2:
+                            resolve();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            e_1 = _a.sent();
+                            reject(e_1);
+                            return [3 /*break*/, 4];
+                        case 4: return [2 /*return*/];
+                    }
+                });
+            }); });
         });
     };
     Atom.using = function (d, f) {
@@ -773,33 +789,49 @@ var WebAtoms;
                 var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
-                                var _this = this;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            this.registerWatchers();
-                                            return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
-                                                    return __generator(this, function (_a) {
-                                                        switch (_a.label) {
-                                                            case 0: return [4 /*yield*/, this.init()];
-                                                            case 1:
-                                                                _a.sent();
-                                                                this.onReady();
-                                                                this._isReady = true;
-                                                                return [2 /*return*/];
-                                                        }
-                                                    });
-                                                }); })];
-                                        case 1:
-                                            _a.sent();
-                                            return [2 /*return*/];
-                                    }
-                                });
-                            }); })];
+                        case 0:
+                            _a.trys.push([0, , 3, 4]);
+                            return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        this.registerWatchers();
+                                        return [2 /*return*/];
+                                    });
+                                }); })];
                         case 1:
                             _a.sent();
-                            return [2 /*return*/];
+                            return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0: return [4 /*yield*/, this.init()];
+                                            case 1:
+                                                _a.sent();
+                                                this.onReady();
+                                                return [2 /*return*/];
+                                        }
+                                    });
+                                }); })];
+                        case 2:
+                            _a.sent();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            this._isReady = true;
+                            return [7 /*endfinally*/];
+                        case 4: return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        AtomViewModel.prototype.waitForReady = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!!this._isReady) return [3 /*break*/, 2];
+                            return [4 /*yield*/, Atom.delay(100)];
+                        case 1:
+                            _a.sent();
+                            return [3 /*break*/, 0];
+                        case 2: return [2 /*return*/];
                     }
                 });
             });
@@ -1267,8 +1299,17 @@ var WebAtoms;
             };
             this.runEvaluate.watcher = this;
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
-            if (e && runAfterSetup) {
-                this.evaluate();
+            if (e) {
+                if (runAfterSetup) {
+                    this.evaluate();
+                }
+                else {
+                    // setup watcher...
+                    for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
+                        var p = _a[_i];
+                        this.evaluatePath(this.target, p);
+                    }
+                }
             }
         }
         AtomWatcher.prototype.evaluatePath = function (target, path) {

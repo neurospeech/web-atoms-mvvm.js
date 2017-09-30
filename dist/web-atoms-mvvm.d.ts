@@ -315,6 +315,7 @@ declare namespace WebAtoms {
         readonly isReady: boolean;
         constructor();
         private privateInit();
+        waitForReady(): Promise<any>;
         protected onReady(): void;
         private registerWatchers();
         private validations;

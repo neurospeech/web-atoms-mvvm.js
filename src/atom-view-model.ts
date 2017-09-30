@@ -28,14 +28,24 @@ namespace WebAtoms {
         }
 
         private async privateInit():Promise<any> {
-            await Atom.postAsync(async () => {
-                this.registerWatchers();
+            try {
+                await Atom.postAsync(async () => {
+                    this.registerWatchers();
+                });
                 await Atom.postAsync(async ()=> {
                     await this.init();
                     this.onReady();
-                    this._isReady = true;
                 });
-            });
+            }
+            finally {
+                this._isReady = true;
+            }
+        }
+
+        public async waitForReady():Promise<any> {
+            while(!this._isReady) {
+                await Atom.delay(100);
+            }
         }
 
         // tslint:disable-next-line:no-empty

@@ -69,13 +69,17 @@ namespace WebAtoms {
         (WebAtoms as any).dispatcher.callLater(f);
     }
 
-    Atom.postAsync = function(f:()=>void):Promise<any> {
+    Atom.postAsync = function(f:()=>any):Promise<any> {
         return new Promise((resolve,reject)=> {
-            (WebAtoms as any).dispatcher.callLater(()=> {
+            (WebAtoms as any).dispatcher.callLater(async ()=> {
                 try {
-                    f();
-                }finally {
-                    resolve("done");
+                    var p:any = f();
+                    if(p && p.then && p.catch) {
+                        await p;
+                    }
+                    resolve();
+                }catch(e) {
+                    reject(e);
                 }
             });
         });
