@@ -30,9 +30,11 @@ namespace WebAtoms {
         private async privateInit():Promise<any> {
             await Atom.postAsync(async () => {
                 this.registerWatchers();
-                await this.init();
-                this.onReady();
-                this._isReady = true;
+                await Atom.postAsync(async ()=> {
+                    await this.init();
+                    this.onReady();
+                    this._isReady = true;
+                });
             });
         }
 

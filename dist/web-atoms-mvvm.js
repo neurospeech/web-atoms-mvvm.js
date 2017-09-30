@@ -774,15 +774,25 @@ var WebAtoms;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0: return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
+                                var _this = this;
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
                                         case 0:
                                             this.registerWatchers();
-                                            return [4 /*yield*/, this.init()];
+                                            return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
+                                                    return __generator(this, function (_a) {
+                                                        switch (_a.label) {
+                                                            case 0: return [4 /*yield*/, this.init()];
+                                                            case 1:
+                                                                _a.sent();
+                                                                this.onReady();
+                                                                this._isReady = true;
+                                                                return [2 /*return*/];
+                                                        }
+                                                    });
+                                                }); })];
                                         case 1:
                                             _a.sent();
-                                            this.onReady();
-                                            this._isReady = true;
                                             return [2 /*return*/];
                                     }
                                 });
