@@ -45,17 +45,36 @@ namespace WebAtoms {
         private registerWatchers():void {
             try {
                 var v:any = this.constructor.prototype;
-                if(v && v._$_autoWatchers) {
-                    var aw:any = v._$_autoWatchers;
-                    for(var key in aw) {
-                        if(!aw.hasOwnProperty(key)) {
-                            continue;
+                if(v) {
+                    if(v._$_autoWatchers){
+                        var aw:any = v._$_autoWatchers;
+                        for(var key in aw) {
+                            if(!aw.hasOwnProperty(key)) {
+                                continue;
+                            }
+                            var vf:any = aw[key];
+                            if(vf.validate) {
+                                this.addValidation(vf.method);
+                            }else {
+                                this.watch(vf.method);
+                            }
                         }
-                        var vf:any = aw[key];
-                        if(vf.validate) {
-                            this.addValidation(vf.method);
-                        }else {
-                            this.watch(vf.method);
+                    }
+
+                    if(v._$_receivers) {
+                        var ar:any = v._$_receivers;
+                        for(var k in ar) {
+                            if(!ar.hasOwnProperty(k)) {
+                                continue;
+                            }
+                            var rf: Function = this[k] as Function;
+                            var messages:string[] = ar[k];
+                            for(var message of messages) {
+                                var d:AtomDisposable = AtomDevice.instance.subscribe(message, (msg,data) => {
+                                    rf.call(this, msg, data);
+                                });
+                                this.registerDisposable(d);
+                            }
                         }
                     }
                 }
@@ -180,6 +199,8 @@ namespace WebAtoms {
          * @memberof AtomViewModel
          */
         protected onMessage<T>(msg: string, a: (data: T) => void):void {
+
+            console.warn("Do not use onMessage, instead use @receive decorator...");
 
             var action: AtomAction = (m, d) => {
                 a(d as T);

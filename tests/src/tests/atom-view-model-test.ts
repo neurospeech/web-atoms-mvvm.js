@@ -38,6 +38,12 @@ class SampleViewModel extends AtomViewModel{
         this.errors = new SampleViewModelErrors();
     }
 
+    @receive("message1","message2")
+    receiveMessages(msg:string , data){
+        this.name = msg;
+        this.data = data;
+    }
+
     @watch
     watchName(){
         this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
@@ -119,6 +125,25 @@ class AtomViewModelTest extends TestItem{
         sm.dispose();
 
       
+    }
+
+    @Test("receive")
+    public async receive(){
+
+        var sm: SampleViewModel = new SampleViewModel();
+        
+        await this.delay(100);
+
+        WebAtoms.AtomDevice.instance.broadcast("message1","message-1");
+
+        Assert.equals("message1", sm.name);
+        Assert.equals("message-1", sm.data);
+
+        WebAtoms.AtomDevice.instance.broadcast("message2","message-2");
+        
+        Assert.equals("message2", sm.name);
+        Assert.equals("message-2", sm.data);
+                
     }
 
 

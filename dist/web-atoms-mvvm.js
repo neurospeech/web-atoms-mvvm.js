@@ -38,8 +38,6 @@ var WebAtoms;
         return DIFactory;
     }());
     /**
-     *
-     *
      * @export
      * @class DI
      */
@@ -47,8 +45,6 @@ var WebAtoms;
         function DI() {
         }
         /**
-         *
-         *
          * @static
          * @template T
          * @param {new () => T} key
@@ -66,8 +62,6 @@ var WebAtoms;
             DI.factory[k] = new DIFactory(key, factory, transient);
         };
         /**
-         *
-         *
          * @static
          * @template T
          * @param {new () => T} c
@@ -101,8 +95,6 @@ var WebAtoms;
             }
         };
         /**
-         *
-         *
          * @static
          * @param {*} key
          * @memberof DI
@@ -119,12 +111,10 @@ var WebAtoms;
     WebAtoms.DI = DI;
     /**
      * This decorator will register given class as singleton instance on DI.
-     *
+     * @example
      *      @DIGlobal
      *      class BackendService{
      *      }
-     *
-     *
      * @export
      * @param {new () => any} c
      * @returns
@@ -134,14 +124,12 @@ var WebAtoms;
         return c;
     }
     WebAtoms.DIGlobal = DIGlobal;
-    ;
     /**
      * This decorator will register given class as transient instance on DI.
-     *
+     * @example
      *      @DIAlwaysNew
      *      class StringHelper{
      *      }
-     *
      * @export
      * @param {new () => any} c
      * @returns
@@ -151,10 +139,25 @@ var WebAtoms;
         return c;
     }
     WebAtoms.DIAlwaysNew = DIAlwaysNew;
-    ;
 })(WebAtoms || (WebAtoms = {}));
 var DIGlobal = WebAtoms.DIGlobal;
 var DIAlwaysNew = WebAtoms.DIAlwaysNew;
+/**
+ * Receive messages for given channel
+ * @param {(string | RegExp)} channel
+ * @returns {Function}
+ */
+function receive() {
+    var channel = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        channel[_i] = arguments[_i];
+    }
+    return function (target, key) {
+        var t = target;
+        var receivers = t._$_receivers = t._$_receivers || {};
+        receivers[key] = channel;
+    };
+}
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -780,20 +783,40 @@ var WebAtoms;
         // tslint:disable-next-line:no-empty
         AtomViewModel.prototype.onReady = function () { };
         AtomViewModel.prototype.registerWatchers = function () {
+            var _this = this;
             try {
                 var v = this.constructor.prototype;
-                if (v && v._$_autoWatchers) {
-                    var aw = v._$_autoWatchers;
-                    for (var key in aw) {
-                        if (!aw.hasOwnProperty(key)) {
-                            continue;
+                if (v) {
+                    if (v._$_autoWatchers) {
+                        var aw = v._$_autoWatchers;
+                        for (var key in aw) {
+                            if (!aw.hasOwnProperty(key)) {
+                                continue;
+                            }
+                            var vf = aw[key];
+                            if (vf.validate) {
+                                this.addValidation(vf.method);
+                            }
+                            else {
+                                this.watch(vf.method);
+                            }
                         }
-                        var vf = aw[key];
-                        if (vf.validate) {
-                            this.addValidation(vf.method);
-                        }
-                        else {
-                            this.watch(vf.method);
+                    }
+                    if (v._$_receivers) {
+                        var ar = v._$_receivers;
+                        for (var k in ar) {
+                            if (!ar.hasOwnProperty(k)) {
+                                continue;
+                            }
+                            var rf = this[k];
+                            var messages = ar[k];
+                            for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
+                                var message = messages_1[_i];
+                                var d = WebAtoms.AtomDevice.instance.subscribe(message, function (msg, data) {
+                                    rf.call(_this, msg, data);
+                                });
+                                this.registerDisposable(d);
+                            }
                         }
                     }
                 }
@@ -922,6 +945,7 @@ var WebAtoms;
          * @memberof AtomViewModel
          */
         AtomViewModel.prototype.onMessage = function (msg, a) {
+            console.warn("Do not use onMessage, instead use @receive decorator...");
             var action = function (m, d) {
                 a(d);
             };

@@ -262,12 +262,11 @@ And you have set `atom-view-model` to `NotificationServiceViewModel`
 
             this.removeCommand = new AtomCommand <AtomNotification>(n => this.onRemoveCommand(n));
 
+        }
 
-
-            // subscribe to UI notifications sent by anyone...
-            this.onMessage<AtomNotification>(
-                "ui-notification",
-                (m, n) => this.onNotified(n);
+        @receive("ui-notification")
+        uiNotification(channel:string, data: AtomNotification){
+            this.onNotified(data);
         }
 
         async onRemoveCommand(n: AtomNotification): Promise<any> {
@@ -397,15 +396,7 @@ binds to `enabled` property.
         async init();
         dispose();
 
-        // should only be called in constructor
-        onMessage<T>(message:string,action:(msg:string,T)=>any);
-
         broadcast(message:string,data:any);
-
-        // registers watch for item
-        // and it will automatically call dispose on subscription
-        // when View Model will be disposed
-        watch(...f:(()=>any)[]);
 
         addValidation(...f:(()=>any)[]);
 
@@ -416,6 +407,16 @@ binds to `enabled` property.
         // called when any property of view model
         // is changed
         onPropertyChanged(name:string);
+
+
+        // decorators for AtomViewModel
+
+        // @receive(...string[]) sets up receiver for broadcast for given channels
+
+        // @watch sets up watching and evaluating expressions when any of property gets modified
+
+        // @validate sets up validation (same as addValidation)
+
     }
 ```
 
@@ -450,7 +451,7 @@ binds to `enabled` property.
         addAll(items:Array<T>);
         insert(i: number, item: T);
         removeAt(i: number);
-        remove(item: T);
+        remove(item: T| (t:T) => bool);
         clear();
         
         // refreshes binding

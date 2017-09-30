@@ -3,9 +3,9 @@
  */
 
 
- namespace WebAtoms{
+ namespace WebAtoms {
 
-    class DIFactory{
+    class DIFactory {
 
         factory: () => any;
 
@@ -14,10 +14,9 @@
         transient: boolean;
 
         constructor(
-            key: any, 
+            key: any,
             factory:()=>any,
-            transient: boolean)
-        {
+            transient: boolean) {
             this.transient = transient;
             this.factory = factory;
             this.key = key;
@@ -25,8 +24,8 @@
 
         instance: any;
 
-        resolve(){
-            if(this.transient){
+        resolve():any {
+            if(this.transient) {
                 return this.factory();
             }
             return this.instance || (this.instance = this.factory());
@@ -34,7 +33,7 @@
 
         stack:Array<{factory:()=>any, transient:boolean, instance:any}>;
 
-        push(factory:()=>any, transient:boolean){
+        push(factory:()=>any, transient:boolean):void {
             this.stack = this.stack || [];
             this.stack.push({
                 factory: this.factory,
@@ -46,11 +45,11 @@
             this.factory = factory;
         }
 
-        pop(){
-            if(!(this.stack && this.stack.length)){
+        pop():void {
+            if(!(this.stack && this.stack.length)) {
                 throw new Error("Stack in DIFactory is empty");
             }
-            var obj = this.stack.pop();
+            var obj:any = this.stack.pop();
             this.factory = obj.factory;
             this.transient = obj.transient;
             this.instance = obj.instance;
@@ -59,87 +58,79 @@
     }
 
     /**
-     * 
-     * 
      * @export
      * @class DI
      */
-    export class DI{
+    export class DI {
 
         private static factory:any = {};
 
         /**
-         * 
-         * 
          * @static
-         * @template T 
-         * @param {new () => T} key 
-         * @param {() => T} factory 
+         * @template T
+         * @param {new () => T} key
+         * @param {() => T} factory
          * @param {boolean} [transient=false] - If true, always new instance will be created
          * @memberof DI
          */
         static register<T>(
-            key: new () => T, 
+            key: new () => T,
             factory: () => T,
-            transient: boolean = false ){
+            transient: boolean = false ):void {
 
-            var k = key as any;
+            var k:any = key as any;
 
-            var existing = DI.factory[k];
-            if(existing){
+            var existing:any = DI.factory[k];
+            if(existing) {
                 throw new Error(`Factory for ${key.name} is already registered`);
             }
             DI.factory[k] = new DIFactory(key,factory,transient);
         }
 
         /**
-         * 
-         * 
          * @static
-         * @template T 
-         * @param {new () => T} c 
-         * @returns {T} 
+         * @template T
+         * @param {new () => T} c
+         * @returns {T}
          * @memberof DI
          */
-        static resolve<T>(c: new () => T ):T{
+        static resolve<T>(c: new () => T ):T {
 
             var f:DIFactory = DI.factory[c as any];
-            if(!f){
+            if(!f) {
                 throw new Error("No factory registered for " + c);
             }
-            return f.resolve();
+            return f.resolve() as T;
         }
 
-        
+
         /**
          * Use this for unit testing, this will push existing
          * DI factory and all instances will be resolved with
          * given instance
-         * 
+         *
          * @static
-         * @param {*} key 
-         * @param {*} instance 
+         * @param {*} key
+         * @param {*} instance
          * @memberof DI
          */
-        static push(key:any, instance:any){
-            var f = DI.factory[key] as DIFactory;
-            if(!f){
+        static push(key:any, instance:any):void {
+            var f:DIFactory = DI.factory[key] as DIFactory;
+            if(!f) {
                 DI.register(key, () => instance);
-            }else{
+            }else {
                 f.push(()=> instance, true);
             }
         }
 
         /**
-         * 
-         * 
          * @static
-         * @param {*} key 
+         * @param {*} key
          * @memberof DI
          */
-        static pop(key:any){
-            var f = DI.factory[key] as DIFactory;
-            if(f){
+        static pop(key:any):void {
+            var f:any = DI.factory[key] as DIFactory;
+            if(f) {
                 f.pop();
             }
         }
@@ -147,37 +138,34 @@
 
     /**
      * This decorator will register given class as singleton instance on DI.
-     * 
+     * @example
      *      @DIGlobal
      *      class BackendService{
      *      }
-     * 
-     * 
      * @export
-     * @param {new () => any} c 
-     * @returns 
+     * @param {new () => any} c
+     * @returns
      */
     export function DIGlobal(c: any): any {
         DI.register(c,()=> new c());
         return c;
-    };
-    
+    }
+
     /**
      * This decorator will register given class as transient instance on DI.
-     * 
+     * @example
      *      @DIAlwaysNew
      *      class StringHelper{
      *      }
-     * 
      * @export
-     * @param {new () => any} c 
-     * @returns 
+     * @param {new () => any} c
+     * @returns
      */
     export function DIAlwaysNew(c: any): any {
         DI.register(c,()=> new c(), true);
         return c;
-    };
-        
+    }
+
 
 
 }
@@ -185,3 +173,15 @@
 var DIGlobal: any = WebAtoms.DIGlobal;
 var DIAlwaysNew: any = WebAtoms.DIAlwaysNew;
 
+/**
+ * Receive messages for given channel
+ * @param {(string | RegExp)} channel
+ * @returns {Function}
+ */
+function receive(...channel:string[]):Function {
+    return function(target:WebAtoms.AtomViewModel, key: string | symbol):void {
+        var t:any = target as any;
+        var receivers:any = t._$_receivers = t._$_receivers || {};
+        receivers[key] = channel;
+    };
+}

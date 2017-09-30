@@ -3,16 +3,12 @@
  */
 declare namespace WebAtoms {
     /**
-     *
-     *
      * @export
      * @class DI
      */
     class DI {
         private static factory;
         /**
-         *
-         *
          * @static
          * @template T
          * @param {new () => T} key
@@ -22,8 +18,6 @@ declare namespace WebAtoms {
          */
         static register<T>(key: new () => T, factory: () => T, transient?: boolean): void;
         /**
-         *
-         *
          * @static
          * @template T
          * @param {new () => T} c
@@ -43,8 +37,6 @@ declare namespace WebAtoms {
          */
         static push(key: any, instance: any): void;
         /**
-         *
-         *
          * @static
          * @param {*} key
          * @memberof DI
@@ -53,12 +45,10 @@ declare namespace WebAtoms {
     }
     /**
      * This decorator will register given class as singleton instance on DI.
-     *
+     * @example
      *      @DIGlobal
      *      class BackendService{
      *      }
-     *
-     *
      * @export
      * @param {new () => any} c
      * @returns
@@ -66,11 +56,10 @@ declare namespace WebAtoms {
     function DIGlobal(c: any): any;
     /**
      * This decorator will register given class as transient instance on DI.
-     *
+     * @example
      *      @DIAlwaysNew
      *      class StringHelper{
      *      }
-     *
      * @export
      * @param {new () => any} c
      * @returns
@@ -79,6 +68,12 @@ declare namespace WebAtoms {
 }
 declare var DIGlobal: any;
 declare var DIAlwaysNew: any;
+/**
+ * Receive messages for given channel
+ * @param {(string | RegExp)} channel
+ * @returns {Function}
+ */
+declare function receive(...channel: string[]): Function;
 declare var Atom: any;
 declare var AtomBinder: any;
 /**

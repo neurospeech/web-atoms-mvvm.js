@@ -112,6 +112,10 @@ var SampleViewModel = /** @class */ (function (_super) {
         _this.errors = new SampleViewModelErrors();
         return _this;
     }
+    SampleViewModel.prototype.receiveMessages = function (msg, data) {
+        this.name = msg;
+        this.data = data;
+    };
     SampleViewModel.prototype.watchName = function () {
         this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
     };
@@ -149,6 +153,9 @@ var SampleViewModel = /** @class */ (function (_super) {
     __decorate([
         bindableProperty
     ], SampleViewModel.prototype, "list", void 0);
+    __decorate([
+        receive("message1", "message2")
+    ], SampleViewModel.prototype, "receiveMessages", null);
     __decorate([
         watch
     ], SampleViewModel.prototype, "watchName", null);
@@ -201,6 +208,27 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         Atom.set(sm, "data.lastName", "Kav");
                         Assert.equals(sm.data.fullName, "Akash Kava");
                         sm.dispose();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    AtomViewModelTest.prototype.receive = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var sm;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        sm = new SampleViewModel();
+                        return [4 /*yield*/, this.delay(100)];
+                    case 1:
+                        _a.sent();
+                        WebAtoms.AtomDevice.instance.broadcast("message1", "message-1");
+                        Assert.equals("message1", sm.name);
+                        Assert.equals("message-1", sm.data);
+                        WebAtoms.AtomDevice.instance.broadcast("message2", "message-2");
+                        Assert.equals("message2", sm.name);
+                        Assert.equals("message-2", sm.data);
                         return [2 /*return*/];
                 }
             });
@@ -283,6 +311,9 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     __decorate([
         Test("watch")
     ], AtomViewModelTest.prototype, "watch", null);
+    __decorate([
+        Test("receive")
+    ], AtomViewModelTest.prototype, "receive", null);
     __decorate([
         Test("bindableProperty")
     ], AtomViewModelTest.prototype, "run", null);
