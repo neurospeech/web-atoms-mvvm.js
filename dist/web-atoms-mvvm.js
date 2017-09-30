@@ -456,6 +456,21 @@ var WebAtoms;
         }
         return oldCreateControl.call(Atom, element, type, data, newScope);
     };
+    Atom.post = function (f) {
+        WebAtoms.dispatcher.callLater(f);
+    };
+    Atom.postAsync = function (f) {
+        return new Promise(function (resolve, reject) {
+            WebAtoms.dispatcher.callLater(function () {
+                try {
+                    f();
+                }
+                finally {
+                    resolve("done");
+                }
+            });
+        });
+    };
     Atom.using = function (d, f) {
         try {
             f();
@@ -755,20 +770,25 @@ var WebAtoms;
         });
         AtomViewModel.prototype.privateInit = function () {
             return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: 
-                        // this is necessary for derived class initialization
-                        return [4 /*yield*/, Atom.delay(1)];
+                        case 0: return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0:
+                                            this.registerWatchers();
+                                            return [4 /*yield*/, this.init()];
+                                        case 1:
+                                            _a.sent();
+                                            this.onReady();
+                                            this._isReady = true;
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
                         case 1:
-                            // this is necessary for derived class initialization
                             _a.sent();
-                            this.registerWatchers();
-                            return [4 /*yield*/, this.init()];
-                        case 2:
-                            _a.sent();
-                            this.onReady();
-                            this._isReady = true;
                             return [2 /*return*/];
                     }
                 });

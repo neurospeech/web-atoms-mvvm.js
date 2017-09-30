@@ -28,13 +28,12 @@ namespace WebAtoms {
         }
 
         private async privateInit():Promise<any> {
-            // this is necessary for derived class initialization
-
-            await Atom.delay(1);
-            this.registerWatchers();
-            await this.init();
-            this.onReady();
-            this._isReady = true;
+            await Atom.postAsync(async () => {
+                this.registerWatchers();
+                await this.init();
+                this.onReady();
+                this._isReady = true;
+            });
         }
 
         // tslint:disable-next-line:no-empty
@@ -44,7 +43,7 @@ namespace WebAtoms {
             try {
                 var v:any = this.constructor.prototype;
                 if(v) {
-                    if(v._$_autoWatchers){
+                    if(v._$_autoWatchers) {
                         var aw:any = v._$_autoWatchers;
                         for(var key in aw) {
                             if(!aw.hasOwnProperty(key)) {
