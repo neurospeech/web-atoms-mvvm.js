@@ -133,7 +133,7 @@ namespace WebAtoms {
             var ds: Array<AtomDisposable> = [];
 
             for(var ft of fts){
-                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, true);
+                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, false, true);
                 this.validations.push(d);
                 this.registerDisposable(d);
                 ds.push(d);

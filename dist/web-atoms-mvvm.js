@@ -924,7 +924,7 @@ var WebAtoms;
             var ds = [];
             for (var _a = 0, fts_1 = fts; _a < fts_1.length; _a++) {
                 var ft = fts_1[_a];
-                var d = new WebAtoms.AtomWatcher(this, ft, true);
+                var d = new WebAtoms.AtomWatcher(this, ft, false, true);
                 this.validations.push(d);
                 this.registerDisposable(d);
                 ds.push(d);
