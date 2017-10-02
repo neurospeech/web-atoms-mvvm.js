@@ -149,6 +149,9 @@ var ComponentGenerator;
         };
         HtmlContent.formLayoutNode = function (a) {
             var cl1 = a.children.filter(function (c) { return c.type == "tag"; }).map(function (c) {
+                var fieldAttributes = {
+                    "class": "atom-field"
+                };
                 var aa = c.attribs || {};
                 var label = aa["atom-label"] || "";
                 if (label) {
@@ -171,6 +174,12 @@ var ComponentGenerator;
                 var error = aa["atom-error"] || "";
                 if (error) {
                     delete aa["atom-error"];
+                }
+                var fieldVisible = aa["atom-field-visible"] || aa["field-visible"];
+                if (fieldVisible) {
+                    delete aa["atom-field-visible"];
+                    delete aa["field-visible"];
+                    fieldAttributes["style-display"] = fieldVisible;
                 }
                 var errorAttribs = {
                     "class": "atom-error",
@@ -214,9 +223,7 @@ var ComponentGenerator;
                 return {
                     name: "div",
                     type: "tag",
-                    attribs: {
-                        "class": "atom-field"
-                    },
+                    attribs: fieldAttributes,
                     children: cl
                 };
             });
