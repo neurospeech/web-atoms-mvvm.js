@@ -272,7 +272,7 @@ namespace WebAtoms {
          * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
          * @memberof AtomWatcher
          */
-        constructor(target:T, path:string[] | (() => any) , forValidation?:boolean) {
+        constructor(target:T, path:string[] | (() => any) , runAfterSetup:boolean, forValidation?:boolean) {
             this.target = target;
             var e:boolean = false;
             if(forValidation === true) {
@@ -294,7 +294,14 @@ namespace WebAtoms {
 
             this.path = path.map( x => x.split(".").map( y => new ObjectProperty(y) ) );
             if(e) {
-                this.evaluate();
+                if(runAfterSetup) {
+                    this.evaluate();
+                }else {
+                    // setup watcher...
+                    for(var p of this.path) {
+                        this.evaluatePath(this.target,p);
+                    }
+                }
             }
 
         }

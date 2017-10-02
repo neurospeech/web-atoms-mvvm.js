@@ -38,8 +38,6 @@ var WebAtoms;
         return DIFactory;
     }());
     /**
-     *
-     *
      * @export
      * @class DI
      */
@@ -47,8 +45,6 @@ var WebAtoms;
         function DI() {
         }
         /**
-         *
-         *
          * @static
          * @template T
          * @param {new () => T} key
@@ -66,8 +62,6 @@ var WebAtoms;
             DI.factory[k] = new DIFactory(key, factory, transient);
         };
         /**
-         *
-         *
          * @static
          * @template T
          * @param {new () => T} c
@@ -101,8 +95,6 @@ var WebAtoms;
             }
         };
         /**
-         *
-         *
          * @static
          * @param {*} key
          * @memberof DI
@@ -119,12 +111,10 @@ var WebAtoms;
     WebAtoms.DI = DI;
     /**
      * This decorator will register given class as singleton instance on DI.
-     *
+     * @example
      *      @DIGlobal
      *      class BackendService{
      *      }
-     *
-     *
      * @export
      * @param {new () => any} c
      * @returns
@@ -134,14 +124,12 @@ var WebAtoms;
         return c;
     }
     WebAtoms.DIGlobal = DIGlobal;
-    ;
     /**
      * This decorator will register given class as transient instance on DI.
-     *
+     * @example
      *      @DIAlwaysNew
      *      class StringHelper{
      *      }
-     *
      * @export
      * @param {new () => any} c
      * @returns
@@ -151,10 +139,25 @@ var WebAtoms;
         return c;
     }
     WebAtoms.DIAlwaysNew = DIAlwaysNew;
-    ;
 })(WebAtoms || (WebAtoms = {}));
 var DIGlobal = WebAtoms.DIGlobal;
 var DIAlwaysNew = WebAtoms.DIAlwaysNew;
+/**
+ * Receive messages for given channel
+ * @param {(string | RegExp)} channel
+ * @returns {Function}
+ */
+function receive() {
+    var channel = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        channel[_i] = arguments[_i];
+    }
+    return function (target, key) {
+        var t = target;
+        var receivers = t._$_receivers = t._$_receivers || {};
+        receivers[key] = channel;
+    };
+}
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -452,6 +455,37 @@ var WebAtoms;
             }
         }
         return oldCreateControl.call(Atom, element, type, data, newScope);
+    };
+    Atom.post = function (f) {
+        WebAtoms.dispatcher.callLater(f);
+    };
+    Atom.postAsync = function (f) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            WebAtoms.dispatcher.callLater(function () { return __awaiter(_this, void 0, void 0, function () {
+                var p, e_1;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 3, , 4]);
+                            p = f();
+                            if (!(p && p.then && p.catch)) return [3 /*break*/, 2];
+                            return [4 /*yield*/, p];
+                        case 1:
+                            _a.sent();
+                            _a.label = 2;
+                        case 2:
+                            resolve();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            e_1 = _a.sent();
+                            reject(e_1);
+                            return [3 /*break*/, 4];
+                        case 4: return [2 /*return*/];
+                    }
+                });
+            }); });
+        });
     };
     Atom.using = function (d, f) {
         try {
@@ -752,27 +786,52 @@ var WebAtoms;
         });
         AtomViewModel.prototype.privateInit = function () {
             return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: 
-                        // this is necessary for derived class initialization
-                        return [4 /*yield*/, Atom.delay(1)];
+                        case 0:
+                            _a.trys.push([0, , 3, 4]);
+                            return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        this.registerWatchers();
+                                        return [2 /*return*/];
+                                    });
+                                }); })];
                         case 1:
-                            // this is necessary for derived class initialization
                             _a.sent();
-                            _a.label = 2;
+                            return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0: return [4 /*yield*/, this.init()];
+                                            case 1:
+                                                _a.sent();
+                                                this.onReady();
+                                                return [2 /*return*/];
+                                        }
+                                    });
+                                }); })];
                         case 2:
-                            _a.trys.push([2, , 4, 5]);
-                            return [4 /*yield*/, this.init()];
-                        case 3:
                             _a.sent();
-                            return [3 /*break*/, 5];
-                        case 4:
-                            this.registerWatchers();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            this._isReady = true;
                             return [7 /*endfinally*/];
-                        case 5:
-                            this.onReady();
-                            return [2 /*return*/];
+                        case 4: return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        AtomViewModel.prototype.waitForReady = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!!this._isReady) return [3 /*break*/, 2];
+                            return [4 /*yield*/, Atom.delay(100)];
+                        case 1:
+                            _a.sent();
+                            return [3 /*break*/, 0];
+                        case 2: return [2 /*return*/];
                     }
                 });
             });
@@ -780,20 +839,40 @@ var WebAtoms;
         // tslint:disable-next-line:no-empty
         AtomViewModel.prototype.onReady = function () { };
         AtomViewModel.prototype.registerWatchers = function () {
+            var _this = this;
             try {
                 var v = this.constructor.prototype;
-                if (v && v._$_autoWatchers) {
-                    var aw = v._$_autoWatchers;
-                    for (var key in aw) {
-                        if (!aw.hasOwnProperty(key)) {
-                            continue;
+                if (v) {
+                    if (v._$_autoWatchers) {
+                        var aw = v._$_autoWatchers;
+                        for (var key in aw) {
+                            if (!aw.hasOwnProperty(key)) {
+                                continue;
+                            }
+                            var vf = aw[key];
+                            if (vf.validate) {
+                                this.addValidation(vf.method);
+                            }
+                            else {
+                                this.watch(vf.method);
+                            }
                         }
-                        var vf = aw[key];
-                        if (vf.validate) {
-                            this.addValidation(vf.method);
-                        }
-                        else {
-                            this.watch(vf.method);
+                    }
+                    if (v._$_receivers) {
+                        var ar = v._$_receivers;
+                        for (var k in ar) {
+                            if (!ar.hasOwnProperty(k)) {
+                                continue;
+                            }
+                            var rf = this[k];
+                            var messages = ar[k];
+                            for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
+                                var message = messages_1[_i];
+                                var d = WebAtoms.AtomDevice.instance.subscribe(message, function (msg, data) {
+                                    rf.call(_this, msg, data);
+                                });
+                                this.registerDisposable(d);
+                            }
                         }
                     }
                 }
@@ -802,7 +881,6 @@ var WebAtoms;
                 console.error("View Model watcher registration failed");
                 console.error(e);
             }
-            this._isReady = true;
         };
         /**
          * Internal method, do not use, instead use errors.hasErrors()
@@ -846,7 +924,7 @@ var WebAtoms;
             var ds = [];
             for (var _a = 0, fts_1 = fts; _a < fts_1.length; _a++) {
                 var ft = fts_1[_a];
-                var d = new WebAtoms.AtomWatcher(this, ft, true);
+                var d = new WebAtoms.AtomWatcher(this, ft, false, true);
                 this.validations.push(d);
                 this.registerDisposable(d);
                 ds.push(d);
@@ -886,7 +964,7 @@ var WebAtoms;
             var dfd = [];
             for (var _a = 0, fts_2 = fts; _a < fts_2.length; _a++) {
                 var ft = fts_2[_a];
-                var d = new WebAtoms.AtomWatcher(this, ft);
+                var d = new WebAtoms.AtomWatcher(this, ft, this._isReady);
                 // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
@@ -922,6 +1000,7 @@ var WebAtoms;
          * @memberof AtomViewModel
          */
         AtomViewModel.prototype.onMessage = function (msg, a) {
+            console.warn("Do not use onMessage, instead use @receive decorator...");
             var action = function (m, d) {
                 a(d);
             };
@@ -1200,7 +1279,7 @@ var WebAtoms;
          * @param {boolean} [forValidation] forValidtion - Ignore, used for internal purpose
          * @memberof AtomWatcher
          */
-        function AtomWatcher(target, path, forValidation) {
+        function AtomWatcher(target, path, runAfterSetup, forValidation) {
             var _this = this;
             this._isExecuting = false;
             this.target = target;
@@ -1221,7 +1300,16 @@ var WebAtoms;
             this.runEvaluate.watcher = this;
             this.path = path.map(function (x) { return x.split(".").map(function (y) { return new ObjectProperty(y); }); });
             if (e) {
-                this.evaluate();
+                if (runAfterSetup) {
+                    this.evaluate();
+                }
+                else {
+                    // setup watcher...
+                    for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
+                        var p = _a[_i];
+                        this.evaluatePath(this.target, p);
+                    }
+                }
             }
         }
         AtomWatcher.prototype.evaluatePath = function (target, path) {

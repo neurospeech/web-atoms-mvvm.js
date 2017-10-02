@@ -28,15 +28,24 @@ namespace WebAtoms {
         }
 
         private async privateInit():Promise<any> {
-            // this is necessary for derived class initialization
-
-            await Atom.delay(1);
             try {
-            await this.init();
-            }finally {
-                this.registerWatchers();
+                await Atom.postAsync(async () => {
+                    this.registerWatchers();
+                });
+                await Atom.postAsync(async ()=> {
+                    await this.init();
+                    this.onReady();
+                });
             }
-            this.onReady();
+            finally {
+                this._isReady = true;
+            }
+        }
+
+        public async waitForReady():Promise<any> {
+            while(!this._isReady) {
+                await Atom.delay(100);
+            }
         }
 
         // tslint:disable-next-line:no-empty
@@ -45,17 +54,36 @@ namespace WebAtoms {
         private registerWatchers():void {
             try {
                 var v:any = this.constructor.prototype;
-                if(v && v._$_autoWatchers) {
-                    var aw:any = v._$_autoWatchers;
-                    for(var key in aw) {
-                        if(!aw.hasOwnProperty(key)) {
-                            continue;
+                if(v) {
+                    if(v._$_autoWatchers) {
+                        var aw:any = v._$_autoWatchers;
+                        for(var key in aw) {
+                            if(!aw.hasOwnProperty(key)) {
+                                continue;
+                            }
+                            var vf:any = aw[key];
+                            if(vf.validate) {
+                                this.addValidation(vf.method);
+                            }else {
+                                this.watch(vf.method);
+                            }
                         }
-                        var vf:any = aw[key];
-                        if(vf.validate) {
-                            this.addValidation(vf.method);
-                        }else {
-                            this.watch(vf.method);
+                    }
+
+                    if(v._$_receivers) {
+                        var ar:any = v._$_receivers;
+                        for(var k in ar) {
+                            if(!ar.hasOwnProperty(k)) {
+                                continue;
+                            }
+                            var rf: Function = this[k] as Function;
+                            var messages:string[] = ar[k];
+                            for(var message of messages) {
+                                var d:AtomDisposable = AtomDevice.instance.subscribe(message, (msg,data) => {
+                                    rf.call(this, msg, data);
+                                });
+                                this.registerDisposable(d);
+                            }
                         }
                     }
                 }
@@ -63,7 +91,6 @@ namespace WebAtoms {
                 console.error(`View Model watcher registration failed`);
                 console.error(e);
             }
-            this._isReady = true;
         }
 
         private validations:AtomWatcher<AtomViewModel>[] = [];
@@ -106,7 +133,7 @@ namespace WebAtoms {
             var ds: Array<AtomDisposable> = [];
 
             for(var ft of fts){
-                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, true);
+                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, false, true);
                 this.validations.push(d);
                 this.registerDisposable(d);
                 ds.push(d);
@@ -141,7 +168,7 @@ namespace WebAtoms {
 
             var dfd:AtomDisposable[] = [];
             for(var ft of fts){
-                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft);
+                var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, this._isReady );
                 // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
@@ -180,6 +207,8 @@ namespace WebAtoms {
          * @memberof AtomViewModel
          */
         protected onMessage<T>(msg: string, a: (data: T) => void):void {
+
+            console.warn("Do not use onMessage, instead use @receive decorator...");
 
             var action: AtomAction = (m, d) => {
                 a(d as T);

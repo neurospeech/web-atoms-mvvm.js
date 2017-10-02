@@ -65,6 +65,26 @@ namespace WebAtoms {
         return oldCreateControl.call(Atom,element,type,data,newScope);
     };
 
+    Atom.post = function(f:()=>void):void {
+        (WebAtoms as any).dispatcher.callLater(f);
+    }
+
+    Atom.postAsync = function(f:()=>any):Promise<any> {
+        return new Promise((resolve,reject)=> {
+            (WebAtoms as any).dispatcher.callLater(async ()=> {
+                try {
+                    var p:any = f();
+                    if(p && p.then && p.catch) {
+                        await p;
+                    }
+                    resolve();
+                }catch(e) {
+                    reject(e);
+                }
+            });
+        });
+    };
+
     Atom.using = function(d:AtomDisposable, f:()=>{}):void {
         try {
             f();

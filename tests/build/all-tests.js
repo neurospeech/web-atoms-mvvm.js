@@ -112,24 +112,22 @@ var SampleViewModel = /** @class */ (function (_super) {
         _this.errors = new SampleViewModelErrors();
         return _this;
     }
+    SampleViewModel.prototype.receiveMessages = function (msg, data) {
+        this.name = msg;
+        this.data = data;
+    };
     SampleViewModel.prototype.watchName = function () {
         this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
     };
     SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        initCalled = true;
-                        this.broadcast("ui-alert", "Model is ready");
-                        return [4 /*yield*/, Atom.delay(10)];
-                    case 1:
-                        _a.sent();
-                        this.list.add({
-                            name: "Sample"
-                        });
-                        return [2 /*return*/];
-                }
+                initCalled = true;
+                this.broadcast("ui-alert", "Model is ready");
+                this.list.add({
+                    name: "Sample"
+                });
+                return [2 /*return*/];
             });
         });
     };
@@ -150,6 +148,9 @@ var SampleViewModel = /** @class */ (function (_super) {
         bindableProperty
     ], SampleViewModel.prototype, "list", void 0);
     __decorate([
+        receive("message1", "message2")
+    ], SampleViewModel.prototype, "receiveMessages", null);
+    __decorate([
         watch
     ], SampleViewModel.prototype, "watchName", null);
     return SampleViewModel;
@@ -166,7 +167,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         sm = new SampleViewModel();
-                        return [4 /*yield*/, this.delay(100)];
+                        return [4 /*yield*/, sm.waitForReady()];
                     case 1:
                         _a.sent();
                         Atom.set(sm, "data.firstName", "something");
@@ -186,7 +187,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         sm = new SampleViewModel();
-                        return [4 /*yield*/, this.delay(100)];
+                        return [4 /*yield*/, sm.waitForReady()];
                     case 1:
                         _a.sent();
                         fullName = "";
@@ -206,6 +207,27 @@ var AtomViewModelTest = /** @class */ (function (_super) {
             });
         });
     };
+    AtomViewModelTest.prototype.receive = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var sm;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        sm = new SampleViewModel();
+                        return [4 /*yield*/, sm.waitForReady()];
+                    case 1:
+                        _a.sent();
+                        WebAtoms.AtomDevice.instance.broadcast("message1", "message-1");
+                        Assert.equals("message1", sm.name);
+                        Assert.equals("message-1", sm.data);
+                        WebAtoms.AtomDevice.instance.broadcast("message2", "message-2");
+                        Assert.equals("message2", sm.name);
+                        Assert.equals("message-2", sm.data);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     AtomViewModelTest.prototype.run = function () {
         return __awaiter(this, void 0, void 0, function () {
             var nameUpated, vm, subscription;
@@ -216,7 +238,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         subscription = Atom.watch(vm, "name", function () {
                             nameUpated = true;
                         });
-                        return [4 /*yield*/, this.delay(100)];
+                        return [4 /*yield*/, vm.waitForReady()];
                     case 1:
                         _a.sent();
                         vm.name = "changed";
@@ -242,7 +264,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                             msg.data = g;
                         });
                         vm = new SampleViewModel();
-                        return [4 /*yield*/, this.delay(1000)];
+                        return [4 /*yield*/, vm.waitForReady()];
                     case 1:
                         _a.sent();
                         Assert.equals(msg.message, "ui-alert");
@@ -264,7 +286,7 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         subscription = vm.list.watch(function () {
                             eventCalled = true;
                         });
-                        return [4 /*yield*/, this.delay(1000)];
+                        return [4 /*yield*/, vm.waitForReady()];
                     case 1:
                         _a.sent();
                         Assert.isTrue(eventCalled);
@@ -283,6 +305,9 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     __decorate([
         Test("watch")
     ], AtomViewModelTest.prototype, "watch", null);
+    __decorate([
+        Test("receive")
+    ], AtomViewModelTest.prototype, "receive", null);
     __decorate([
         Test("bindableProperty")
     ], AtomViewModelTest.prototype, "run", null);

@@ -38,6 +38,12 @@ class SampleViewModel extends AtomViewModel{
         this.errors = new SampleViewModelErrors();
     }
 
+    @receive("message1","message2")
+    receiveMessages(msg:string , data){
+        this.name = msg;
+        this.data = data;
+    }
+
     @watch
     watchName(){
         this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
@@ -47,8 +53,6 @@ class SampleViewModel extends AtomViewModel{
         initCalled = true;
 
         this.broadcast("ui-alert","Model is ready");
-
-        await Atom.delay(10);
 
         this.list.add({
             name: "Sample"
@@ -75,7 +79,7 @@ class AtomViewModelTest extends TestItem{
     async validation (){
         var sm: SampleViewModel = new SampleViewModel();
 
-        await this.delay(100);
+        await sm.waitForReady();
 
         Atom.set(sm,"data.firstName","something");
 
@@ -93,7 +97,7 @@ class AtomViewModelTest extends TestItem{
     async watch () {
         var sm: SampleViewModel = new SampleViewModel();
 
-        await this.delay(100);
+        await sm.waitForReady();
 
         var fullName = "";
         Atom.set(sm,"data.lastName","");
@@ -121,6 +125,25 @@ class AtomViewModelTest extends TestItem{
       
     }
 
+    @Test("receive")
+    public async receive(){
+
+        var sm: SampleViewModel = new SampleViewModel();
+        
+        await sm.waitForReady();
+
+        WebAtoms.AtomDevice.instance.broadcast("message1","message-1");
+
+        Assert.equals("message1", sm.name);
+        Assert.equals("message-1", sm.data);
+
+        WebAtoms.AtomDevice.instance.broadcast("message2","message-2");
+        
+        Assert.equals("message2", sm.name);
+        Assert.equals("message-2", sm.data);
+                
+    }
+
 
     @Test("bindableProperty")
     public async run(){
@@ -133,7 +156,7 @@ class AtomViewModelTest extends TestItem{
             nameUpated = true;
         });
 
-        await this.delay(100);
+        await vm.waitForReady();
 
         vm.name = "changed";
 
@@ -160,7 +183,7 @@ class AtomViewModelTest extends TestItem{
 
         var vm:SampleViewModel = new SampleViewModel();
 
-        await this.delay(1000);
+        await vm.waitForReady();
 
         Assert.equals(msg.message, "ui-alert");
         Assert.equals(msg.data,"Model is ready");
@@ -179,7 +202,7 @@ class AtomViewModelTest extends TestItem{
             eventCalled = true;
         });
 
-        await this.delay(1000);
+        await vm.waitForReady();
 
         Assert.isTrue(eventCalled);
 
