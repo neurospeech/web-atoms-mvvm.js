@@ -119,6 +119,9 @@ var SampleViewModel = /** @class */ (function (_super) {
     SampleViewModel.prototype.watchName = function () {
         this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
     };
+    SampleViewModel.prototype.watchName2 = function () {
+        this.broadcast("name", this.data.firstName);
+    };
     SampleViewModel.prototype.init = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -153,6 +156,9 @@ var SampleViewModel = /** @class */ (function (_super) {
     __decorate([
         watch
     ], SampleViewModel.prototype, "watchName", null);
+    __decorate([
+        watch
+    ], SampleViewModel.prototype, "watchName2", null);
     return SampleViewModel;
 }(AtomViewModel));
 var AtomViewModelTest = /** @class */ (function (_super) {

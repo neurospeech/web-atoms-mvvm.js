@@ -49,6 +49,11 @@ class SampleViewModel extends AtomViewModel{
         this.errors.name = this.data.firstName ? "" : "Name cannot be empty";
     }
 
+    @watch
+    watchName2(){
+        this.broadcast("name", this.data.firstName);
+    }
+
     async init(){
         initCalled = true;
 
