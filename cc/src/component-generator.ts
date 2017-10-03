@@ -201,7 +201,13 @@ namespace ComponentGenerator{
 
         static formLayoutNode(a){
 
+
             var cl1 = a.children.filter(c=>c.type == "tag").map( c => {
+
+                var fieldAttributes = {
+                    "class":"atom-field"
+                };
+    
                 
                 var aa = c.attribs || {};
 
@@ -219,6 +225,8 @@ namespace ComponentGenerator{
                     isRequired = "";
                 }
 
+                
+
                 if(isRequired.endsWith("}") || isRequired.endsWith("]")){
                     var last = isRequired.substr(isRequired.length-1);
                     isRequired = isRequired.substr(0,isRequired.length-1) + " ? '*' : 'false'" + last;
@@ -233,6 +241,12 @@ namespace ComponentGenerator{
                     delete aa["atom-error"];
                 }
 
+                var fieldVisible = aa["atom-field-visible"] || aa["field-visible"];
+                if(fieldVisible){
+                    delete aa["atom-field-visible"];
+                    delete aa["field-visible"];
+                    fieldAttributes["style-display"] = fieldVisible;
+                }
 
                 var errorAttribs = {
                     "class":"atom-error",
@@ -278,12 +292,12 @@ namespace ComponentGenerator{
                     }
                 ];
 
+
+
                 return {
                     name:"div",
                     type:"tag",
-                    attribs:{
-                        "class":"atom-field"
-                    },
+                    attribs:fieldAttributes,
                     children:cl
                 };
 

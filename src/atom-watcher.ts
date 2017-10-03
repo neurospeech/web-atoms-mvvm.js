@@ -1,8 +1,15 @@
 namespace WebAtoms {
 
+    var _viewModelParseWatchCache = {};
 
     function parsePath(f:any):string[] {
         var str:string = f.toString().trim();
+
+        var key = str;
+
+        var px = _viewModelParseWatchCache[key];
+        if(px)
+            return px;
 
         // remove last }
 
@@ -29,14 +36,14 @@ namespace WebAtoms {
 
         str = str.substr(index+1);
 
-        var regExp:string = `(?:(${p})(?:\.[a-zA-Z_][a-zA-Z_0-9\.]*)+)`;
+        var regExp:string = `(?:(${p})(?:(\\.[a-zA-Z_][a-zA-Z_0-9]*)+)(?:\\(?))`;
 
         var re:RegExp = new RegExp(regExp, "gi");
 
         var path: string[] = [];
 
         var ms:any = str.replace(re, m => {
-            // console.log(`m: ${m}`);
+            //console.log(`m: ${m}`);
             var px:string = m;
             if(px.startsWith("this.")) {
                 px = px.substr(5);
@@ -49,11 +56,19 @@ namespace WebAtoms {
             if(!path.find(y => y === px)) {
                 path.push(px);
             }
+
+            path = path.filter( f => !f.endsWith("(") );
+
             return m;
         });
         // debugger;
+
+        _viewModelParseWatchCache[key] = path;
+
         return path;
     }
+
+    
 
     /**
      * AtomErrors class holds all validation errors registered in view model.

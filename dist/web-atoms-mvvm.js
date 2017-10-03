@@ -1134,8 +1134,13 @@ function validate(target, key, descriptor) {
 }
 var WebAtoms;
 (function (WebAtoms) {
+    var _viewModelParseWatchCache = {};
     function parsePath(f) {
         var str = f.toString().trim();
+        var key = str;
+        var px = _viewModelParseWatchCache[key];
+        if (px)
+            return px;
         // remove last }
         if (str.endsWith("}")) {
             str = str.substr(0, str.length - 1);
@@ -1151,11 +1156,11 @@ var WebAtoms;
         var isThis = index === 0;
         var p = isThis ? "\_this|this" : str.substr(0, index);
         str = str.substr(index + 1);
-        var regExp = "(?:(" + p + ")(?:.[a-zA-Z_][a-zA-Z_0-9.]*)+)";
+        var regExp = "(?:(" + p + ")(?:(\\.[a-zA-Z_][a-zA-Z_0-9]*)+)(?:\\(?))";
         var re = new RegExp(regExp, "gi");
         var path = [];
         var ms = str.replace(re, function (m) {
-            // console.log(`m: ${m}`);
+            //console.log(`m: ${m}`);
             var px = m;
             if (px.startsWith("this.")) {
                 px = px.substr(5);
@@ -1170,9 +1175,11 @@ var WebAtoms;
             if (!path.find(function (y) { return y === px; })) {
                 path.push(px);
             }
+            path = path.filter(function (f) { return !f.endsWith("("); });
             return m;
         });
         // debugger;
+        _viewModelParseWatchCache[key] = path;
         return path;
     }
     /**
