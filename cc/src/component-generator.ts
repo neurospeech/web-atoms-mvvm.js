@@ -236,15 +236,33 @@ namespace ComponentGenerator{
                     isRequired = "*";
                 }
 
-                var error = aa["atom-error"] || "";
-                if(error){
+                var error:string = aa["atom-error"] || "";
+                if(error) {
                     delete aa["atom-error"];
                 }
 
-                var fieldVisible = aa["atom-field-visible"] || aa["field-visible"];
-                if(fieldVisible){
+                var fieldVisible:string = aa["atom-field-visible"] ||
+                    aa["field-visible"] ||
+                    aa["atom-field-visibility"] ||
+                    aa["field-visibility"];
+                if(fieldVisible) {
                     delete aa["atom-field-visible"];
                     delete aa["field-visible"];
+                    delete aa["atom-field-visibility"];
+                    delete aa["field-visibility"];
+
+                    fieldVisible = fieldVisible.trim();
+
+                    if(fieldVisible.startsWith("{")) {
+                        fieldVisible = fieldVisible.substr(1,fieldVisible.length-2);
+                        fieldVisible = `{ ${fieldVisible} ? '' : 'none' }`;
+                    }
+
+                    if(fieldVisible.startsWith("[")) {
+                        fieldVisible = fieldVisible.substr(1,fieldVisible.length-2);
+                        fieldVisible = `[ ${fieldVisible} ? '' : 'none' ]`;
+                    }
+
                     fieldAttributes["style-display"] = fieldVisible;
                 }
 
