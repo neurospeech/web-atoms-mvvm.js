@@ -321,12 +321,18 @@ namespace ComponentGenerator{
 
             });
 
+            var formAttribs:any = a.attribs || {};
+            var fc:string = formAttribs["class"];
+            if(fc) {
+                formAttribs["class"] = "atom-form " + fc;
+            }else{
+                formAttribs["class"] = "atom-form";
+            }
+
             return { 
                 name:"div",
                 type:"tag",
-                attribs:{
-                    "class":"atom-form"
-                },
+                attribs:formAttribs,
                 children: cl1
             } ;
         }
