@@ -6,30 +6,30 @@ import * as path from "path";
 namespace ComponentGenerator{
 
     var AtomEvaluator = {
-        
+
             ecache: {},
-        
+
             becache: {},
-        
+
             parse: function (txt) {
-        
+
                 // http://jsfiddle.net/A3vg6/44/ (recommended)
                 // http://jsfiddle.net/A3vg6/45/ (working)
                 // http://jsfiddle.net/A3vg6/51/ (including $ sign)
-        
+
                 var be = this.becache[txt];
                 if (be)
                     return be;
-        
+
                 var regex = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*(\()?)*/gi;
-        
+
                 var keywords = /(window|viewModel|appScope|scope|data|owner|localScope)/gi;
-        
+
                 var path = [];
                 var vars = [];
-        
+
                 var found = {};
-        
+
                 var ms = txt.replace(regex,
                     function (match) {
                         var original = match;
@@ -66,8 +66,8 @@ namespace ComponentGenerator{
                         return "(" + nv + ")" + trail;
                     }
                     );
-        
-        
+
+
                 var method = "return " + ms + ";";
                 var methodString = method;
                 try {
@@ -75,7 +75,7 @@ namespace ComponentGenerator{
                 } catch (e) {
                     throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
                 }
-        
+
                 be = { length: vars.length, method: method, path: path, original: ms };
                 this.becache[txt] = be;
                 return be;
@@ -85,17 +85,17 @@ namespace ComponentGenerator{
                 var e = this.ecache[k];
                 if (e)
                     return e;
-        
+
                 vars.push("Atom");
                 vars.push("AtomPromise");
                 vars.push("$x");
-        
+
                 e = new Function(vars,method);
                 this.ecache[k] = e;
                 return e;
             }
         };
-        
+
 
     class TagInitializerList{
         component:string;
@@ -133,7 +133,7 @@ namespace ComponentGenerator{
             if(v.startsWith("$")){
                 v = v.substr(1);
             }
-            
+
             var plist = v.split(".");
 
             v = ` ${JSON.stringify(plist)}, 1 `;
@@ -161,7 +161,7 @@ namespace ComponentGenerator{
             v = v.substr(1,v.length-2);
 
             v = HtmlContent.escapeLambda(v);
-            
+
             var vx = AtomEvaluator.parse(v);
 
             v = "";
@@ -212,8 +212,8 @@ namespace ComponentGenerator{
                 var fieldAttributes = {
                     "class":"atom-field"
                 };
-    
-                
+
+
                 var aa = c.attribs || {};
 
                 var label = aa["atom-label"] || "";
@@ -230,7 +230,7 @@ namespace ComponentGenerator{
                     isRequired = "";
                 }
 
-                
+
 
                 if(isRequired.endsWith("}") || isRequired.endsWith("]")){
                     var last = isRequired.substr(isRequired.length-1);
@@ -342,28 +342,29 @@ namespace ComponentGenerator{
             } ;
         }
 
-        static mapNode(a,tags:TagInitializerList, children?:Array<any>){
+        static mapNode(a:any,tags:TagInitializerList, children?:Array<any>): string[] {
 
-            //debugger;
+            // debugger;
 
-            if(a.name == "form-layout"){
-                //console.log(`converting form layout with ${a.children.length} children`);
+            if(a.name === "form-layout") {
+                // console.log(`converting form layout with ${a.children.length} children`);
                 a = HtmlContent.formLayoutNode(a);
-                //console.log(`converting form layout to ${a.children.length} children`);
-                
+                // console.log(`converting form layout to ${a.children.length} children`);
+
             }
 
-            
 
-            var r = [a.name];
 
-            var ca = {};
+            var r:string[] = [a.name];
 
-            //debugger;
-            if(!a.children)
+            var ca:any = {};
+
+            // debugger;
+            if(!a.children) {
                 return r;
+            }
 
-            var aa = a.attribs || {};
+            var aa:any = a.attribs || {};
 
             var inits:Array<string> = [];
 
@@ -373,7 +374,7 @@ namespace ComponentGenerator{
                     //    continue;
 
                     var ckey = HtmlContent.camelCase(key);
-                    
+
                     var v = (aa[key] as string).trim();
 
                     if(!v)
@@ -406,7 +407,7 @@ namespace ComponentGenerator{
                         continue;
                     }
 
-                    if(/autofocus/i.test(key)){
+                    if(/autofocus/i.test(key)) {
                         inits.push(`window.WebAtoms.dispatcher.callLater( 
                             function() { 
                                 e.focus(); 
@@ -449,7 +450,7 @@ namespace ComponentGenerator{
                     r.push(child);
                 }
             }
-            return r;            
+            return r;
         }
 
 
@@ -592,7 +593,7 @@ namespace ComponentGenerator{
 
         nsNamesapce: string;
         html: string;
-        
+
 
         constructor(html: string, nsNamespace: string) {
             this.html = html;
@@ -631,14 +632,14 @@ namespace ComponentGenerator{
             this.lastTime = this.currentTime;
         }
 
-        
+
 
     }
 
 
 
     export class ComponentGenerator{
-        
+
         nsNamesapce: string;
 
         emitDeclaration: boolean;
@@ -647,7 +648,7 @@ namespace ComponentGenerator{
 
             // scan all html files...
             for(var file of fs.readdirSync(folder)){
-                
+
                 var fullName = path.join(folder,file);
                 var s = fs.statSync(fullName);
                 if(s.isDirectory()){
@@ -670,7 +671,7 @@ namespace ComponentGenerator{
 
         files:Array<HtmlFile>;
 
-        
+
 
         constructor(folder: string, outFile?:string, nsNamespace?:string, emitDeclaration?:boolean) {
             this.folder = folder;
@@ -685,12 +686,12 @@ namespace ComponentGenerator{
 
             this.files = [];
 
-            
+
             this.watch();
             this.compile();
 
             console.log(`Watching for changes in ${folder}`);
-            
+
         }
 
 
@@ -770,7 +771,7 @@ namespace ComponentGenerator{
                 fs.writeFileSync(`${this.outFile}.d.ts`,declarations);
                 fs.writeFileSync(`${this.outFile}.mock.js`,mock);
             }
-            
+
             console.log(`${now.toLocaleTimeString()} - File generated ${this.outFile}`);
         }
 
@@ -779,7 +780,7 @@ namespace ComponentGenerator{
                 this.postCompile();
             });
         }
-        
+
         last:any;
 
         postCompile():void{
@@ -810,7 +811,7 @@ namespace ComponentGenerator{
 
                     config.srcFolder = path.join(folder,config.srcFolder);
                     config.outFile = path.join(folder,config.outFile);
-                    
+
                     var cc = new ComponentGenerator(
                         config.srcFolder, 
                         config.outFile, 

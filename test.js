@@ -43,7 +43,7 @@ loadScript("./tests/build/all-tests.js");
 
 // .. so on.. you can write a script to load many files....
 
-var p = WebAtoms.Unit.TestRunner.instance.run();
+var p = WebAtoms.Unit.TestRunner.instance.run(process.argv[2]);
 
 p.then(function(){
     process.exit();

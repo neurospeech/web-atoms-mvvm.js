@@ -263,17 +263,18 @@ var ComponentGenerator;
             };
         };
         HtmlContent.mapNode = function (a, tags, children) {
-            //debugger;
-            if (a.name == "form-layout") {
-                //console.log(`converting form layout with ${a.children.length} children`);
+            // debugger;
+            if (a.name === "form-layout") {
+                // console.log(`converting form layout with ${a.children.length} children`);
                 a = HtmlContent.formLayoutNode(a);
-                //console.log(`converting form layout to ${a.children.length} children`);
+                // console.log(`converting form layout to ${a.children.length} children`);
             }
             var r = [a.name];
             var ca = {};
-            //debugger;
-            if (!a.children)
+            // debugger;
+            if (!a.children) {
                 return r;
+            }
             var aa = a.attribs || {};
             var inits = [];
             if (aa) {
