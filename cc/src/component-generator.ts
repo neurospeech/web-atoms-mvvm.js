@@ -32,6 +32,7 @@ namespace ComponentGenerator{
         
                 var ms = txt.replace(regex,
                     function (match) {
+                        var original = match;
                         var nv = "v" + (path.length + 1);
                         if (match.indexOf("$owner.") == 0) {
                             match = match.substr(7);
@@ -56,8 +57,12 @@ namespace ComponentGenerator{
                             return false;
                         });
 
-                        path.push(match);
-                        vars.push(nv);
+                        if(match.length>0){
+                            path.push(match);
+                            vars.push(nv);
+                        }else{
+                            return original;
+                        }
                         return "(" + nv + ")" + trail;
                     }
                     );
