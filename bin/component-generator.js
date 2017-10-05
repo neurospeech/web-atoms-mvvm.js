@@ -21,6 +21,7 @@ var ComponentGenerator;
             var vars = [];
             var found = {};
             var ms = txt.replace(regex, function (match) {
+                var original = match;
                 var nv = "v" + (path.length + 1);
                 if (match.indexOf("$owner.") == 0) {
                     match = match.substr(7);
@@ -42,8 +43,13 @@ var ComponentGenerator;
                     trail = "." + m;
                     return false;
                 });
-                path.push(match);
-                vars.push(nv);
+                if (match.length > 0) {
+                    path.push(match);
+                    vars.push(nv);
+                }
+                else {
+                    return original;
+                }
                 return "(" + nv + ")" + trail;
             });
             var method = "return " + ms + ";";
@@ -175,10 +181,24 @@ var ComponentGenerator;
                 if (error) {
                     delete aa["atom-error"];
                 }
-                var fieldVisible = aa["atom-field-visible"] || aa["field-visible"];
+                var fieldVisible = aa["atom-field-visible"] ||
+                    aa["field-visible"] ||
+                    aa["atom-field-visibility"] ||
+                    aa["field-visibility"];
                 if (fieldVisible) {
                     delete aa["atom-field-visible"];
                     delete aa["field-visible"];
+                    delete aa["atom-field-visibility"];
+                    delete aa["field-visibility"];
+                    fieldVisible = fieldVisible.trim();
+                    if (fieldVisible.startsWith("{")) {
+                        fieldVisible = fieldVisible.substr(1, fieldVisible.length - 2);
+                        fieldVisible = "{ " + fieldVisible + " ? '' : 'none' }";
+                    }
+                    if (fieldVisible.startsWith("[")) {
+                        fieldVisible = fieldVisible.substr(1, fieldVisible.length - 2);
+                        fieldVisible = "[ " + fieldVisible + " ? '' : 'none' ]";
+                    }
                     fieldAttributes["style-display"] = fieldVisible;
                 }
                 var errorAttribs = {
@@ -227,27 +247,34 @@ var ComponentGenerator;
                     children: cl
                 };
             });
+            var formAttribs = a.attribs || {};
+            var fc = formAttribs["class"];
+            if (fc) {
+                formAttribs["class"] = "atom-form " + fc;
+            }
+            else {
+                formAttribs["class"] = "atom-form";
+            }
             return {
                 name: "div",
                 type: "tag",
-                attribs: {
-                    "class": "atom-form"
-                },
+                attribs: formAttribs,
                 children: cl1
             };
         };
         HtmlContent.mapNode = function (a, tags, children) {
-            //debugger;
-            if (a.name == "form-layout") {
-                //console.log(`converting form layout with ${a.children.length} children`);
+            // debugger;
+            if (a.name === "form-layout") {
+                // console.log(`converting form layout with ${a.children.length} children`);
                 a = HtmlContent.formLayoutNode(a);
-                //console.log(`converting form layout to ${a.children.length} children`);
+                // console.log(`converting form layout to ${a.children.length} children`);
             }
             var r = [a.name];
             var ca = {};
-            //debugger;
-            if (!a.children)
+            // debugger;
+            if (!a.children) {
                 return r;
+            }
             var aa = a.attribs || {};
             var inits = [];
             if (aa) {
