@@ -386,7 +386,7 @@ function bindableReceive(...channel: string[]): Function {
 
         registerInit(target, vm => {
             var fx:WebAtoms.AtomAction = (cx:string, m:any) => {
-                this[key] = m;
+                vm[key] = m;
             };
             for(var c of channel) {
                 var dx: WebAtoms.AtomDisposable = WebAtoms.AtomDevice.instance.subscribe(c, fx);
@@ -404,13 +404,23 @@ function bindableBroadcast(...channel: string[]): Function {
         var bp:any = bindableProperty(target, key);
 
         registerInit(target, vm => {
-            var fx:WebAtoms.AtomAction = (cx:string, m:any) => {
-                var v:any = this[key];
+            var fx:(t:any) => any = (t:any):any => {
+                var v:any = vm[key];
                 for(var c of channel) {
                     vm.broadcast(c, v);
                 }
             };
-            var d:WebAtoms.AtomWatcher<any> = new WebAtoms.AtomWatcher<any>(this,[ key], false );
+            var d:WebAtoms.AtomWatcher<any> = new WebAtoms.AtomWatcher<any>(vm,[ key], false );
+            d.func = fx;
+
+            // tslint:disable-next-line:no-string-literal
+            var f: Function = d["evaluatePath"];
+
+            // tslint:disable-next-line:no-string-literal
+            for(var p of d.path) {
+                f.call(d, vm, p);
+            }
+
             vm.registerDisposable(d);
         });
 

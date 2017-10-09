@@ -1143,11 +1143,10 @@ function bindableReceive() {
         channel[_i] = arguments[_i];
     }
     return function (target, key) {
-        var _this = this;
         var bp = bindableProperty(target, key);
         registerInit(target, function (vm) {
             var fx = function (cx, m) {
-                _this[key] = m;
+                vm[key] = m;
             };
             for (var _i = 0, channel_2 = channel; _i < channel_2.length; _i++) {
                 var c = channel_2[_i];
@@ -1164,17 +1163,24 @@ function bindableBroadcast() {
         channel[_i] = arguments[_i];
     }
     return function (target, key) {
-        var _this = this;
         var bp = bindableProperty(target, key);
         registerInit(target, function (vm) {
-            var fx = function (cx, m) {
-                var v = _this[key];
+            var fx = function (t) {
+                var v = vm[key];
                 for (var _i = 0, channel_3 = channel; _i < channel_3.length; _i++) {
                     var c = channel_3[_i];
                     vm.broadcast(c, v);
                 }
             };
-            var d = new WebAtoms.AtomWatcher(_this, [key], false);
+            var d = new WebAtoms.AtomWatcher(vm, [key], false);
+            d.func = fx;
+            // tslint:disable-next-line:no-string-literal
+            var f = d["evaluatePath"];
+            // tslint:disable-next-line:no-string-literal
+            for (var _i = 0, _a = d.path; _i < _a.length; _i++) {
+                var p = _a[_i];
+                f.call(d, vm, p);
+            }
             vm.registerDisposable(d);
         });
         return bp;

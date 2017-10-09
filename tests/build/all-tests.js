@@ -336,29 +336,62 @@ var WebAtoms;
         return Task;
     }());
     WebAtoms.Task = Task;
-    var SourceViewModel = /** @class */ (function () {
+    var SourceViewModel = /** @class */ (function (_super) {
+        __extends(SourceViewModel, _super);
         function SourceViewModel() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         __decorate([
             bindableBroadcast("task-updated")
         ], SourceViewModel.prototype, "task", void 0);
         return SourceViewModel;
-    }());
+    }(WebAtoms.AtomViewModel));
     WebAtoms.SourceViewModel = SourceViewModel;
-    var DestinationViewModel = /** @class */ (function () {
+    var DestinationViewModel = /** @class */ (function (_super) {
+        __extends(DestinationViewModel, _super);
         function DestinationViewModel() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         __decorate([
             bindableReceive("task-updated")
         ], DestinationViewModel.prototype, "task", void 0);
         return DestinationViewModel;
-    }());
+    }(WebAtoms.AtomViewModel));
     WebAtoms.DestinationViewModel = DestinationViewModel;
     var BindableTest = /** @class */ (function (_super) {
         __extends(BindableTest, _super);
         function BindableTest() {
             return _super.call(this) || this;
         }
+        BindableTest.prototype.bindable = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var svm, dvm, t;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            svm = new SourceViewModel();
+                            dvm = new DestinationViewModel();
+                            return [4 /*yield*/, svm.waitForReady()];
+                        case 1:
+                            _a.sent();
+                            return [4 /*yield*/, dvm.waitForReady()];
+                        case 2:
+                            _a.sent();
+                            t = new Task();
+                            t.label = "Test";
+                            svm.task = t;
+                            Assert.equals("Test", dvm.task.label);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        __decorate([
+            Test("bindable")
+        ], BindableTest.prototype, "bindable", null);
+        BindableTest = __decorate([
+            Category("Bindable")
+        ], BindableTest);
         return BindableTest;
     }(TestItem));
     WebAtoms.BindableTest = BindableTest;
