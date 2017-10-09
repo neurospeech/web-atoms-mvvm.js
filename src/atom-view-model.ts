@@ -21,7 +21,7 @@ namespace WebAtoms {
 
         private disposables: Array<AtomDisposable>;
 
-        private subscriptions: VMSubscription[] = [];
+        private subscriptions: VMSubscription[];
 
         private _channelPrefix: string = "";
         public get channelPrefix(): string {
@@ -31,12 +31,14 @@ namespace WebAtoms {
             this._channelPrefix = v;
 
             var temp: VMSubscription[] = this.subscriptions;
-            this.subscriptions = [];
-            for(var s of temp) {
-                s.disposable.dispose();
-            }
-            for(var s1 of temp) {
-                this.subscribe(s.channel,s.action);
+            if(temp) {
+                this.subscriptions = [];
+                for(var s of temp) {
+                    s.disposable.dispose();
+                }
+                for(var s1 of temp) {
+                    this.subscribe(s.channel,s.action);
+                }
             }
             Atom.refresh(this,"channelPrefix");
         }
@@ -229,6 +231,7 @@ namespace WebAtoms {
 
         private subscribe(channel: string, c: (ch:string, data:any) => void): void {
             var sub:AtomDisposable = AtomDevice.instance.subscribe( this.channelPrefix + channel, c);
+            this.subscriptions = this.subscriptions || [];
             this.subscriptions.push({
                 channel: channel,
                 action: c,
@@ -262,7 +265,7 @@ namespace WebAtoms {
                 for(let d of this.subscriptions) {
                     d.disposable.dispose();
                 }
-                this.subscriptions = [];
+                this.subscriptions = null;
             }
         }
 
@@ -337,6 +340,8 @@ namespace WebAtoms {
          * @memberof AtomWindowViewModel
          */
         close(result?:any):void {
+            // tslint:disable-next-line:no-string-literal
+            this["_channelPrefix"] = "";
             this.broadcast(`atom-window-close:${this.windowName}`,result);
         }
 
@@ -350,6 +355,8 @@ namespace WebAtoms {
          * @memberof AtomWindowViewModel
          */
         cancel():void {
+            // tslint:disable-next-line:no-string-literal
+            this["_channelPrefix"] = "";
             this.broadcast(`atom-window-cancel:${this.windowName}`,null);
         }
 
