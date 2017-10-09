@@ -410,9 +410,8 @@ function bindableBroadcast(...channel: string[]): Function {
                     vm.broadcast(c, v);
                 }
             };
-            // tslint:disable-next-line:no-string-literal
-            var vfx: Function = vm["watch"];
-            vfx.call(vm,fx);
+            var d:WebAtoms.AtomWatcher<any> = new WebAtoms.AtomWatcher<any>(this,[ key], false );
+            vm.registerDisposable(d);
         });
 
         return bp;

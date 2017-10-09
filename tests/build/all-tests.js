@@ -328,6 +328,41 @@ var AtomViewModelTest = /** @class */ (function (_super) {
     ], AtomViewModelTest);
     return AtomViewModelTest;
 }(TestItem));
+var WebAtoms;
+(function (WebAtoms) {
+    var Task = /** @class */ (function () {
+        function Task() {
+        }
+        return Task;
+    }());
+    WebAtoms.Task = Task;
+    var SourceViewModel = /** @class */ (function () {
+        function SourceViewModel() {
+        }
+        __decorate([
+            bindableBroadcast("task-updated")
+        ], SourceViewModel.prototype, "task", void 0);
+        return SourceViewModel;
+    }());
+    WebAtoms.SourceViewModel = SourceViewModel;
+    var DestinationViewModel = /** @class */ (function () {
+        function DestinationViewModel() {
+        }
+        __decorate([
+            bindableReceive("task-updated")
+        ], DestinationViewModel.prototype, "task", void 0);
+        return DestinationViewModel;
+    }());
+    WebAtoms.DestinationViewModel = DestinationViewModel;
+    var BindableTest = /** @class */ (function (_super) {
+        __extends(BindableTest, _super);
+        function BindableTest() {
+            return _super.call(this) || this;
+        }
+        return BindableTest;
+    }(TestItem));
+    WebAtoms.BindableTest = BindableTest;
+})(WebAtoms || (WebAtoms = {}));
 var DateTimeService = /** @class */ (function () {
     function DateTimeService() {
     }

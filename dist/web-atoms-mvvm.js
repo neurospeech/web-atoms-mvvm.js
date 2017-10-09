@@ -1174,9 +1174,8 @@ function bindableBroadcast() {
                     vm.broadcast(c, v);
                 }
             };
-            // tslint:disable-next-line:no-string-literal
-            var vfx = vm["watch"];
-            vfx.call(vm, fx);
+            var d = new WebAtoms.AtomWatcher(_this, [key], false);
+            vm.registerDisposable(d);
         });
         return bp;
     };
