@@ -199,7 +199,6 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         fullName = "";
                         Atom.set(sm, "data.lastName", "");
                         d = sm.watchFullName();
-                        debugger;
                         Atom.set(sm, "data.firstName", "Akash");
                         Assert.equals("Akash", sm.data.fullName);
                         Atom.set(sm, "data.lastName", "Kava");
@@ -395,6 +394,52 @@ var WebAtoms;
         return BindableTest;
     }(TestItem));
     WebAtoms.BindableTest = BindableTest;
+})(WebAtoms || (WebAtoms = {}));
+var WebAtoms;
+(function (WebAtoms) {
+    var BroadcastTest = /** @class */ (function (_super) {
+        __extends(BroadcastTest, _super);
+        function BroadcastTest() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        BroadcastTest.prototype.prefix = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var svm, dvm, t;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            svm = new WebAtoms.SourceViewModel();
+                            dvm = new WebAtoms.DestinationViewModel();
+                            return [4 /*yield*/, svm.waitForReady()];
+                        case 1:
+                            _a.sent();
+                            return [4 /*yield*/, dvm.waitForReady()];
+                        case 2:
+                            _a.sent();
+                            svm.channelPrefix = "c";
+                            t = new WebAtoms.Task();
+                            t.label = "new";
+                            svm.task = t;
+                            Assert.isFalse(dvm.task ? true : false);
+                            dvm.channelPrefix = "c";
+                            t = new WebAtoms.Task();
+                            t.label = "c";
+                            svm.task = t;
+                            Assert.equals(svm.task.label, dvm.task.label);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        __decorate([
+            Test("Prefix")
+        ], BroadcastTest.prototype, "prefix", null);
+        BroadcastTest = __decorate([
+            Category("Broadcast Prefix")
+        ], BroadcastTest);
+        return BroadcastTest;
+    }(TestItem));
+    WebAtoms.BroadcastTest = BroadcastTest;
 })(WebAtoms || (WebAtoms = {}));
 var DateTimeService = /** @class */ (function () {
     function DateTimeService() {

@@ -756,51 +756,34 @@ var WebAtoms;
         __extends(AtomViewModel, _super);
         function AtomViewModel() {
             var _this = _super.call(this) || this;
+            _this.subscriptions = [];
+            _this._channelPrefix = "";
             _this._isReady = false;
-            // private registerWatchers():void {
-            //     try {
-            //         var v:any = this.constructor.prototype;
-            //         if(v) {
-            //             if(v._$_autoWatchers) {
-            //                 var aw:any = v._$_autoWatchers;
-            //                 for(var key in aw) {
-            //                     if(!aw.hasOwnProperty(key)) {
-            //                         continue;
-            //                     }
-            //                     var vf:any = aw[key];
-            //                     if(vf.validate) {
-            //                         this.addValidation(vf.method);
-            //                     }else {
-            //                         this.watch(vf.method);
-            //                     }
-            //                 }
-            //             }
-            //             if(v._$_receivers) {
-            //                 var ar:any = v._$_receivers;
-            //                 for(var k in ar) {
-            //                     if(!ar.hasOwnProperty(k)) {
-            //                         continue;
-            //                     }
-            //                     var rf: Function = this[k] as Function;
-            //                     var messages:string[] = ar[k];
-            //                     for(var message of messages) {
-            //                         var d:AtomDisposable = AtomDevice.instance.subscribe(message, (msg,data) => {
-            //                             rf.call(this, msg, data);
-            //                         });
-            //                         this.registerDisposable(d);
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     }catch(e) {
-            //         console.error(`View Model watcher registration failed`);
-            //         console.error(e);
-            //     }
-            // }
             _this.validations = [];
             WebAtoms.AtomDevice.instance.runAsync(function () { return _this.privateInit(); });
             return _this;
         }
+        Object.defineProperty(AtomViewModel.prototype, "channelPrefix", {
+            get: function () {
+                return this._channelPrefix;
+            },
+            set: function (v) {
+                this._channelPrefix = v;
+                var temp = this.subscriptions;
+                this.subscriptions = [];
+                for (var _i = 0, temp_1 = temp; _i < temp_1.length; _i++) {
+                    var s = temp_1[_i];
+                    s.disposable.dispose();
+                }
+                for (var _a = 0, temp_2 = temp; _a < temp_2.length; _a++) {
+                    var s1 = temp_2[_a];
+                    this.subscribe(s.channel, s.action);
+                }
+                Atom.refresh(this, "channelPrefix");
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(AtomViewModel.prototype, "isReady", {
             get: function () {
                 return this._isReady;
@@ -997,7 +980,7 @@ var WebAtoms;
             var action = function (m, d) {
                 a(d);
             };
-            var sub = WebAtoms.AtomDevice.instance.subscribe(msg, action);
+            var sub = WebAtoms.AtomDevice.instance.subscribe(this.channelPrefix + msg, action);
             this.registerDisposable(sub);
         };
         /**
@@ -1008,7 +991,15 @@ var WebAtoms;
          * @memberof AtomViewModel
          */
         AtomViewModel.prototype.broadcast = function (msg, data) {
-            WebAtoms.AtomDevice.instance.broadcast(msg, data);
+            WebAtoms.AtomDevice.instance.broadcast(this.channelPrefix + msg, data);
+        };
+        AtomViewModel.prototype.subscribe = function (channel, c) {
+            var sub = WebAtoms.AtomDevice.instance.subscribe(this.channelPrefix + channel, c);
+            this.subscriptions.push({
+                channel: channel,
+                action: c,
+                disposable: sub
+            });
         };
         /**
          * Put your asynchronous initializations here
@@ -1036,6 +1027,13 @@ var WebAtoms;
                     var d = _a[_i];
                     d.dispose();
                 }
+            }
+            if (this.subscriptions) {
+                for (var _b = 0, _c = this.subscriptions; _b < _c.length; _b++) {
+                    var d = _c[_b];
+                    d.disposable.dispose();
+                }
+                this.subscriptions = [];
             }
         };
         return AtomViewModel;
@@ -1080,6 +1078,28 @@ var WebAtoms;
         function AtomWindowViewModel() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        Object.defineProperty(AtomWindowViewModel.prototype, "windowName", {
+            /**
+             * windowName will be set to generated html tag id, you can use this
+             * to mock AtomWindowViewModel in testing.
+             *
+             * When window is closed or cancelled, view model only broadcasts
+             * `atom-window-close:${this.windowName}`, you can listen for
+             * such message.
+             *
+             * @type {string}
+             * @memberof AtomWindowViewModel
+             */
+            get: function () {
+                return this._windowName;
+            },
+            set: function (v) {
+                this._windowName = v;
+                Atom.refresh(this, "windowName");
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * This will broadcast `atom-window-close:windowName`.
          * WindowService will close the window on receipt of such message and
@@ -1127,12 +1147,14 @@ function receive() {
     return function (target, key) {
         registerInit(target, function (vm) {
             var fx = vm[key];
+            var a = function (ch, d) {
+                fx.call(vm, ch, d);
+            };
+            // tslint:disable-next-line:no-string-literal
+            var s = vm["subscribe"];
             for (var _i = 0, channel_1 = channel; _i < channel_1.length; _i++) {
                 var c = channel_1[_i];
-                var dx = WebAtoms.AtomDevice.instance.subscribe(c, function (cx, mx) {
-                    fx.call(vm, cx, mx);
-                });
-                vm.registerDisposable(dx);
+                s.call(vm, c, a);
             }
         });
     };
@@ -1148,10 +1170,11 @@ function bindableReceive() {
             var fx = function (cx, m) {
                 vm[key] = m;
             };
+            // tslint:disable-next-line:no-string-literal
+            var s = vm["subscribe"];
             for (var _i = 0, channel_2 = channel; _i < channel_2.length; _i++) {
                 var c = channel_2[_i];
-                var dx = WebAtoms.AtomDevice.instance.subscribe(c, fx);
-                vm.registerDisposable(dx);
+                s.call(vm, c, fx);
             }
         });
         return bp;
@@ -2128,6 +2151,7 @@ var WebAtoms;
                             var dispatcher = WebAtoms["dispatcher"];
                             if (viewModel !== undefined) {
                                 Atom.set(windowCtrl, "viewModel", viewModel);
+                                viewModel.windowName = windowDiv.id;
                             }
                             windowCtrl.set_next(function () {
                                 cancelSubscription.dispose();
@@ -2160,7 +2184,7 @@ var WebAtoms;
                             dispatcher.callLater(function () {
                                 var scope = windowCtrl.get_scope();
                                 var vm = windowCtrl.get_viewModel();
-                                if (vm) {
+                                if (vm && !vm.windowName) {
                                     vm.windowName = windowDiv.id;
                                 }
                                 windowCtrl.openWindow(scope, null);

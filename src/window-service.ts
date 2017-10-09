@@ -170,6 +170,7 @@ namespace WebAtoms {
 
                 if(viewModel !== undefined) {
                     Atom.set(windowCtrl,"viewModel",viewModel);
+                    viewModel.windowName = windowDiv.id;
                 }
 
                 windowCtrl.set_next(()=> {
@@ -204,7 +205,7 @@ namespace WebAtoms {
                 dispatcher.callLater(()=> {
                     var scope:any = windowCtrl.get_scope();
                     var vm:any = windowCtrl.get_viewModel();
-                    if(vm) {
+                    if(vm && !vm.windowName) {
                         vm.windowName = windowDiv.id;
                     }
                     windowCtrl.openWindow(scope,null);
