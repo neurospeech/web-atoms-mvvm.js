@@ -171,6 +171,7 @@ namespace WebAtoms {
                 if(viewModel !== undefined) {
                     Atom.set(windowCtrl,"viewModel",viewModel);
                     viewModel.windowName = windowDiv.id;
+                    viewModel.channelPrefix = windowDiv.id;
                 }
 
                 windowCtrl.set_next(()=> {
