@@ -173,15 +173,3 @@
 var DIGlobal: any = WebAtoms.DIGlobal;
 var DIAlwaysNew: any = WebAtoms.DIAlwaysNew;
 
-/**
- * Receive messages for given channel
- * @param {(string | RegExp)} channel
- * @returns {Function}
- */
-function receive(...channel:string[]):Function {
-    return function(target:WebAtoms.AtomViewModel, key: string | symbol):void {
-        var t:any = target as any;
-        var receivers:any = t._$_receivers = t._$_receivers || {};
-        receivers[key] = channel;
-    };
-}

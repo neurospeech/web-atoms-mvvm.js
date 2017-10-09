@@ -68,12 +68,6 @@ declare namespace WebAtoms {
 }
 declare var DIGlobal: any;
 declare var DIAlwaysNew: any;
-/**
- * Receive messages for given channel
- * @param {(string | RegExp)} channel
- * @returns {Function}
- */
-declare function receive(...channel: string[]): Function;
 declare var Atom: any;
 declare var AtomBinder: any;
 /**
@@ -317,7 +311,7 @@ declare namespace WebAtoms {
         private privateInit();
         waitForReady(): Promise<any>;
         protected onReady(): void;
-        private registerWatchers();
+        private runDecoratorInits();
         private validations;
         /**
          * Internal method, do not use, instead use errors.hasErrors()
@@ -374,7 +368,7 @@ declare namespace WebAtoms {
          * @param {AtomDisposable} d
          * @memberof AtomViewModel
          */
-        protected registerDisposable(d: AtomDisposable): void;
+        registerDisposable(d: AtomDisposable): void;
         protected onPropertyChanged(name: string): void;
         /**
          * Register listener for given message.
@@ -479,6 +473,16 @@ declare namespace WebAtoms {
         cancel(): void;
     }
 }
+declare type viewModelInit = (vm: WebAtoms.AtomViewModel) => void;
+declare function registerInit(target: WebAtoms.AtomViewModel, fx: viewModelInit): void;
+/**
+ * Receive messages for given channel
+ * @param {(string | RegExp)} channel
+ * @returns {Function}
+ */
+declare function receive(...channel: string[]): Function;
+declare function bindableReceive(...channel: string[]): Function;
+declare function bindableBroadcast(...channel: string[]): Function;
 declare function watch(target: WebAtoms.AtomViewModel, key: string | symbol, descriptor: any): void;
 declare function validate(target: WebAtoms.AtomViewModel, key: string | symbol, descriptor: any): void;
 declare namespace WebAtoms {

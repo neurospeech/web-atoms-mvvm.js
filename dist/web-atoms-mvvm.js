@@ -142,22 +142,6 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var DIGlobal = WebAtoms.DIGlobal;
 var DIAlwaysNew = WebAtoms.DIAlwaysNew;
-/**
- * Receive messages for given channel
- * @param {(string | RegExp)} channel
- * @returns {Function}
- */
-function receive() {
-    var channel = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        channel[_i] = arguments[_i];
-    }
-    return function (target, key) {
-        var t = target;
-        var receivers = t._$_receivers = t._$_receivers || {};
-        receivers[key] = channel;
-    };
-}
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -773,6 +757,46 @@ var WebAtoms;
         function AtomViewModel() {
             var _this = _super.call(this) || this;
             _this._isReady = false;
+            // private registerWatchers():void {
+            //     try {
+            //         var v:any = this.constructor.prototype;
+            //         if(v) {
+            //             if(v._$_autoWatchers) {
+            //                 var aw:any = v._$_autoWatchers;
+            //                 for(var key in aw) {
+            //                     if(!aw.hasOwnProperty(key)) {
+            //                         continue;
+            //                     }
+            //                     var vf:any = aw[key];
+            //                     if(vf.validate) {
+            //                         this.addValidation(vf.method);
+            //                     }else {
+            //                         this.watch(vf.method);
+            //                     }
+            //                 }
+            //             }
+            //             if(v._$_receivers) {
+            //                 var ar:any = v._$_receivers;
+            //                 for(var k in ar) {
+            //                     if(!ar.hasOwnProperty(k)) {
+            //                         continue;
+            //                     }
+            //                     var rf: Function = this[k] as Function;
+            //                     var messages:string[] = ar[k];
+            //                     for(var message of messages) {
+            //                         var d:AtomDisposable = AtomDevice.instance.subscribe(message, (msg,data) => {
+            //                             rf.call(this, msg, data);
+            //                         });
+            //                         this.registerDisposable(d);
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }catch(e) {
+            //         console.error(`View Model watcher registration failed`);
+            //         console.error(e);
+            //     }
+            // }
             _this.validations = [];
             WebAtoms.AtomDevice.instance.runAsync(function () { return _this.privateInit(); });
             return _this;
@@ -793,7 +817,7 @@ var WebAtoms;
                             _a.trys.push([0, , 3, 4]);
                             return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
                                     return __generator(this, function (_a) {
-                                        this.registerWatchers();
+                                        this.runDecoratorInits();
                                         return [2 /*return*/];
                                     });
                                 }); })];
@@ -838,48 +862,17 @@ var WebAtoms;
         };
         // tslint:disable-next-line:no-empty
         AtomViewModel.prototype.onReady = function () { };
-        AtomViewModel.prototype.registerWatchers = function () {
-            var _this = this;
-            try {
-                var v = this.constructor.prototype;
-                if (v) {
-                    if (v._$_autoWatchers) {
-                        var aw = v._$_autoWatchers;
-                        for (var key in aw) {
-                            if (!aw.hasOwnProperty(key)) {
-                                continue;
-                            }
-                            var vf = aw[key];
-                            if (vf.validate) {
-                                this.addValidation(vf.method);
-                            }
-                            else {
-                                this.watch(vf.method);
-                            }
-                        }
-                    }
-                    if (v._$_receivers) {
-                        var ar = v._$_receivers;
-                        for (var k in ar) {
-                            if (!ar.hasOwnProperty(k)) {
-                                continue;
-                            }
-                            var rf = this[k];
-                            var messages = ar[k];
-                            for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
-                                var message = messages_1[_i];
-                                var d = WebAtoms.AtomDevice.instance.subscribe(message, function (msg, data) {
-                                    rf.call(_this, msg, data);
-                                });
-                                this.registerDisposable(d);
-                            }
-                        }
-                    }
-                }
+        AtomViewModel.prototype.runDecoratorInits = function () {
+            var v = this.constructor.prototype;
+            if (!v) {
+                return;
             }
-            catch (e) {
-                console.error("View Model watcher registration failed");
-                console.error(e);
+            var ris = v._$_inits;
+            if (ris) {
+                for (var _i = 0, ris_1 = ris; _i < ris_1.length; _i++) {
+                    var ri = ris_1[_i];
+                    ri.call(this, this);
+                }
             }
         };
         /**
@@ -1116,21 +1109,92 @@ var WebAtoms;
     }(AtomViewModel));
     WebAtoms.AtomWindowViewModel = AtomWindowViewModel;
 })(WebAtoms || (WebAtoms = {}));
-function watch(target, key, descriptor) {
-    var v = target;
-    v._$_autoWatchers = v._$_autoWatchers || {};
-    v._$_autoWatchers[key] = {
-        method: descriptor.value
+function registerInit(target, fx) {
+    var t = target;
+    var inits = t._$_inits = t._$_inits || [];
+    inits.push(fx);
+}
+/**
+ * Receive messages for given channel
+ * @param {(string | RegExp)} channel
+ * @returns {Function}
+ */
+function receive() {
+    var channel = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        channel[_i] = arguments[_i];
+    }
+    return function (target, key) {
+        registerInit(target, function (vm) {
+            var fx = vm[key];
+            for (var _i = 0, channel_1 = channel; _i < channel_1.length; _i++) {
+                var c = channel_1[_i];
+                var dx = WebAtoms.AtomDevice.instance.subscribe(c, function (cx, mx) {
+                    fx.call(vm, cx, mx);
+                });
+                vm.registerDisposable(dx);
+            }
+        });
     };
 }
-function validate(target, key, descriptor) {
-    var v = target;
-    v._$_autoWatchers = v._$_autoWatchers || {};
-    v._$_autoWatchers[key] = descriptor.value;
-    v._$_autoWatchers[key] = {
-        method: descriptor.value,
-        validate: true
+function bindableReceive() {
+    var channel = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        channel[_i] = arguments[_i];
+    }
+    return function (target, key) {
+        var _this = this;
+        var bp = bindableProperty(target, key);
+        registerInit(target, function (vm) {
+            var fx = function (cx, m) {
+                _this[key] = m;
+            };
+            for (var _i = 0, channel_2 = channel; _i < channel_2.length; _i++) {
+                var c = channel_2[_i];
+                var dx = WebAtoms.AtomDevice.instance.subscribe(c, fx);
+                vm.registerDisposable(dx);
+            }
+        });
+        return bp;
     };
+}
+function bindableBroadcast() {
+    var channel = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        channel[_i] = arguments[_i];
+    }
+    return function (target, key) {
+        var _this = this;
+        var bp = bindableProperty(target, key);
+        registerInit(target, function (vm) {
+            var fx = function (cx, m) {
+                var v = _this[key];
+                for (var _i = 0, channel_3 = channel; _i < channel_3.length; _i++) {
+                    var c = channel_3[_i];
+                    vm.broadcast(c, v);
+                }
+            };
+            // tslint:disable-next-line:no-string-literal
+            var vfx = vm["watch"];
+            vfx.call(vm, fx);
+        });
+        return bp;
+    };
+}
+function watch(target, key, descriptor) {
+    registerInit(target, function (vm) {
+        // tslint:disable-next-line:no-string-literal
+        var vfx = vm["watch"];
+        vfx.call(vm, vm[key]);
+    });
+}
+function validate(target, key, descriptor) {
+    registerInit(target, function (vm) {
+        // tslint:disable-next-line:no-string-literal
+        var vfx = vm["addValidation"];
+        // tslint:disable-next-line:no-string-literal
+        vfx.call(vm, vm["key"]);
+    });
 }
 var WebAtoms;
 (function (WebAtoms) {
