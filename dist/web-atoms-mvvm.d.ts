@@ -305,6 +305,9 @@ declare namespace WebAtoms {
      */
     class AtomViewModel extends AtomModel {
         private disposables;
+        private subscriptions;
+        private _channelPrefix;
+        channelPrefix: string;
         private _isReady;
         readonly isReady: boolean;
         constructor();
@@ -388,6 +391,7 @@ declare namespace WebAtoms {
          * @memberof AtomViewModel
          */
         broadcast(msg: string, data: any): void;
+        private subscribe(channel, c);
         /**
          * Put your asynchronous initializations here
          *
@@ -450,6 +454,7 @@ declare namespace WebAtoms {
          * @memberof AtomWindowViewModel
          */
         windowName: string;
+        _windowName: string;
         /**
          * This will broadcast `atom-window-close:windowName`.
          * WindowService will close the window on receipt of such message and

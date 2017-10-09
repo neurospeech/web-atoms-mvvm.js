@@ -3,6 +3,13 @@
 
 
 namespace WebAtoms {
+
+    type VMSubscription = {
+        channel: string,
+        action: AtomAction,
+        disposable: AtomDisposable
+    };
+
     /**
      *
      *
@@ -13,6 +20,26 @@ namespace WebAtoms {
     export class AtomViewModel extends AtomModel {
 
         private disposables: Array<AtomDisposable>;
+
+        private subscriptions: VMSubscription[] = [];
+
+        private _channelPrefix: string = "";
+        public get channelPrefix(): string {
+            return this._channelPrefix;
+        }
+        public set channelPrefix(v: string) {
+            this._channelPrefix = v;
+
+            var temp: VMSubscription[] = this.subscriptions;
+            this.subscriptions = [];
+            for(var s of temp) {
+                s.disposable.dispose();
+            }
+            for(var s1 of temp) {
+                this.subscribe(s.channel,s.action);
+            }
+            Atom.refresh(this,"channelPrefix");
+        }
 
         private _isReady:boolean = false;
 
@@ -64,48 +91,6 @@ namespace WebAtoms {
                 }
             }
         }
-
-        // private registerWatchers():void {
-        //     try {
-        //         var v:any = this.constructor.prototype;
-        //         if(v) {
-        //             if(v._$_autoWatchers) {
-        //                 var aw:any = v._$_autoWatchers;
-        //                 for(var key in aw) {
-        //                     if(!aw.hasOwnProperty(key)) {
-        //                         continue;
-        //                     }
-        //                     var vf:any = aw[key];
-        //                     if(vf.validate) {
-        //                         this.addValidation(vf.method);
-        //                     }else {
-        //                         this.watch(vf.method);
-        //                     }
-        //                 }
-        //             }
-
-        //             if(v._$_receivers) {
-        //                 var ar:any = v._$_receivers;
-        //                 for(var k in ar) {
-        //                     if(!ar.hasOwnProperty(k)) {
-        //                         continue;
-        //                     }
-        //                     var rf: Function = this[k] as Function;
-        //                     var messages:string[] = ar[k];
-        //                     for(var message of messages) {
-        //                         var d:AtomDisposable = AtomDevice.instance.subscribe(message, (msg,data) => {
-        //                             rf.call(this, msg, data);
-        //                         });
-        //                         this.registerDisposable(d);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }catch(e) {
-        //         console.error(`View Model watcher registration failed`);
-        //         console.error(e);
-        //     }
-        // }
 
         private validations:AtomWatcher<AtomViewModel>[] = [];
 
@@ -227,7 +212,7 @@ namespace WebAtoms {
             var action: AtomAction = (m, d) => {
                 a(d as T);
             };
-            var sub:AtomDisposable = AtomDevice.instance.subscribe(msg, action);
+            var sub:AtomDisposable = AtomDevice.instance.subscribe( this.channelPrefix + msg, action);
             this.registerDisposable(sub);
         }
 
@@ -239,7 +224,16 @@ namespace WebAtoms {
          * @memberof AtomViewModel
          */
         public broadcast(msg: string, data: any):void {
-            AtomDevice.instance.broadcast(msg, data);
+            AtomDevice.instance.broadcast(this.channelPrefix + msg, data);
+        }
+
+        private subscribe(channel: string, c: (ch:string, data:any) => void): void {
+            var sub:AtomDisposable = AtomDevice.instance.subscribe( this.channelPrefix + channel, c);
+            this.subscriptions.push({
+                channel: channel,
+                action: c,
+                disposable: sub
+            });
         }
 
         /**
@@ -260,9 +254,15 @@ namespace WebAtoms {
          */
         public dispose():void {
             if(this.disposables) {
-                for(let d of this.disposables){
+                for(let d of this.disposables) {
                     d.dispose();
                 }
+            }
+            if(this.subscriptions) {
+                for(let d of this.subscriptions) {
+                    d.disposable.dispose();
+                }
+                this.subscriptions = [];
             }
         }
 
@@ -317,7 +317,14 @@ namespace WebAtoms {
          * @type {string}
          * @memberof AtomWindowViewModel
          */
-        windowName: string;
+        public get windowName(): string {
+            return this._windowName;
+        }
+        public set windowName(v:string) {
+            this._windowName = v;
+            Atom.refresh(this, "windowName");
+        }
+        _windowName: string;
 
         /**
          * This will broadcast `atom-window-close:windowName`.
@@ -370,11 +377,13 @@ function receive(...channel:string[]):Function {
     return function(target:WebAtoms.AtomViewModel, key: string | symbol):void {
         registerInit(target, vm => {
             var fx:Function = (vm as any)[key];
+            var a: WebAtoms.AtomAction = (ch:string, d: any): void => {
+                fx.call(vm, ch, d );
+            };
+            // tslint:disable-next-line:no-string-literal
+            var s:Function = vm["subscribe"];
             for(var c of channel){
-                var dx: WebAtoms.AtomDisposable = WebAtoms.AtomDevice.instance.subscribe(c, (cx,mx) => {
-                    fx.call(vm, cx, mx);
-                });
-                vm.registerDisposable(dx);
+                s.call(vm,c, a);
             }
         });
     };
@@ -388,9 +397,10 @@ function bindableReceive(...channel: string[]): Function {
             var fx:WebAtoms.AtomAction = (cx:string, m:any) => {
                 vm[key] = m;
             };
+            // tslint:disable-next-line:no-string-literal
+            var s:Function = vm["subscribe"];
             for(var c of channel) {
-                var dx: WebAtoms.AtomDisposable = WebAtoms.AtomDevice.instance.subscribe(c, fx);
-                vm.registerDisposable(dx);
+                s.call(vm, c, fx);
             }
         });
 

@@ -109,8 +109,6 @@ class AtomViewModelTest extends TestItem{
 
         var d = sm.watchFullName();
 
-        debugger;
-
         Atom.set(sm,"data.firstName","Akash");
 
         Assert.equals("Akash",sm.data.fullName);
