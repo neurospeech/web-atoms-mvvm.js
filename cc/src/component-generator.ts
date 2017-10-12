@@ -387,7 +387,11 @@ namespace ComponentGenerator{
 
                     if(v.startsWith("{") && v.endsWith("}")){
                         // one time binding...
-                        inits.push(`this.setLocalValue('${ckey}',${HtmlContent.processOneTimeBinding(v)},e);`);
+                        if(/^viewmodel$/i.test(ckey)){
+                            inits.push(`this.setLocalValue('${ckey}',${HtmlContent.processOneTimeBinding(v)},e, true);`);
+                        }else{
+                            inits.push(`this.setLocalValue('${ckey}',${HtmlContent.processOneTimeBinding(v)},e);`);
+                        }
                         continue;
                     }
 
