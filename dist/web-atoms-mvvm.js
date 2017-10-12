@@ -756,7 +756,6 @@ var WebAtoms;
         __extends(AtomViewModel, _super);
         function AtomViewModel() {
             var _this = _super.call(this) || this;
-            _this.subscriptions = [];
             _this._channelPrefix = "";
             _this._isReady = false;
             _this.validations = [];
@@ -770,14 +769,16 @@ var WebAtoms;
             set: function (v) {
                 this._channelPrefix = v;
                 var temp = this.subscriptions;
-                this.subscriptions = [];
-                for (var _i = 0, temp_1 = temp; _i < temp_1.length; _i++) {
-                    var s = temp_1[_i];
-                    s.disposable.dispose();
-                }
-                for (var _a = 0, temp_2 = temp; _a < temp_2.length; _a++) {
-                    var s1 = temp_2[_a];
-                    this.subscribe(s.channel, s.action);
+                if (temp) {
+                    this.subscriptions = [];
+                    for (var _i = 0, temp_1 = temp; _i < temp_1.length; _i++) {
+                        var s = temp_1[_i];
+                        s.disposable.dispose();
+                    }
+                    for (var _a = 0, temp_2 = temp; _a < temp_2.length; _a++) {
+                        var s1 = temp_2[_a];
+                        this.subscribe(s.channel, s.action);
+                    }
                 }
                 Atom.refresh(this, "channelPrefix");
             },
@@ -995,6 +996,7 @@ var WebAtoms;
         };
         AtomViewModel.prototype.subscribe = function (channel, c) {
             var sub = WebAtoms.AtomDevice.instance.subscribe(this.channelPrefix + channel, c);
+            this.subscriptions = this.subscriptions || [];
             this.subscriptions.push({
                 channel: channel,
                 action: c,
@@ -1033,7 +1035,7 @@ var WebAtoms;
                     var d = _c[_b];
                     d.disposable.dispose();
                 }
-                this.subscriptions = [];
+                this.subscriptions = null;
             }
         };
         return AtomViewModel;
@@ -1111,6 +1113,8 @@ var WebAtoms;
          * @memberof AtomWindowViewModel
          */
         AtomWindowViewModel.prototype.close = function (result) {
+            // tslint:disable-next-line:no-string-literal
+            this["_channelPrefix"] = "";
             this.broadcast("atom-window-close:" + this.windowName, result);
         };
         /**
@@ -1123,6 +1127,8 @@ var WebAtoms;
          * @memberof AtomWindowViewModel
          */
         AtomWindowViewModel.prototype.cancel = function () {
+            // tslint:disable-next-line:no-string-literal
+            this["_channelPrefix"] = "";
             this.broadcast("atom-window-cancel:" + this.windowName, null);
         };
         return AtomWindowViewModel;
