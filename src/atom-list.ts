@@ -129,4 +129,13 @@ namespace WebAtoms {
         }
 
     }
+
+    // tslint:disable
+    Array.prototype["add"] = AtomList.prototype.add;
+    Array.prototype["addAll"] = AtomList.prototype.addAll;
+    Array.prototype["clear"] = AtomList.prototype.clear;
+    Array.prototype["refresh"] = AtomList.prototype.refresh;
+    Array.prototype["remove"] = AtomList.prototype.remove;
+    Array.prototype["removeAt"] = AtomList.prototype.removeAt;
+    Array.prototype["watch"] = AtomList.prototype.watch;
 }
