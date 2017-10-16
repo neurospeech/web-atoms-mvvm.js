@@ -588,3 +588,44 @@ Once component is generated, you can include generated javascript file and creat
     </div>
 
 ```
+
+# Component Generator Task Example
+
+Following is an example of how to add custom component generator task in VS Code.
+
+```json
+    {
+        "taskName": "Component Compiler",
+        "command": "node",
+        "isBackground": true,
+        "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,
+            "panel": "dedicated"
+        },
+        "args": [
+            "node_modules/web-atoms-mvvm/bin/component-generator.js",
+            "app"
+        ],
+        "problemMatcher":{
+            "owner": "cc",
+            "fileLocation": ["relative", "${workspaceFolder}"],
+            "pattern": {
+                "regexp": "^([^\\(].*)\\((\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+                "file": 1,
+                "location": 2,
+                "severity": 3,
+                "code": 4,
+                "message": 5
+            },
+            "background": {
+                
+                "activeOnStart": true,
+                "beginsPattern": "^\\s*\\d{1,2}:\\d{1,2}:\\d{1,2}(?: AM| PM)? - File change detected\\. Starting incremental compilation\\.\\.\\.",
+                "endsPattern": "^\\s*\\d{1,2}:\\d{1,2}:\\d{1,2}(?: AM| PM)? - Compilation complete\\. Watching for file changes\\."
+            }
+        }
+    }
+```
+
