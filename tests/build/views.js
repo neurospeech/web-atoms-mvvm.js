@@ -16,7 +16,13 @@ window.Test.Namespace.HelpButton = (function(window,baseType){
 ];
 
                 (function(window,WebAtoms){
+                    this.HelpButton_t0 = function(e) { 
+                        var oldInit = AtomUI.attr(e,'base-data-atom-init');
+                        if(oldInit){
+                            (window.WebAtoms.PageSetup[oldInit]).call(this,e);
+                        }
                     
+                    };
                 }).call(WebAtoms.PageSetup,window,WebAtoms);
 
                 return classCreatorEx({
@@ -24,8 +30,18 @@ window.Test.Namespace.HelpButton = (function(window,baseType){
                     base: baseType,
                     start: function(e){
                         
+                        var oldInit = AtomUI.attr(e,'data-atom-init');
+                        if(oldInit){
+                            AtomUI.attr(e, 'base-data-atom-init',oldInit);
+                        };
+                        AtomUI.attr(e, 'data-atom-init','HelpButton_t0');
+                    
                     },
-                    methods:{},
-                    properties:{}
+                    methods:{
+                        setLocalValue: window.__atomSetLocalValue(baseType)
+                    },
+                    properties:{
+                        
+                    }
                 })
             })(window, WebAtoms.AtomButton.prototype);

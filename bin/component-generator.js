@@ -61,7 +61,8 @@ var ComponentGenerator;
                 method = AtomEvaluator.compile(vars, method);
             }
             catch (e) {
-                throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                //throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                throw new Error(e.message + " in \"" + txt + "\"");
             }
             be = { length: vars.length, method: method, path: path, original: ms };
             this.becache[txt] = be;
@@ -266,6 +267,7 @@ var ComponentGenerator;
             };
         };
         HtmlContent.mapNode = function (a, tags, children) {
+            var original = a;
             // debugger;
             if (a.name === "form-layout") {
                 // console.log(`converting form layout with ${a.children.length} children`);
@@ -325,12 +327,14 @@ var ComponentGenerator;
                         ca[key] = aa[key];
                     }
                     catch (er) {
+                        //debugger;
                         var en = a.startIndex || 0;
                         var cn = 0;
                         var ln = currentFileLines.findIndex(function (x) { return en < x; });
-                        ln = currentFileLines[ln - 1];
-                        cn = en - ln;
-                        console.error(currentFileName + "(" + ln + "," + cn + "): error CS001: " + er);
+                        var sln = currentFileLines[ln - 1];
+                        cn = en - sln;
+                        var errorText = ("" + er.message).split("\n").join(" ").split("\r").join("");
+                        console.log(currentFileName + "(" + ln + "," + cn + "): error TS0001: " + errorText + ".");
                     }
                 }
                 if (children) {
@@ -436,7 +440,7 @@ var ComponentGenerator;
                 if (error) {
                     console.error(error);
                 }
-            });
+            }, { withStartIndices: true });
             var parser = new htmlparser2_1.Parser(handler);
             parser.write(this.html);
             parser.end();
@@ -465,7 +469,7 @@ var ComponentGenerator;
             configurable: true
         });
         HtmlFile.prototype.compile = function () {
-            currentFileName = this.file;
+            currentFileName = this.file.split('\\').join("/");
             var html = fs.readFileSync(this.file, 'utf8');
             var lastLength = 0;
             currentFileLines = html.split('\n').map(function (x) {
@@ -495,7 +499,8 @@ var ComponentGenerator;
             this.files = [];
             this.watch();
             this.compile();
-            console.log("Watching for changes in " + folder);
+            console.log((new Date()).toLocaleTimeString() + " - Compilation complete. Watching for file changes.");
+            console.log("    ");
         }
         ComponentGenerator.prototype.loadFiles = function (folder) {
             // scan all html files...
@@ -525,7 +530,7 @@ var ComponentGenerator;
                     if (!fs.existsSync(file.file)) {
                         deletedFiles.push(file);
                     }
-                    console.log("Generating " + file.file);
+                    //console.log(`Generating ${file.file}`);
                     file.compile();
                 }
                 for (var _b = 0, _c = file.nodes; _b < _c.length; _b++) {
@@ -576,7 +581,6 @@ var ComponentGenerator;
                 fs.writeFileSync(this.outFile + ".d.ts", declarations);
                 fs.writeFileSync(this.outFile + ".mock.js", mock);
             }
-            console.log(now.toLocaleTimeString() + " - File generated " + this.outFile);
         };
         ComponentGenerator.prototype.watch = function () {
             var _this = this;
@@ -591,7 +595,12 @@ var ComponentGenerator;
             }
             this.last = setTimeout(function () {
                 _this.last = 0;
+                console.log("    ");
+                console.log((new Date()).toLocaleTimeString() + " - File change detected. Starting incremental compilation...");
+                console.log("     ");
                 _this.compile();
+                console.log("     ");
+                console.log((new Date()).toLocaleTimeString() + " - Compilation complete. Watching for file changes.");
             }, 100);
         };
         return ComponentGenerator;

@@ -78,7 +78,8 @@ namespace ComponentGenerator{
                 try {
                     method = AtomEvaluator.compile(vars, method);
                 } catch (e) {
-                    throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                    //throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                    throw new Error(`${e.message} in "${txt}"`);
                 }
 
                 be = { length: vars.length, method: method, path: path, original: ms };
@@ -349,6 +350,8 @@ namespace ComponentGenerator{
 
         static mapNode(a:any,tags:TagInitializerList, children?:Array<any>): string[] {
 
+            var original = a;
+
             // debugger;
 
             if(a.name === "form-layout") {
@@ -428,12 +431,14 @@ namespace ComponentGenerator{
 
                         ca[key] = aa[key];
                     }catch(er){
+                        //debugger;
                         var en = a.startIndex || 0;
                         var cn = 0;
                         var ln = currentFileLines.findIndex( x => en < x );
-                        ln = currentFileLines[ln-1];
-                        cn = en - ln;
-                        console.error(`${currentFileName}(${ln},${cn}): error CS001: ${er}`);
+                        var sln = currentFileLines[ln-1];
+                        cn = en - sln;
+                        var errorText:string = `${er.message}`.split("\n").join(" ").split("\r").join("");
+                        console.log(`${currentFileName}(${ln},${cn}): error TS0001: ${errorText}.`);
                     }
                 }
 
@@ -596,7 +601,8 @@ namespace ComponentGenerator{
                 {
                     console.error(error);
                 }
-            });
+            }, { withStartIndices: true });
+            
             var parser = new Parser(handler);
             parser.write(this.html);    
             parser.end();
@@ -644,8 +650,8 @@ namespace ComponentGenerator{
         compile(){
 
 
-            currentFileName = this.file;
-            
+            currentFileName = this.file.split('\\').join("/");
+
 
             var html = fs.readFileSync(this.file,'utf8');
 
@@ -721,8 +727,8 @@ namespace ComponentGenerator{
 
             this.watch();
             this.compile();
-
-            console.log(`Watching for changes in ${folder}`);
+            console.log(`${(new Date()).toLocaleTimeString()} - Compilation complete. Watching for file changes.`);
+            console.log("    ");
 
         }
 
@@ -743,7 +749,7 @@ namespace ComponentGenerator{
                         deletedFiles.push(file);
                     }
 
-                    console.log(`Generating ${file.file}`);
+                    //console.log(`Generating ${file.file}`);
                     file.compile();
                 }
                 for(var n of file.nodes){
@@ -803,8 +809,6 @@ namespace ComponentGenerator{
                 fs.writeFileSync(`${this.outFile}.d.ts`,declarations);
                 fs.writeFileSync(`${this.outFile}.mock.js`,mock);
             }
-
-            console.log(`${now.toLocaleTimeString()} - File generated ${this.outFile}`);
         }
 
         watch():void{
@@ -821,7 +825,14 @@ namespace ComponentGenerator{
             }
             this.last = setTimeout(()=>{
                 this.last = 0;
+                console.log("    ");
+                console.log(`${(new Date()).toLocaleTimeString()} - File change detected. Starting incremental compilation...`);
+                console.log("     ");
                 this.compile();
+                console.log("     ");
+                console.log(`${(new Date()).toLocaleTimeString()} - Compilation complete. Watching for file changes.`);
+
+                
             },100);
         }
     }
