@@ -1,0 +1,1 @@
+ var Test.Namespace = Test.Namespace || {};  Test.Namespace.HelpButton = {}; 

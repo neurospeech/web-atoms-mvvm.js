@@ -1,9 +1,14 @@
+// tslint:disable
 import {DomHandler,Parser} from "htmlparser2";
 
 import * as fs from "fs";
 import * as path from "path";
 
 namespace ComponentGenerator{
+
+
+    var currentFileName:string = "";
+    var currentFileLines: Array<number> = [];
 
     var AtomEvaluator = {
 
@@ -73,7 +78,8 @@ namespace ComponentGenerator{
                 try {
                     method = AtomEvaluator.compile(vars, method);
                 } catch (e) {
-                    throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                    //throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                    throw new Error(`${e.message} in "${txt}"`);
                 }
 
                 be = { length: vars.length, method: method, path: path, original: ms };
@@ -279,7 +285,7 @@ namespace ComponentGenerator{
                 var errorStyle = "";
                 if(error){
                     if(error.endsWith("}") || error.endsWith("]")){
-                        var last = error.substr(error.length-1);
+                        var last:any = error.substr(error.length-1);
                         errorStyle = error.substr(0,error.length-1) + " ? '' : 'none'" + last;
                         errorAttribs["style-display"] = errorStyle;
                     }
@@ -344,6 +350,8 @@ namespace ComponentGenerator{
 
         static mapNode(a:any,tags:TagInitializerList, children?:Array<any>): string[] {
 
+            var original = a;
+
             // debugger;
 
             if(a.name === "form-layout") {
@@ -373,53 +381,65 @@ namespace ComponentGenerator{
                     //if(!aa.hasOwnProperty(key))
                     //    continue;
 
-                    var ckey = HtmlContent.camelCase(key);
+                    try{
 
-                    var v = (aa[key] as string).trim();
+                        var ckey = HtmlContent.camelCase(key);
 
-                    if(!v)
-                        continue;
+                        var v = (aa[key] as string).trim();
 
-                    if(key === "data-atom-init"){
-                        inits.push(`WebAtoms.PageSetup.${v}(e);`);
-                        continue;
-                    }
+                        if(!v)
+                            continue;
 
-                    if(v.startsWith("{") && v.endsWith("}")){
-                        // one time binding...
-                        if(/^viewmodel$/i.test(ckey)){
-                            inits.push(`this.setLocalValue('${ckey}',${HtmlContent.processOneTimeBinding(v)},e, true);`);
-                        }else{
-                            inits.push(`this.setLocalValue('${ckey}',${HtmlContent.processOneTimeBinding(v)},e);`);
+                        if(key === "data-atom-init"){
+                            inits.push(`WebAtoms.PageSetup.${v}(e);`);
+                            continue;
                         }
-                        continue;
-                    }
 
-                    if(v.startsWith("[") && v.endsWith("]")){
-                        // one way binding...
-                        inits.push(`this.bind(e,'${ckey}',${HtmlContent.processOneWayBinding(v)});`)
-                        continue;
-                    }
-                    if(v.startsWith("$[") && v.endsWith("]")){
-                        // two way binding...
-                        inits.push(`this.bind(e,'${ckey}',${HtmlContent.processTwoWayBinding(v)});`)
-                        continue;
-                    }
-                    if(v.startsWith("^[") && v.endsWith("]")){
-                        // two way binding...
-                        inits.push(`this.bind(e,'${ckey}',${HtmlContent.processTwoWayBinding(v)},null,"keyup,keydown,keypress,blur,click");`)
-                        continue;
-                    }
+                        if(v.startsWith("{") && v.endsWith("}")){
+                            // one time binding...
+                            if(/^viewmodel$/i.test(ckey)){
+                                inits.push(`this.setLocalValue('${ckey}',${HtmlContent.processOneTimeBinding(v)},e, true);`);
+                            }else{
+                                inits.push(`this.setLocalValue('${ckey}',${HtmlContent.processOneTimeBinding(v)},e);`);
+                            }
+                            continue;
+                        }
 
-                    if(/autofocus/i.test(key)) {
-                        inits.push(`window.WebAtoms.dispatcher.callLater( 
-                            function() { 
-                                e.focus(); 
-                            });`);
-                        continue;
-                    }
+                        if(v.startsWith("[") && v.endsWith("]")){
+                            // one way binding...
+                            inits.push(`this.bind(e,'${ckey}',${HtmlContent.processOneWayBinding(v)});`)
+                            continue;
+                        }
+                        if(v.startsWith("$[") && v.endsWith("]")){
+                            // two way binding...
+                            inits.push(`this.bind(e,'${ckey}',${HtmlContent.processTwoWayBinding(v)});`)
+                            continue;
+                        }
+                        if(v.startsWith("^[") && v.endsWith("]")){
+                            // two way binding...
+                            inits.push(`this.bind(e,'${ckey}',${HtmlContent.processTwoWayBinding(v)},null,"keyup,keydown,keypress,blur,click");`)
+                            continue;
+                        }
 
-                    ca[key] = aa[key];
+                        if(/autofocus/i.test(key)) {
+                            inits.push(`window.WebAtoms.dispatcher.callLater( 
+                                function() { 
+                                    e.focus(); 
+                                });`);
+                            continue;
+                        }
+
+                        ca[key] = aa[key];
+                    }catch(er){
+                        //debugger;
+                        var en = a.startIndex || 0;
+                        var cn = 0;
+                        var ln = currentFileLines.findIndex( x => en < x );
+                        var sln = currentFileLines[ln-1];
+                        cn = en - sln;
+                        var errorText:string = `${er.message}`.split("\n").join(" ").split("\r").join("");
+                        console.log(`${currentFileName}(${ln},${cn}): error TS0001: ${errorText}.`);
+                    }
                 }
 
                 if(children){
@@ -512,7 +532,7 @@ namespace ComponentGenerator{
             var tags:TagInitializerList = new TagInitializerList(name);
 
             var rootChildren = [];
-            var rootNode = HtmlContent.mapNode(node,tags, rootChildren)[1];
+            var rootNode = HtmlContent.mapNode(node,tags, rootChildren)[1] as any;
 
             var startScript = "";
 
@@ -581,7 +601,8 @@ namespace ComponentGenerator{
                 {
                     console.error(error);
                 }
-            });
+            }, { withStartIndices: true });
+            
             var parser = new Parser(handler);
             parser.write(this.html);    
             parser.end();
@@ -628,7 +649,20 @@ namespace ComponentGenerator{
 
         compile(){
 
+
+            currentFileName = this.file.split('\\').join("/");
+
+
             var html = fs.readFileSync(this.file,'utf8');
+
+
+            var lastLength = 0;
+            currentFileLines = html.split('\n').map(x => {
+                var n: number = lastLength;
+                lastLength += x.length + 1;
+                return n ;
+            });
+            
 
             var node = new HtmlFragment(html,this.nsNamespace);
             node.compile();
@@ -693,8 +727,8 @@ namespace ComponentGenerator{
 
             this.watch();
             this.compile();
-
-            console.log(`Watching for changes in ${folder}`);
+            console.log(`${(new Date()).toLocaleTimeString()} - Compilation complete. Watching for file changes.`);
+            console.log("    ");
 
         }
 
@@ -715,7 +749,7 @@ namespace ComponentGenerator{
                         deletedFiles.push(file);
                     }
 
-                    console.log(`Generating ${file.file}`);
+                    //console.log(`Generating ${file.file}`);
                     file.compile();
                 }
                 for(var n of file.nodes){
@@ -775,8 +809,6 @@ namespace ComponentGenerator{
                 fs.writeFileSync(`${this.outFile}.d.ts`,declarations);
                 fs.writeFileSync(`${this.outFile}.mock.js`,mock);
             }
-
-            console.log(`${now.toLocaleTimeString()} - File generated ${this.outFile}`);
         }
 
         watch():void{
@@ -793,7 +825,14 @@ namespace ComponentGenerator{
             }
             this.last = setTimeout(()=>{
                 this.last = 0;
+                console.log("    ");
+                console.log(`${(new Date()).toLocaleTimeString()} - File change detected. Starting incremental compilation...`);
+                console.log("     ");
                 this.compile();
+                console.log("     ");
+                console.log(`${(new Date()).toLocaleTimeString()} - Compilation complete. Watching for file changes.`);
+
+                
             },100);
         }
     }

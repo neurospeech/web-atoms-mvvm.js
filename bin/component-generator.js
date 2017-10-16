@@ -1,10 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable
 var htmlparser2_1 = require("htmlparser2");
 var fs = require("fs");
 var path = require("path");
 var ComponentGenerator;
 (function (ComponentGenerator_1) {
+    var currentFileName = "";
+    var currentFileLines = [];
     var AtomEvaluator = {
         ecache: {},
         becache: {},
@@ -58,7 +61,8 @@ var ComponentGenerator;
                 method = AtomEvaluator.compile(vars, method);
             }
             catch (e) {
-                throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                //throw new Error("Error executing \n" + methodString + "\nOriginal: " + txt + "\r\n" + e);
+                throw new Error(e.message + " in \"" + txt + "\"");
             }
             be = { length: vars.length, method: method, path: path, original: ms };
             this.becache[txt] = be;
@@ -263,6 +267,7 @@ var ComponentGenerator;
             };
         };
         HtmlContent.mapNode = function (a, tags, children) {
+            var original = a;
             // debugger;
             if (a.name === "form-layout") {
                 // console.log(`converting form layout with ${a.children.length} children`);
@@ -281,44 +286,56 @@ var ComponentGenerator;
                 for (var key in aa) {
                     //if(!aa.hasOwnProperty(key))
                     //    continue;
-                    var ckey = HtmlContent.camelCase(key);
-                    var v = aa[key].trim();
-                    if (!v)
-                        continue;
-                    if (key === "data-atom-init") {
-                        inits.push("WebAtoms.PageSetup." + v + "(e);");
-                        continue;
-                    }
-                    if (v.startsWith("{") && v.endsWith("}")) {
-                        // one time binding...
-                        if (/^viewmodel$/i.test(ckey)) {
-                            inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e, true);");
+                    try {
+                        var ckey = HtmlContent.camelCase(key);
+                        var v = aa[key].trim();
+                        if (!v)
+                            continue;
+                        if (key === "data-atom-init") {
+                            inits.push("WebAtoms.PageSetup." + v + "(e);");
+                            continue;
                         }
-                        else {
-                            inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e);");
+                        if (v.startsWith("{") && v.endsWith("}")) {
+                            // one time binding...
+                            if (/^viewmodel$/i.test(ckey)) {
+                                inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e, true);");
+                            }
+                            else {
+                                inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e);");
+                            }
+                            continue;
                         }
-                        continue;
+                        if (v.startsWith("[") && v.endsWith("]")) {
+                            // one way binding...
+                            inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processOneWayBinding(v) + ");");
+                            continue;
+                        }
+                        if (v.startsWith("$[") && v.endsWith("]")) {
+                            // two way binding...
+                            inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ");");
+                            continue;
+                        }
+                        if (v.startsWith("^[") && v.endsWith("]")) {
+                            // two way binding...
+                            inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ",null,\"keyup,keydown,keypress,blur,click\");");
+                            continue;
+                        }
+                        if (/autofocus/i.test(key)) {
+                            inits.push("window.WebAtoms.dispatcher.callLater( \n                                function() { \n                                    e.focus(); \n                                });");
+                            continue;
+                        }
+                        ca[key] = aa[key];
                     }
-                    if (v.startsWith("[") && v.endsWith("]")) {
-                        // one way binding...
-                        inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processOneWayBinding(v) + ");");
-                        continue;
+                    catch (er) {
+                        //debugger;
+                        var en = a.startIndex || 0;
+                        var cn = 0;
+                        var ln = currentFileLines.findIndex(function (x) { return en < x; });
+                        var sln = currentFileLines[ln - 1];
+                        cn = en - sln;
+                        var errorText = ("" + er.message).split("\n").join(" ").split("\r").join("");
+                        console.log(currentFileName + "(" + ln + "," + cn + "): error TS0001: " + errorText + ".");
                     }
-                    if (v.startsWith("$[") && v.endsWith("]")) {
-                        // two way binding...
-                        inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ");");
-                        continue;
-                    }
-                    if (v.startsWith("^[") && v.endsWith("]")) {
-                        // two way binding...
-                        inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ",null,\"keyup,keydown,keypress,blur,click\");");
-                        continue;
-                    }
-                    if (/autofocus/i.test(key)) {
-                        inits.push("window.WebAtoms.dispatcher.callLater( \n                            function() { \n                                e.focus(); \n                            });");
-                        continue;
-                    }
-                    ca[key] = aa[key];
                 }
                 if (children) {
                     inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            (window.WebAtoms.PageSetup[oldInit]).call(this,e);\n                        }\n                    ");
@@ -423,7 +440,7 @@ var ComponentGenerator;
                 if (error) {
                     console.error(error);
                 }
-            });
+            }, { withStartIndices: true });
             var parser = new htmlparser2_1.Parser(handler);
             parser.write(this.html);
             parser.end();
@@ -452,7 +469,14 @@ var ComponentGenerator;
             configurable: true
         });
         HtmlFile.prototype.compile = function () {
+            currentFileName = this.file.split('\\').join("/");
             var html = fs.readFileSync(this.file, 'utf8');
+            var lastLength = 0;
+            currentFileLines = html.split('\n').map(function (x) {
+                var n = lastLength;
+                lastLength += x.length + 1;
+                return n;
+            });
             var node = new HtmlFragment(html, this.nsNamespace);
             node.compile();
             this.nodes = node.nodes;
@@ -475,7 +499,8 @@ var ComponentGenerator;
             this.files = [];
             this.watch();
             this.compile();
-            console.log("Watching for changes in " + folder);
+            console.log((new Date()).toLocaleTimeString() + " - Compilation complete. Watching for file changes.");
+            console.log("    ");
         }
         ComponentGenerator.prototype.loadFiles = function (folder) {
             // scan all html files...
@@ -505,7 +530,7 @@ var ComponentGenerator;
                     if (!fs.existsSync(file.file)) {
                         deletedFiles.push(file);
                     }
-                    console.log("Generating " + file.file);
+                    //console.log(`Generating ${file.file}`);
                     file.compile();
                 }
                 for (var _b = 0, _c = file.nodes; _b < _c.length; _b++) {
@@ -556,7 +581,6 @@ var ComponentGenerator;
                 fs.writeFileSync(this.outFile + ".d.ts", declarations);
                 fs.writeFileSync(this.outFile + ".mock.js", mock);
             }
-            console.log(now.toLocaleTimeString() + " - File generated " + this.outFile);
         };
         ComponentGenerator.prototype.watch = function () {
             var _this = this;
@@ -571,7 +595,12 @@ var ComponentGenerator;
             }
             this.last = setTimeout(function () {
                 _this.last = 0;
+                console.log("    ");
+                console.log((new Date()).toLocaleTimeString() + " - File change detected. Starting incremental compilation...");
+                console.log("     ");
                 _this.compile();
+                console.log("     ");
+                console.log((new Date()).toLocaleTimeString() + " - Compilation complete. Watching for file changes.");
             }, 100);
         };
         return ComponentGenerator;
