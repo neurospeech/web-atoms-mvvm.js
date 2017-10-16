@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable
 var htmlparser2_1 = require("htmlparser2");
 var fs = require("fs");
 var path = require("path");

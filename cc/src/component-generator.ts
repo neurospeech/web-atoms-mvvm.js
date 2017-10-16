@@ -1,3 +1,4 @@
+// tslint:disable
 import {DomHandler,Parser} from "htmlparser2";
 
 import * as fs from "fs";
@@ -526,7 +527,7 @@ namespace ComponentGenerator{
             var tags:TagInitializerList = new TagInitializerList(name);
 
             var rootChildren = [];
-            var rootNode = HtmlContent.mapNode(node,tags, rootChildren)[1];
+            var rootNode = HtmlContent.mapNode(node,tags, rootChildren)[1] as any;
 
             var startScript = "";
 
