@@ -5,6 +5,8 @@ var fs = require("fs");
 var path = require("path");
 var ComponentGenerator;
 (function (ComponentGenerator_1) {
+    var currentFileName = "";
+    var currentFileLines = [];
     var AtomEvaluator = {
         ecache: {},
         becache: {},
@@ -281,44 +283,54 @@ var ComponentGenerator;
                 for (var key in aa) {
                     //if(!aa.hasOwnProperty(key))
                     //    continue;
-                    var ckey = HtmlContent.camelCase(key);
-                    var v = aa[key].trim();
-                    if (!v)
-                        continue;
-                    if (key === "data-atom-init") {
-                        inits.push("WebAtoms.PageSetup." + v + "(e);");
-                        continue;
-                    }
-                    if (v.startsWith("{") && v.endsWith("}")) {
-                        // one time binding...
-                        if (/^viewmodel$/i.test(ckey)) {
-                            inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e, true);");
+                    try {
+                        var ckey = HtmlContent.camelCase(key);
+                        var v = aa[key].trim();
+                        if (!v)
+                            continue;
+                        if (key === "data-atom-init") {
+                            inits.push("WebAtoms.PageSetup." + v + "(e);");
+                            continue;
                         }
-                        else {
-                            inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e);");
+                        if (v.startsWith("{") && v.endsWith("}")) {
+                            // one time binding...
+                            if (/^viewmodel$/i.test(ckey)) {
+                                inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e, true);");
+                            }
+                            else {
+                                inits.push("this.setLocalValue('" + ckey + "'," + HtmlContent.processOneTimeBinding(v) + ",e);");
+                            }
+                            continue;
                         }
-                        continue;
+                        if (v.startsWith("[") && v.endsWith("]")) {
+                            // one way binding...
+                            inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processOneWayBinding(v) + ");");
+                            continue;
+                        }
+                        if (v.startsWith("$[") && v.endsWith("]")) {
+                            // two way binding...
+                            inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ");");
+                            continue;
+                        }
+                        if (v.startsWith("^[") && v.endsWith("]")) {
+                            // two way binding...
+                            inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ",null,\"keyup,keydown,keypress,blur,click\");");
+                            continue;
+                        }
+                        if (/autofocus/i.test(key)) {
+                            inits.push("window.WebAtoms.dispatcher.callLater( \n                                function() { \n                                    e.focus(); \n                                });");
+                            continue;
+                        }
+                        ca[key] = aa[key];
                     }
-                    if (v.startsWith("[") && v.endsWith("]")) {
-                        // one way binding...
-                        inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processOneWayBinding(v) + ");");
-                        continue;
+                    catch (er) {
+                        var en = a.startIndex || 0;
+                        var cn = 0;
+                        var ln = currentFileLines.findIndex(function (x) { return en < x; });
+                        ln = currentFileLines[ln - 1];
+                        cn = en - ln;
+                        console.error(currentFileName + "(" + ln + "," + cn + "): error CS001: " + er);
                     }
-                    if (v.startsWith("$[") && v.endsWith("]")) {
-                        // two way binding...
-                        inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ");");
-                        continue;
-                    }
-                    if (v.startsWith("^[") && v.endsWith("]")) {
-                        // two way binding...
-                        inits.push("this.bind(e,'" + ckey + "'," + HtmlContent.processTwoWayBinding(v) + ",null,\"keyup,keydown,keypress,blur,click\");");
-                        continue;
-                    }
-                    if (/autofocus/i.test(key)) {
-                        inits.push("window.WebAtoms.dispatcher.callLater( \n                            function() { \n                                e.focus(); \n                            });");
-                        continue;
-                    }
-                    ca[key] = aa[key];
                 }
                 if (children) {
                     inits.push("var oldInit = AtomUI.attr(e,'base-data-atom-init');\n                        if(oldInit){\n                            (window.WebAtoms.PageSetup[oldInit]).call(this,e);\n                        }\n                    ");
@@ -452,7 +464,14 @@ var ComponentGenerator;
             configurable: true
         });
         HtmlFile.prototype.compile = function () {
+            currentFileName = this.file;
             var html = fs.readFileSync(this.file, 'utf8');
+            var lastLength = 0;
+            currentFileLines = html.split('\n').map(function (x) {
+                var n = lastLength;
+                lastLength += x.length + 1;
+                return n;
+            });
             var node = new HtmlFragment(html, this.nsNamespace);
             node.compile();
             this.nodes = node.nodes;
