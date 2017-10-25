@@ -1,4 +1,4 @@
-// tslint:disable
+
 import {DomHandler,Parser} from "htmlparser2";
 import * as less from "less";
 import * as deasync from "deasync" ;

@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable
 var htmlparser2_1 = require("htmlparser2");
 var less = require("less");
 var deasync = require("deasync");
