@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable
 var htmlparser2_1 = require("htmlparser2");
+var less = require("less");
+var deasync = require("deasync");
 var fs = require("fs");
 var path = require("path");
 var ComponentGenerator;
@@ -266,9 +268,29 @@ var ComponentGenerator;
                 children: cl1
             };
         };
-        HtmlContent.mapNode = function (a, tags, children) {
+        return HtmlContent;
+    }());
+    ComponentGenerator_1.HtmlContent = HtmlContent;
+    var HtmlComponent = /** @class */ (function () {
+        function HtmlComponent(node, nsNamespace, name) {
+            this.baseType = null;
+            this.name = null;
+            this.nsNamespace = null;
+            this.generated = null;
+            this.generatedStyle = "";
+            this.nsNamespace = nsNamespace;
+            this.parseNode(node, name);
+        }
+        HtmlComponent.prototype.mapNode = function (a, tags, children) {
+            var _this = this;
             var original = a;
             // debugger;
+            if (/style/i.test(a.name)) {
+                // debugger;
+                this.generatedStyle += a.children.map(function (x) { return x.data; }).join("\r\n");
+                this.generatedStyle += "\r\n";
+                return;
+            }
             if (a.name === "form-layout") {
                 // console.log(`converting form layout with ${a.children.length} children`);
                 a = HtmlContent.formLayoutNode(a);
@@ -350,7 +372,10 @@ var ComponentGenerator;
             if (text) {
                 ca["atom-text"] = text.trim();
             }
-            var processedChildren = a.children.filter(function (f) { return f.type == 'tag'; }).map(function (n) { return HtmlContent.mapNode(n, tags); });
+            var processedChildren = a.children
+                .filter(function (f) { return /tag|style/i.test(f.type); })
+                .map(function (n) { return _this.mapNode(n, tags); })
+                .filter(function (n) { return n; });
             if (children) {
                 for (var _i = 0, processedChildren_1 = processedChildren; _i < processedChildren_1.length; _i++) {
                     var child = processedChildren_1[_i];
@@ -365,18 +390,6 @@ var ComponentGenerator;
             }
             return r;
         };
-        return HtmlContent;
-    }());
-    ComponentGenerator_1.HtmlContent = HtmlContent;
-    var HtmlComponent = /** @class */ (function () {
-        function HtmlComponent(node, nsNamespace, name) {
-            this.baseType = null;
-            this.name = null;
-            this.nsNamespace = null;
-            this.generated = null;
-            this.nsNamespace = nsNamespace;
-            this.parseNode(node, name);
-        }
         HtmlComponent.prototype.parseNode = function (node, name) {
             if (node.type != 'tag')
                 return "";
@@ -407,7 +420,7 @@ var ComponentGenerator;
             this.baseType = type;
             var tags = new TagInitializerList(name);
             var rootChildren = [];
-            var rootNode = HtmlContent.mapNode(node, tags, rootChildren)[1];
+            var rootNode = this.mapNode(node, tags, rootChildren)[1];
             var startScript = "";
             for (var key in rootNode) {
                 if (!rootNode.hasOwnProperty(key))
@@ -417,12 +430,38 @@ var ComponentGenerator;
                     startScript += "\n                        var oldInit = AtomUI.attr(e,'data-atom-init');\n                        if(oldInit){\n                            AtomUI.attr(e, 'base-data-atom-init',oldInit);\n                        };\n                        AtomUI.attr(e, 'data-atom-init','" + value + "');\n                    ";
                 }
                 else {
-                    startScript += " if(!AtomUI.attr(e,'" + key + "')) AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
+                    var ck = key;
+                    if (/class/i.test(ck)) {
+                        ck = "atom-class";
+                    }
+                    startScript += " if(!AtomUI.attr(e,'" + ck + "')) AtomUI.attr(e, '" + ck + "', '" + value + "' );\r\n\t\t";
                 }
             }
             result = JSON.stringify(rootChildren, undefined, 2);
             name = "" + (this.nsNamespace + "." || "") + name;
-            this.generated = "window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{\n                        setLocalValue: window.__atomSetLocalValue(baseType)\n                    },\n                    properties:{\n                        " + props + "\n                    }\n                })\n            })(window, " + type + ".prototype);\r\n";
+            var style = "";
+            if (this.generatedStyle) {
+                this.compileLess();
+                style += "\n                    (function(d){\n                        var css = " + JSON.stringify(this.generatedStyle) + ";\n                        var head = d.head || d.getElementsByTagName('head')[0];\n                        var style = d.createElement('style');\n                        style.type = 'text/css';\n                        style.id = \"component_style_" + (this.nsNamespace ? this.nsNamespace + "." : "") + this.name + "\";\n                        if(style.styleSheet){\n                            style.styleSheet.cssText = css;\n                        }else{\n                            style.appendChild(d.createTextNode(css));\n                        }\n                        head.appendChild(style);\n                    })(document);\n                ";
+            }
+            this.generated = style + ("\n                window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{\n                        setLocalValue: window.__atomSetLocalValue(baseType)\n                    },\n                    properties:{\n                        " + props + "\n                    }\n                })\n            })(window, " + type + ".prototype);\r\n");
+        };
+        HtmlComponent.prototype.compileLess = function () {
+            var _this = this;
+            try {
+                var finished = false;
+                var lessSync = deasync(function (r) {
+                    less.render(_this.generatedStyle, function (e, o) {
+                        _this.generatedStyle = o.css;
+                        finished = true;
+                        r();
+                    });
+                });
+                lessSync();
+            }
+            catch (er) {
+                console.error(er);
+            }
         };
         return HtmlComponent;
     }());
@@ -444,6 +483,7 @@ var ComponentGenerator;
             var parser = new htmlparser2_1.Parser(handler);
             parser.write(this.html);
             parser.end();
+            // debugger;
             for (var _i = 0, _a = handler.dom; _i < _a.length; _i++) {
                 var node = _a[_i];
                 var cn = new HtmlComponent(node, this.nsNamesapce);
