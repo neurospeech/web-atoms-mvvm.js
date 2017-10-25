@@ -370,7 +370,10 @@ var ComponentGenerator;
             if (text) {
                 ca["atom-text"] = text.trim();
             }
-            var processedChildren = a.children.filter(function (f) { return /tag|style/i.test(f.type); }).map(function (n) { return _this.mapNode(n, tags); });
+            var processedChildren = a.children
+                .filter(function (f) { return /tag|style/i.test(f.type); })
+                .map(function (n) { return _this.mapNode(n, tags); })
+                .filter(function (n) { return n; });
             if (children) {
                 for (var _i = 0, processedChildren_1 = processedChildren; _i < processedChildren_1.length; _i++) {
                     var child = processedChildren_1[_i];

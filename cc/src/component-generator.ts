@@ -486,7 +486,10 @@ namespace ComponentGenerator{
                 ca["atom-text"] = text.trim();
             }
 
-            var processedChildren = a.children.filter(f=> /tag|style/i.test(f.type)).map((n)=> this.mapNode(n,tags));
+            var processedChildren = a.children
+                .filter(f=> /tag|style/i.test(f.type))
+                .map((n)=> this.mapNode(n,tags))
+                .filter(n => n);
 
             if(children){
                 for(var child of processedChildren){
