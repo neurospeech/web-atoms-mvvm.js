@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable
 var htmlparser2_1 = require("htmlparser2");
+var less = require("less");
+var deasync = require("deasync");
 var fs = require("fs");
 var path = require("path");
 var ComponentGenerator;
@@ -285,7 +287,7 @@ var ComponentGenerator;
             // debugger;
             if (/style/i.test(a.name)) {
                 // debugger;
-                this.generatedStyle += a.children.map(function (x) { return x.text; }).join("\r\n");
+                this.generatedStyle += a.children.map(function (x) { return x.data; }).join("\r\n");
                 this.generatedStyle += "\r\n";
                 return;
             }
@@ -435,9 +437,27 @@ var ComponentGenerator;
             name = "" + (this.nsNamespace + "." || "") + name;
             var style = "";
             if (this.generatedStyle) {
+                this.compileLess();
                 style += "\n                    (function(d){\n                        var css = " + JSON.stringify(this.generatedStyle) + ";\n                        var head = d.head || d.getElementsByTagName('head')[0];\n                        var style = d.createElement('style');\n                        style.type = 'text/css';\n                        style.id = \"component_style_" + (this.nsNamespace ? this.nsNamespace + "." : "") + this.name + "\";\n                        if(style.styleSheet){\n                            style.styleSheet.cssText = css;\n                        }else{\n                            style.appendChild(d.createTextNode(css));\n                        }\n                        head.appendChild(style);\n                    })(document);\n                ";
             }
             this.generated = style + ("\n                window." + name + " = (function(window,baseType){\n\n                window.Templates.jsonML[\"" + name + ".template\"] = \n                    " + result + ";\n\n                (function(window,WebAtoms){\n                    " + tags.toScript() + "\n                }).call(WebAtoms.PageSetup,window,WebAtoms);\n\n                return classCreatorEx({\n                    name: \"" + name + "\",\n                    base: baseType,\n                    start: function(e){\n                        " + startScript + "\n                    },\n                    methods:{\n                        setLocalValue: window.__atomSetLocalValue(baseType)\n                    },\n                    properties:{\n                        " + props + "\n                    }\n                })\n            })(window, " + type + ".prototype);\r\n");
+        };
+        HtmlComponent.prototype.compileLess = function () {
+            var _this = this;
+            try {
+                var finished = false;
+                var lessSync = deasync(function (r) {
+                    less.render(_this.generatedStyle, function (e, o) {
+                        _this.generatedStyle = o.css;
+                        finished = true;
+                        r();
+                    });
+                });
+                lessSync();
+            }
+            catch (er) {
+                console.error(er);
+            }
         };
         return HtmlComponent;
     }());

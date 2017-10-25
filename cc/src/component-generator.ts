@@ -1,5 +1,7 @@
 // tslint:disable
 import {DomHandler,Parser} from "htmlparser2";
+import * as less from "less";
+import * as deasync from "deasync" ;
 
 import * as fs from "fs";
 import * as path from "path";
@@ -372,7 +374,7 @@ namespace ComponentGenerator{
 
             if( /style/i.test(a.name)){
                 // debugger;
-                this.generatedStyle += a.children.map(x => x.text).join("\r\n");
+                this.generatedStyle += a.children.map(x => x.data).join("\r\n");
                 this.generatedStyle += "\r\n";
                 return;
             }
@@ -572,6 +574,9 @@ namespace ComponentGenerator{
             var style:string = "";
 
             if(this.generatedStyle) {
+
+                this.compileLess();
+
                 style += `
                     (function(d){
                         var css = ${ JSON.stringify(this.generatedStyle) };
@@ -613,6 +618,24 @@ namespace ComponentGenerator{
                     }
                 })
             })(window, ${type}.prototype);\r\n`;
+
+        }
+
+        compileLess(): void {
+            try{
+            var finished = false;
+            var lessSync = deasync((r) => {
+                less.render(this.generatedStyle, (e,o) => {
+                    this.generatedStyle = o.css;
+                    finished = true;
+                    r();
+                });
+            });
+
+            lessSync();
+            }catch(er){
+                console.error(er);
+            }
 
         }
 

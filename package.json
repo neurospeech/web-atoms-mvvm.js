@@ -7,7 +7,9 @@
     "test": "tests"
   },
   "dependencies": {
+    "deasync": "^0.1.10",
     "htmlparser2": "^3.9.2",
+    "less": "^2.7.3",
     "manakin": "^0.5.1",
     "ts-promise": "^0.3.4",
     "typescript": "^2.4.2",

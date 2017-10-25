@@ -5,7 +5,7 @@ if(!window['Test']){
                         }
 
                     (function(d){
-                        var css = "\r\n";
+                        var css = "div test {\n  color: red;\n}\n";
                         var head = d.head || d.getElementsByTagName('head')[0];
                         var style = d.createElement('style');
                         style.type = 'text/css';
@@ -22,7 +22,6 @@ if(!window['Test']){
 
                 window.Templates.jsonML["Test.Namespace.HelpButton.template"] = 
                     [
-  null,
   [
     "p",
     {
