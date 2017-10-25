@@ -430,7 +430,11 @@ var ComponentGenerator;
                     startScript += "\n                        var oldInit = AtomUI.attr(e,'data-atom-init');\n                        if(oldInit){\n                            AtomUI.attr(e, 'base-data-atom-init',oldInit);\n                        };\n                        AtomUI.attr(e, 'data-atom-init','" + value + "');\n                    ";
                 }
                 else {
-                    startScript += " if(!AtomUI.attr(e,'" + key + "')) AtomUI.attr(e, '" + key + "', '" + value + "' );\r\n\t\t";
+                    var ck = key;
+                    if (/class/i.test(ck)) {
+                        ck = "atom-class";
+                    }
+                    startScript += " if(!AtomUI.attr(e,'" + ck + "')) AtomUI.attr(e, '" + ck + "', '" + value + "' );\r\n\t\t";
                 }
             }
             result = JSON.stringify(rootChildren, undefined, 2);

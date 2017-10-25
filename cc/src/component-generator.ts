@@ -453,7 +453,6 @@ namespace ComponentGenerator{
                                 });`);
                             continue;
                         }
-
                         ca[key] = aa[key];
                     }catch(er){
                         //debugger;
@@ -562,7 +561,11 @@ namespace ComponentGenerator{
                         AtomUI.attr(e, 'data-atom-init','${value}');
                     `;
                 }else{
-                    startScript += ` if(!AtomUI.attr(e,'${key}')) AtomUI.attr(e, '${key}', '${value}' );\r\n\t\t`;
+                    var ck = key;
+                    if(/class/i.test(ck)){
+                        ck = "atom-class";
+                    }
+                    startScript += ` if(!AtomUI.attr(e,'${ck}')) AtomUI.attr(e, '${ck}', '${value}' );\r\n\t\t`;
                 }
 
             }
