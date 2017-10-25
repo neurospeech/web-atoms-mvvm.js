@@ -20,7 +20,7 @@ Please add following Web Atoms to your Html page or Project.
 ## CDN in Production
 
     <script 
-    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.1.73/dist/web-atoms-mvvm.min.js">
+    src="//cdn.jsdelivr.net/npm/web-atoms-mvvm@1.2.1/dist/web-atoms-mvvm.min.js">
 
 ## NPM Package
 
@@ -528,13 +528,25 @@ You can create sample component as shown below and it will generate JavaScript w
 As dividing html into smaller fragments is pain, instead, small individual components can be scattered around in
 folders for better management and component generator will generate single JavaScript which can be reused on pages.
 
+Component supports style with css/less tags.
+
 ```html
 
     <!-- declaration of custom control -->
 
     <div 
+        class="task-list"
         atom-component="TaskList"
         atom-view-model="{ new TaskListViewModel() }">
+
+        <style>
+            .task-list {
+                > div {
+                    color: gray;
+                }
+            }
+        </style>
+
         <div>
             <input atom-text="$[viewModel.newItem.label]">
             <button atom-event-click="{ => $viewModel.addTask() }"></button>
