@@ -1,4 +1,4 @@
-// tslint:disable
+
 import {DomHandler,Parser} from "htmlparser2";
 import * as less from "less";
 import * as deasync from "deasync" ;
@@ -586,7 +586,7 @@ namespace ComponentGenerator{
                         var head = d.head || d.getElementsByTagName('head')[0];
                         var style = d.createElement('style');
                         style.type = 'text/css';
-                        style.id = "component_style_${ (this.nsNamespace ? this.nsNamespace +"." : "") }${this.name}";
+                        style.id = "component_style_${ (this.nsNamespace ? this.nsNamespace +"_" : "") }${this.name}";
                         if(style.styleSheet){
                             style.styleSheet.cssText = css;
                         }else{
