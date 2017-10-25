@@ -348,11 +348,34 @@ namespace ComponentGenerator{
             } ;
         }
 
-        static mapNode(a:any,tags:TagInitializerList, children?:Array<any>): string[] {
 
+    }
+
+    export class HtmlComponent{
+
+        baseType:string = null;
+        name:string = null;
+        nsNamespace:string = null;
+        generated:string = null;
+        generatedStyle: string = "";
+
+        constructor(node,nsNamespace,name?){
+            this.nsNamespace = nsNamespace;
+            this.parseNode(node,name);
+        }
+
+        mapNode(a:any,tags:TagInitializerList, children?:Array<any>): string[] {
+            
             var original = a;
 
             // debugger;
+
+            if( /style/i.test(a.name)){
+                // debugger;
+                this.generatedStyle += a.children.map(x => x.text).join("\r\n");
+                this.generatedStyle += "\r\n";
+                return;
+            }
 
             if(a.name === "form-layout") {
                 // console.log(`converting form layout with ${a.children.length} children`);
@@ -463,7 +486,7 @@ namespace ComponentGenerator{
                 ca["atom-text"] = text.trim();
             }
 
-            var processedChildren = a.children.filter(f=>f.type == 'tag').map((n)=> HtmlContent.mapNode(n,tags));
+            var processedChildren = a.children.filter(f=> /tag|style/i.test(f.type)).map((n)=> this.mapNode(n,tags));
 
             if(children){
                 for(var child of processedChildren){
@@ -477,21 +500,6 @@ namespace ComponentGenerator{
             return r;
         }
 
-
-
-    }
-
-    export class HtmlComponent{
-
-        baseType:string = null;
-        name:string = null;
-        nsNamespace:string = null;
-        generated:string = null;
-
-        constructor(node,nsNamespace,name?){
-            this.nsNamespace = nsNamespace;
-            this.parseNode(node,name);
-        }
 
         parseNode(node, name?){
             if(node.type != 'tag')
@@ -532,7 +540,7 @@ namespace ComponentGenerator{
             var tags:TagInitializerList = new TagInitializerList(name);
 
             var rootChildren = [];
-            var rootNode = HtmlContent.mapNode(node,tags, rootChildren)[1] as any;
+            var rootNode = this.mapNode(node,tags, rootChildren)[1] as any;
 
             var startScript = "";
 
@@ -558,7 +566,28 @@ namespace ComponentGenerator{
 
             name = `${this.nsNamespace + "." || ""}${name}`;
 
-            this.generated = `window.${name} = (function(window,baseType){
+            var style:string = "";
+
+            if(this.generatedStyle) {
+                style += `
+                    (function(d){
+                        var css = ${ JSON.stringify(this.generatedStyle) };
+                        var head = d.head || d.getElementsByTagName('head')[0];
+                        var style = d.createElement('style');
+                        style.type = 'text/css';
+                        style.id = "component_style_${ (this.nsNamespace ? this.nsNamespace +"." : "") }${this.name}";
+                        if(style.styleSheet){
+                            style.styleSheet.cssText = css;
+                        }else{
+                            style.appendChild(d.createTextNode(css));
+                        }
+                        head.appendChild(style);
+                    })(document);
+                `;
+            }
+
+            this.generated = style + `
+                window.${name} = (function(window,baseType){
 
                 window.Templates.jsonML["${name}.template"] = 
                     ${result};
@@ -606,6 +635,8 @@ namespace ComponentGenerator{
             var parser = new Parser(handler);
             parser.write(this.html);    
             parser.end();
+
+            // debugger;
 
             for(var node of handler.dom){
                 var cn = new HtmlComponent(node,this.nsNamesapce);

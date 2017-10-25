@@ -3,13 +3,30 @@ if(!window['Test']){
                         }if(!window.Test['Namespace']){
                             window.Test['Namespace'] = {};
                         }
-window.Test.Namespace.HelpButton = (function(window,baseType){
+
+                    (function(d){
+                        var css = "\r\n";
+                        var head = d.head || d.getElementsByTagName('head')[0];
+                        var style = d.createElement('style');
+                        style.type = 'text/css';
+                        style.id = "component_style_Test.Namespace.HelpButton";
+                        if(style.styleSheet){
+                            style.styleSheet.cssText = css;
+                        }else{
+                            style.appendChild(d.createTextNode(css));
+                        }
+                        head.appendChild(style);
+                    })(document);
+                
+                window.Test.Namespace.HelpButton = (function(window,baseType){
 
                 window.Templates.jsonML["Test.Namespace.HelpButton.template"] = 
                     [
+  null,
   [
     "p",
     {
+      "data-atom-init": "HelpButton_t1",
       "atom-text": "Help"
     }
   ]
@@ -22,6 +39,9 @@ window.Test.Namespace.HelpButton = (function(window,baseType){
                             (window.WebAtoms.PageSetup[oldInit]).call(this,e);
                         }
                     
+                    };
+		this.HelpButton_t1 = function(e) { 
+                        this.bind(e,'styleDisabled', [["data","a"],["data","b"],["data","c"]], 0, function(v1,v2,v3) { return (v1) ? (v2) : (v3); });
                     };
                 }).call(WebAtoms.PageSetup,window,WebAtoms);
 

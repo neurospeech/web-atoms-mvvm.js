@@ -1,3 +1,10 @@
 <div atom-component="HelpButton" atom-type="AtomButton">
-    <p style-disabled="[ $data.a  $data.b : $data.c ]" >Help</p>
+
+        <style>
+            test {
+                color: red
+            }
+        </style>
+
+    <p style-disabled="[ $data.a ? $data.b : $data.c ]" >Help</p>
 </div>

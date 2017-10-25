@@ -38,6 +38,13 @@ loadScript("bin/component-generator.js");
 var text = 
 `<div atom-component='TaskList' atom-type='AtomWindow' style-display="{ $scope.items ? '' : 'none' }" atom-view-model='{ new TaskListViewModel() }'> 
 
+    <style>
+        // something
+        test: {
+            color: red
+        }
+    </style>
+
     <form-layout>
         <input atom-label="Sample" atom-value="$[data.text]"/>
     </form-layout>
