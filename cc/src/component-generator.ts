@@ -687,7 +687,7 @@ namespace ComponentGenerator {
             var lessName = `${dirName}${path.sep}${p.name}.less`;
             if(fs.existsSync(lessName)){
                 less = fs.readFileSync(lessName, 'utf8');
-                console.log(`$$ Found Less file ${lessName}`);
+                //console.log(`$$ Found Less file ${lessName}`);
             }
 
 
@@ -731,9 +731,9 @@ namespace ComponentGenerator {
 
             for(var node of handler.dom){
                 var cn = new HtmlComponent(node,this.nsNamespace, name,  less);
-                less = null;
                 if(cn.generated){
                     this.nodes.push(cn);
+                    less = null;                    
                 }
             }
         }        

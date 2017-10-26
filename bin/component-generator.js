@@ -493,7 +493,7 @@ var ComponentGenerator;
             var lessName = "" + dirName + path.sep + p.name + ".less";
             if (fs.existsSync(lessName)) {
                 less = fs.readFileSync(lessName, 'utf8');
-                console.log("$$ Found Less file " + lessName);
+                //console.log(`$$ Found Less file ${lessName}`);
             }
             var lastLength = 0;
             currentFileLines = html.split('\n').map(function (x) {
@@ -527,9 +527,9 @@ var ComponentGenerator;
             for (var _i = 0, _a = handler.dom; _i < _a.length; _i++) {
                 var node = _a[_i];
                 var cn = new HtmlComponent(node, this.nsNamespace, name, less);
-                less = null;
                 if (cn.generated) {
                     this.nodes.push(cn);
+                    less = null;
                 }
             }
         };
