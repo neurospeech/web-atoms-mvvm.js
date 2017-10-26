@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+//tslint:disable
 var htmlparser2_1 = require("htmlparser2");
 var less = require("less");
 var deasync = require("deasync");
@@ -17,8 +18,9 @@ var ComponentGenerator;
             // http://jsfiddle.net/A3vg6/45/ (working)
             // http://jsfiddle.net/A3vg6/51/ (including $ sign)
             var be = this.becache[txt];
-            if (be)
+            if (be) {
                 return be;
+            }
             var regex = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*(\()?)*/gi;
             var keywords = /(window|viewModel|appScope|scope|data|owner|localScope)/gi;
             var path = [];
@@ -38,17 +40,17 @@ var ComponentGenerator;
                         match = match.substr(1);
                     }
                 }
-                match = match.split(".");
+                var matches = match.split(".");
                 var trail = "";
-                match = match.filter(function (m) {
+                matches = matches.filter(function (m) {
                     if (!m.endsWith("(")) {
                         return true;
                     }
                     trail = "." + m;
                     return false;
                 });
-                if (match.length > 0) {
-                    path.push(match);
+                if (matches.length > 0) {
+                    path.push(matches);
                     vars.push(nv);
                 }
                 else {
@@ -90,7 +92,7 @@ var ComponentGenerator;
         TagInitializerList.prototype.toScript = function () {
             var _this = this;
             return this.tags.map(function (tag, i) {
-                return "this." + _this.component + "_t" + i + " = function(e) { \n                        " + tag.toScript() + "\n                    };";
+                return "this." + _this.component + "_t" + i + " = function(e) {\n                        " + tag.toScript() + "\n                    };";
             }).join("\r\n\t\t");
         };
         return TagInitializerList;
@@ -687,9 +689,12 @@ var ComponentGenerator;
             }
         }
     }
+    // tslint:disable-next-line:no-string-literal
     global["HtmlContent"] = HtmlContent;
+    // tslint:disable-next-line:no-string-literal
     global["ComponentGenerator"] = ComponentGenerator;
+    // tslint:disable-next-line:no-string-literal
     global["HtmlComponent"] = HtmlComponent;
-    //global["HtmlFragment"] = HtmlFragment;
+    // global["HtmlFragment"] = HtmlFragment;
 })(ComponentGenerator || (ComponentGenerator = {}));
 //# sourceMappingURL=component-generator.js.map

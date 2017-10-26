@@ -1,4 +1,4 @@
-
+//tslint:disable
 import {DomHandler,Parser} from "htmlparser2";
 import * as less from "less";
 import * as deasync from "deasync" ;
@@ -6,31 +6,32 @@ import * as deasync from "deasync" ;
 import * as fs from "fs";
 import * as path from "path";
 
-namespace ComponentGenerator{
+namespace ComponentGenerator {
 
 
     var currentFileName:string = "";
     var currentFileLines: Array<number> = [];
 
-    var AtomEvaluator = {
+    var AtomEvaluator:any = {
 
             ecache: {},
 
             becache: {},
 
-            parse: function (txt) {
+            parse: function (txt:string):any {
 
                 // http://jsfiddle.net/A3vg6/44/ (recommended)
                 // http://jsfiddle.net/A3vg6/45/ (working)
                 // http://jsfiddle.net/A3vg6/51/ (including $ sign)
 
-                var be = this.becache[txt];
-                if (be)
+                var be:any = this.becache[txt];
+                if (be) {
                     return be;
+                }
 
-                var regex = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*(\()?)*/gi;
+                var regex:RegExp = /(?:(\$)(window|viewModel|appScope|scope|data|owner|localScope))(?:\.[a-zA-Z_][a-zA-Z_0-9]*(\()?)*/gi;
 
-                var keywords = /(window|viewModel|appScope|scope|data|owner|localScope)/gi;
+                var keywords:RegExp = /(window|viewModel|appScope|scope|data|owner|localScope)/gi;
 
                 var path = [];
                 var vars = [];
@@ -52,11 +53,11 @@ namespace ComponentGenerator{
                             }
                         }
 
-                        match = match.split(".");
+                        var matches = match.split(".");
 
                         var trail = "";
 
-                        match = match.filter(m => {
+                        matches = matches.filter(m => {
                             if(!m.endsWith("(")){
                                 return true;
                             }
@@ -64,8 +65,8 @@ namespace ComponentGenerator{
                             return false;
                         });
 
-                        if(match.length>0){
-                            path.push(match);
+                        if(matches.length>0){
+                            path.push(matches);
                             vars.push(nv);
                         }else{
                             return original;
@@ -109,13 +110,13 @@ namespace ComponentGenerator{
         component:string;
         tags: Array<TagInitializer> = [];
 
-        constructor(name){
+        constructor(name:string) {
             this.component = name;
         }
 
-        toScript():string{
+        toScript():string {
             return this.tags.map((tag,i) => {
-                return `this.${this.component}_t${i} = function(e) { 
+                return `this.${this.component}_t${i} = function(e) {
                         ${tag.toScript()}
                     };`;
             }).join("\r\n\t\t");
@@ -941,16 +942,18 @@ namespace ComponentGenerator{
         if(process.argv[2]){
             if(process.argv[3]){
                 var cc = new ComponentGenerator(process.argv[2], process.argv[3] );
-            }
-            else{
+            } else {
                 parseFolder(process.argv[2]);
             }
         }
     }
 
+    // tslint:disable-next-line:no-string-literal
     global["HtmlContent"] = HtmlContent;
+    // tslint:disable-next-line:no-string-literal
     global["ComponentGenerator"] = ComponentGenerator;
+    // tslint:disable-next-line:no-string-literal
     global["HtmlComponent"] = HtmlComponent;
-    //global["HtmlFragment"] = HtmlFragment;
+    // global["HtmlFragment"] = HtmlFragment;
 
 }
