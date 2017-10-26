@@ -491,9 +491,9 @@ var ComponentGenerator;
             var p = path.parse(this.file);
             var less = "";
             var lessName = "" + dirName + path.sep + p.name + ".less";
-            console.log("$$ Looking for file " + lessName);
             if (fs.existsSync(lessName)) {
                 less = fs.readFileSync(lessName, 'utf8');
+                console.log("$$ Found Less file " + lessName);
             }
             var lastLength = 0;
             currentFileLines = html.split('\n').map(function (x) {
