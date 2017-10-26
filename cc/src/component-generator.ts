@@ -685,6 +685,7 @@ namespace ComponentGenerator {
             var less: string = "";
 
             var lessName = `${dirName}${path.sep}${p.name}.less`;
+            console.log(`$$ Looking for file ${lessName}`);
             if(fs.existsSync(lessName)){
                 less = fs.readFileSync(lessName, 'utf8');
             }

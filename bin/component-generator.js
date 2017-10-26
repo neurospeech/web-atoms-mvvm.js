@@ -491,6 +491,7 @@ var ComponentGenerator;
             var p = path.parse(this.file);
             var less = "";
             var lessName = "" + dirName + path.sep + p.name + ".less";
+            console.log("$$ Looking for file " + lessName);
             if (fs.existsSync(lessName)) {
                 less = fs.readFileSync(lessName, 'utf8');
             }
