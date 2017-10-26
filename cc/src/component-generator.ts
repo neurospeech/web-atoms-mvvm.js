@@ -367,6 +367,7 @@ namespace ComponentGenerator {
             if(less){
                 this.generatedStyle = less;
             }
+            this.name = name;
             this.parseNode(node,name);
         }
 

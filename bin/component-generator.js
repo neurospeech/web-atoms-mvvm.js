@@ -283,6 +283,7 @@ var ComponentGenerator;
             if (less) {
                 this.generatedStyle = less;
             }
+            this.name = name;
             this.parseNode(node, name);
         }
         HtmlComponent.prototype.mapNode = function (a, tags, children) {
