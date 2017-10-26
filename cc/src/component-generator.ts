@@ -521,7 +521,7 @@ namespace ComponentGenerator {
 
             if(node.attribs){
 
-                name = node.attribs["atom-component"];
+                name = node.attribs["atom-component"] || name;
                 this.name = name;
                 delete node.attribs["atom-component"];
 

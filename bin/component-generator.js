@@ -402,7 +402,7 @@ var ComponentGenerator;
             var type = "WebAtoms.AtomControl";
             var props = "";
             if (node.attribs) {
-                name = node.attribs["atom-component"];
+                name = node.attribs["atom-component"] || name;
                 this.name = name;
                 delete node.attribs["atom-component"];
                 if (node.attribs["atom-type"]) {
