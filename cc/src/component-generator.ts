@@ -361,8 +361,11 @@ namespace ComponentGenerator{
         generated:string = null;
         generatedStyle: string = "";
 
-        constructor(node,nsNamespace,name?){
+        constructor(node,nsNamespace,name?:string, less?:string){
             this.nsNamespace = nsNamespace;
+            if(less){
+                this.generatedStyle = less;
+            }
             this.parseNode(node,name);
         }
 
@@ -644,47 +647,6 @@ namespace ComponentGenerator{
 
     }
 
-    export class HtmlFragment{
-
-        baseType:string = null;
-
-        nodes:Array<HtmlComponent> = [];
-
-        compile() {
-
-            this.nodes = [];
-
-            var handler = new DomHandler(function (error, dom) {
-                if (error)
-                {
-                    console.error(error);
-                }
-            }, { withStartIndices: true });
-            
-            var parser = new Parser(handler);
-            parser.write(this.html);    
-            parser.end();
-
-            // debugger;
-
-            for(var node of handler.dom){
-                var cn = new HtmlComponent(node,this.nsNamesapce);
-                if(cn.generated){
-                    this.nodes.push(cn);
-                }
-            }
-
-        }
-
-        nsNamesapce: string;
-        html: string;
-
-
-        constructor(html: string, nsNamespace: string) {
-            this.html = html;
-            this.nsNamesapce = nsNamespace;
-        }
-    }
 
     export class HtmlFile{
         nsNamespace: string;
@@ -713,7 +675,17 @@ namespace ComponentGenerator{
             currentFileName = this.file.split('\\').join("/");
 
 
-            var html = fs.readFileSync(this.file,'utf8');
+            var html:string  = fs.readFileSync(this.file,'utf8');
+
+            var dirName:string = path.dirname(this.file);
+            var p: path.ParsedPath = path.parse(this.file);
+
+            var less: string = "";
+
+            var lessName = `${dirName}${path.sep}${p.name}.less`;
+            if(fs.existsSync(lessName)){
+                less = fs.readFileSync(lessName, 'utf8');
+            }
 
 
             var lastLength = 0;
@@ -724,11 +696,44 @@ namespace ComponentGenerator{
             });
             
 
-            var node = new HtmlFragment(html,this.nsNamespace);
-            node.compile();
-            this.nodes = node.nodes;
+            this.compileNodes(html,less, this.pascalCase(p.name) );
+
+            //this.nodes = node.nodes;
             this.lastTime = this.currentTime;
         }
+
+        pascalCase(s:string): string {
+            if(!s)
+                return "";
+            var str = s.replace(/-([a-z])/ig, function(all, letter) {
+              return letter.toUpperCase();
+            });
+            return str.slice(0, 1).toUpperCase() + str.slice(1);
+        }
+
+        compileNodes(html:string, less: string, name: string):void {
+            this.nodes = [];           
+            var handler = new DomHandler(function (error, dom) {
+                if (error)
+                {
+                    console.error(error);
+                }
+            }, { withStartIndices: true });
+            
+            var parser = new Parser(handler);
+            parser.write(html);    
+            parser.end();
+
+            // debugger;
+
+            for(var node of handler.dom){
+                var cn = new HtmlComponent(node,this.nsNamespace, name,  less);
+                less = null;
+                if(cn.generated){
+                    this.nodes.push(cn);
+                }
+            }
+        }        
 
 
 
@@ -945,6 +950,7 @@ namespace ComponentGenerator{
 
     global["HtmlContent"] = HtmlContent;
     global["ComponentGenerator"] = ComponentGenerator;
-    global["HtmlFragment"] = HtmlFragment;
+    global["HtmlComponent"] = HtmlComponent;
+    //global["HtmlFragment"] = HtmlFragment;
 
 }
