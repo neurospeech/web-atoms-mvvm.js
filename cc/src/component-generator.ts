@@ -870,10 +870,8 @@ namespace ComponentGenerator {
                 }
             }
 
-            var dirName: string = path.dirname(this.outFile);
-            if(!fs.existsSync(dirName)){
-                fs.mkdirSync(dirName);
-            }
+
+            this.createDirectories(this.outFile);
 
             fs.writeFileSync(this.outFile,result);
             var now = new Date();
@@ -881,6 +879,17 @@ namespace ComponentGenerator {
             if(this.emitDeclaration){
                 fs.writeFileSync(`${this.outFile}.d.ts`,declarations);
                 fs.writeFileSync(`${this.outFile}.mock.js`,mock);
+            }
+        }
+
+        createDirectories(fn: string):void {
+            var dirName: string = path.dirname(fn);
+            if(!fs.existsSync(dirName)){
+                var parent : string = path.dirname(dirName);
+                if(!fs.existsSync(parent)){
+                    this.createDirectories(parent);
+                }
+                fs.mkdirSync(dirName);
             }
         }
 

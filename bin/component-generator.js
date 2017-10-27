@@ -626,15 +626,22 @@ var ComponentGenerator;
                     mock += "var " + node.name + " = {}; ";
                 }
             }
-            var dirName = path.dirname(this.outFile);
-            if (!fs.existsSync(dirName)) {
-                fs.mkdirSync(dirName);
-            }
+            this.createDirectories(this.outFile);
             fs.writeFileSync(this.outFile, result);
             var now = new Date();
             if (this.emitDeclaration) {
                 fs.writeFileSync(this.outFile + ".d.ts", declarations);
                 fs.writeFileSync(this.outFile + ".mock.js", mock);
+            }
+        };
+        ComponentGenerator.prototype.createDirectories = function (fn) {
+            var dirName = path.dirname(fn);
+            if (!fs.existsSync(dirName)) {
+                var parent = path.dirname(dirName);
+                if (!fs.existsSync(parent)) {
+                    this.createDirectories(parent);
+                }
+                fs.mkdirSync(dirName);
             }
         };
         ComponentGenerator.prototype.watch = function () {
