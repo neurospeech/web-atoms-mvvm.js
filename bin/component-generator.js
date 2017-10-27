@@ -639,7 +639,7 @@ var ComponentGenerator;
             if (!fs.existsSync(dirName)) {
                 var parent = path.dirname(dirName);
                 if (!fs.existsSync(parent)) {
-                    this.createDirectories(parent);
+                    this.createDirectories(dirName);
                 }
                 fs.mkdirSync(dirName);
             }
