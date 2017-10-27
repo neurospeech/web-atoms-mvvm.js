@@ -682,7 +682,7 @@ var ComponentGenerator;
         }
     }
     if (process && process.argv) {
-        if (process.argv[2]) {
+        if (process.argv[2] !== undefined) {
             if (process.argv[3]) {
                 var cc = new ComponentGenerator(process.argv[2], process.argv[3]);
             }
