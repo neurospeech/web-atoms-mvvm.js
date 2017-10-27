@@ -626,6 +626,10 @@ var ComponentGenerator;
                     mock += "var " + node.name + " = {}; ";
                 }
             }
+            var dirName = path.dirname(this.outFile);
+            if (!fs.existsSync(dirName)) {
+                fs.mkdirSync(dirName);
+            }
             fs.writeFileSync(this.outFile, result);
             var now = new Date();
             if (this.emitDeclaration) {
