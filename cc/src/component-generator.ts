@@ -952,6 +952,8 @@ namespace ComponentGenerator {
             } else {
                 parseFolder(process.argv[2]);
             }
+        }else {
+            parseFolder(".");
         }
     }
 

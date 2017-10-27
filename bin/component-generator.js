@@ -694,6 +694,9 @@ var ComponentGenerator;
                 parseFolder(process.argv[2]);
             }
         }
+        else {
+            parseFolder(".");
+        }
     }
     // tslint:disable-next-line:no-string-literal
     global["HtmlContent"] = HtmlContent;
