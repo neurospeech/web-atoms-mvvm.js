@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "npm install web-atoms-generator -g\nnpm link typescript web-atoms-generator"
+    "install": "npm install web-atoms-generator -g"
   },
   "repository": {
     "type": "git",
