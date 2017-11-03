@@ -38,6 +38,11 @@ function bindableProperty(target: any, key: string):void {
         var setter:(v:any) => void = function (newVal:any):void {
             // console.log(`Set: ${key} => ${newVal}`);
             // debugger;
+            var oldValue:any = this[keyName];
+            // tslint:disable-next-line:triple-equals
+            if(oldValue == newVal) {
+                return;
+            }
             this[keyName] = newVal;
             Atom.refresh(this, key);
 

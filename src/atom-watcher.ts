@@ -1,18 +1,16 @@
 namespace WebAtoms {
 
-    var _viewModelParseWatchCache = {};
+    var _viewModelParseWatchCache:any = {};
 
     function parsePath(f:any):string[] {
         var str:string = f.toString().trim();
 
-        var key = str;
+        var key:string = str;
 
-        var px = _viewModelParseWatchCache[key];
-        if(px)
+        var px:string[] = _viewModelParseWatchCache[key];
+        if(px) {
             return px;
-
-        // remove last }
-
+        }
 
         if(str.endsWith("}")) {
             str = str.substr(0,str.length-1);
@@ -43,7 +41,7 @@ namespace WebAtoms {
         var path: string[] = [];
 
         var ms:any = str.replace(re, m => {
-            //console.log(`m: ${m}`);
+            // console.log(`m: ${m}`);
             var px:string = m;
             if(px.startsWith("this.")) {
                 px = px.substr(5);
@@ -63,12 +61,24 @@ namespace WebAtoms {
         });
         // debugger;
 
+        path = path.sort( (a,b) => b.localeCompare(a) );
+
+        var rp:string[] = [];
+        for(var rpitem of path) {
+            if(rp.find( x => x.startsWith(rpitem) )) {
+                continue;
+            }
+            rp.push(rpitem);
+        }
+
+        // console.log(`Watching: ${path.join(", ")}`);
+
         _viewModelParseWatchCache[key] = path;
 
         return path;
     }
 
-    
+
 
     /**
      * AtomErrors class holds all validation errors registered in view model.
@@ -180,6 +190,8 @@ namespace WebAtoms {
         public funcText: string;
 
         private evaluatePath(target:any, path: ObjectProperty[]): any {
+
+            // console.log(`\tevaluatePath: ${path.map(op=>op.name).join(", ")}`);
 
             var newTarget:any = null;
             for(var p of path) {

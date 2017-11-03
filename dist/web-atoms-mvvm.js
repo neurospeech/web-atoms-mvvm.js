@@ -185,6 +185,11 @@ function bindableProperty(target, key) {
     var setter = function (newVal) {
         // console.log(`Set: ${key} => ${newVal}`);
         // debugger;
+        var oldValue = this[keyName];
+        // tslint:disable-next-line:triple-equals
+        if (oldValue == newVal) {
+            return;
+        }
         this[keyName] = newVal;
         Atom.refresh(this, key);
         if (this.onPropertyChanged) {
@@ -1089,6 +1094,17 @@ var WebAtoms;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         Object.defineProperty(AtomWindowViewModel.prototype, "windowName", {
+            // init(): Promise<any> {
+            //     if(!Atom.testMode) {
+            //         if(this._windowName) {
+            //             return;
+            //         }
+            //     }
+            //     return super.init();
+            // }
+            // windowInit(): Promise<any> {
+            //     return super.init();
+            // }
             /**
              * windowName will be set to generated html tag id, you can use this
              * to mock AtomWindowViewModel in testing.
@@ -1245,9 +1261,9 @@ var WebAtoms;
         var str = f.toString().trim();
         var key = str;
         var px = _viewModelParseWatchCache[key];
-        if (px)
+        if (px) {
             return px;
-        // remove last }
+        }
         if (str.endsWith("}")) {
             str = str.substr(0, str.length - 1);
         }
@@ -1266,7 +1282,7 @@ var WebAtoms;
         var re = new RegExp(regExp, "gi");
         var path = [];
         var ms = str.replace(re, function (m) {
-            //console.log(`m: ${m}`);
+            // console.log(`m: ${m}`);
             var px = m;
             if (px.startsWith("this.")) {
                 px = px.substr(5);
@@ -1285,6 +1301,16 @@ var WebAtoms;
             return m;
         });
         // debugger;
+        path = path.sort(function (a, b) { return b.localeCompare(a); });
+        var rp = [];
+        for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
+            var rpitem = path_1[_i];
+            if (rp.find(function (x) { return x.startsWith(rpitem); })) {
+                continue;
+            }
+            rp.push(rpitem);
+        }
+        // console.log(`Watching: ${path.join(", ")}`);
         _viewModelParseWatchCache[key] = path;
         return path;
     }
@@ -1426,9 +1452,10 @@ var WebAtoms;
             }
         }
         AtomWatcher.prototype.evaluatePath = function (target, path) {
+            // console.log(`\tevaluatePath: ${path.map(op=>op.name).join(", ")}`);
             var newTarget = null;
-            for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
-                var p = path_1[_i];
+            for (var _i = 0, path_2 = path; _i < path_2.length; _i++) {
+                var p = path_2[_i];
                 newTarget = AtomBinder.getValue(target, p.name);
                 if (!p.target) {
                     p.watcher = Atom.watch(target, p.name, this.runEvaluate);

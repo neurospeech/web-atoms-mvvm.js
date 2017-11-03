@@ -203,9 +203,11 @@ var AtomViewModelTest = /** @class */ (function (_super) {
                         Assert.equals("Akash", sm.data.fullName);
                         Atom.set(sm, "data.lastName", "Kava");
                         Assert.equals("Akash Kava", sm.data.fullName);
+                        sm.data = { firstName: "A", lastName: "K" };
+                        Assert.equals("A K", sm.data.fullName);
                         d.dispose();
                         Atom.set(sm, "data.lastName", "Kav");
-                        Assert.equals(sm.data.fullName, "Akash Kava");
+                        Assert.equals(sm.data.fullName, "A K");
                         sm.dispose();
                         return [2 /*return*/];
                 }

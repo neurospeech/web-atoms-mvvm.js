@@ -24,7 +24,10 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Test",
-            "program": "${workspaceRoot}/test.js"
+            "program": "${workspaceRoot}/test.js",
+            "args": [
+                "AtomViewModelTest.watch"
+            ]
         }    
     ]
 }

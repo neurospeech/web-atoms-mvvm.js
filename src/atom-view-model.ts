@@ -309,6 +309,22 @@ namespace WebAtoms {
      */
     export class AtomWindowViewModel extends AtomViewModel {
 
+
+
+        // init(): Promise<any> {
+        //     if(!Atom.testMode) {
+        //         if(this._windowName) {
+        //             return;
+        //         }
+        //     }
+        //     return super.init();
+        // }
+
+        // windowInit(): Promise<any> {
+        //     return super.init();
+        // }
+
+
         /**
          * windowName will be set to generated html tag id, you can use this
          * to mock AtomWindowViewModel in testing.
