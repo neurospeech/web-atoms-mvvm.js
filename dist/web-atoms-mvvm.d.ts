@@ -314,6 +314,7 @@ declare namespace WebAtoms {
         private privateInit();
         waitForReady(): Promise<any>;
         protected onReady(): void;
+        postInit: Array<Function>;
         private runDecoratorInits();
         private validations;
         /**

@@ -30,7 +30,7 @@
     "@types/node": "^8.0.26",
     "systemjs": "^0.20.18",
     "tslint": "^5.7.0",
-    "web-atoms-unit": "^1.0.19",
+    "web-atoms-unit": "^1.0.20",
     "ts-promise": "^0.3.4",
     "typescript": "^2.4.2"
   }

@@ -808,10 +808,11 @@ var WebAtoms;
         AtomViewModel.prototype.privateInit = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var _this = this;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
+                var _i, _a, i;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            _a.trys.push([0, , 3, 4]);
+                            _b.trys.push([0, , 3, 4]);
                             return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
                                     return __generator(this, function (_a) {
                                         this.runDecoratorInits();
@@ -819,7 +820,7 @@ var WebAtoms;
                                     });
                                 }); })];
                         case 1:
-                            _a.sent();
+                            _b.sent();
                             return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
@@ -832,7 +833,14 @@ var WebAtoms;
                                     });
                                 }); })];
                         case 2:
-                            _a.sent();
+                            _b.sent();
+                            if (this.postInit) {
+                                for (_i = 0, _a = this.postInit; _i < _a.length; _i++) {
+                                    i = _a[_i];
+                                    i();
+                                }
+                                this.postInit = null;
+                            }
                             return [3 /*break*/, 4];
                         case 3:
                             this._isReady = true;
@@ -958,6 +966,12 @@ var WebAtoms;
                 // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
+                if (!this._isReady) {
+                    this.postInit = this.postInit || [];
+                    this.postInit.push(function () {
+                        d.runEvaluate();
+                    });
+                }
             }
             return new WebAtoms.DisposableAction(function () {
                 _this.disposables = _this.disposables.filter(function (f) { return !dfd.find(function (fd) { return f === fd; }); });
