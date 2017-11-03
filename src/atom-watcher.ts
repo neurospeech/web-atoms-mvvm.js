@@ -323,12 +323,13 @@ namespace WebAtoms {
             if(e) {
                 if(runAfterSetup) {
                     this.evaluate();
-                }else {
-                    // setup watcher...
-                    for(var p of this.path) {
-                        this.evaluatePath(this.target,p);
-                    }
                 }
+                // else {
+                //     // setup watcher...
+                //     for(var p of this.path) {
+                //         this.evaluatePath(this.target,p);
+                //     }
+                // }
             }
 
         }

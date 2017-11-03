@@ -1456,13 +1456,12 @@ var WebAtoms;
                 if (runAfterSetup) {
                     this.evaluate();
                 }
-                else {
-                    // setup watcher...
-                    for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
-                        var p = _a[_i];
-                        this.evaluatePath(this.target, p);
-                    }
-                }
+                // else {
+                //     // setup watcher...
+                //     for(var p of this.path) {
+                //         this.evaluatePath(this.target,p);
+                //     }
+                // }
             }
         }
         AtomWatcher.prototype.evaluatePath = function (target, path) {
