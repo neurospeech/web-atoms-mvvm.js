@@ -125,7 +125,7 @@ class AtomViewModelTest extends TestItem{
 
         Atom.set(sm,"data.lastName","Kav");
 
-        Assert.equals(sm.data.fullName,"Akash Kava");
+        Assert.equals(sm.data.fullName,"A K");
 
         sm.dispose();
 

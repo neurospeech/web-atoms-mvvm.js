@@ -1452,7 +1452,7 @@ var WebAtoms;
             }
         }
         AtomWatcher.prototype.evaluatePath = function (target, path) {
-            console.log("\tevaluatePath: " + path.map(function (op) { return op.name; }).join(", "));
+            // console.log(`\tevaluatePath: ${path.map(op=>op.name).join(", ")}`);
             var newTarget = null;
             for (var _i = 0, path_2 = path; _i < path_2.length; _i++) {
                 var p = path_2[_i];

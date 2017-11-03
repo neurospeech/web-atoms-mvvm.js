@@ -191,7 +191,7 @@ namespace WebAtoms {
 
         private evaluatePath(target:any, path: ObjectProperty[]): any {
 
-            console.log(`\tevaluatePath: ${path.map(op=>op.name).join(", ")}`);
+            // console.log(`\tevaluatePath: ${path.map(op=>op.name).join(", ")}`);
 
             var newTarget:any = null;
             for(var p of path) {
