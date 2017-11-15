@@ -34,8 +34,8 @@ function methodBuilder(method:string) {
 
             // console.log("methodBuilder called");
             // console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
-        }
-    }
+        };
+    };
 }
 
 // tslint:disable-next-line
@@ -77,6 +77,17 @@ function parameterBuilder(paramName:string){
 
 declare var Atom:any;
 
+type RestAttr =
+    (target:WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number)
+        => void;
+
+type RestParamAttr = (key:string)
+    => RestAttr;
+
+type RestMethodAttr = (key: string)
+    => (target:WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number)
+        => void;
+
 
 /**
  * This will register Url path fragment on parameter.
@@ -93,7 +104,24 @@ declare var Atom:any;
  * @function Path
  * @param {name} - Name of the parameter
  */
-var Path = parameterBuilder("Path");
+var Path:RestParamAttr = parameterBuilder("Path");
+
+/**
+ * This will register header on parameter.
+ *
+ * @example
+ *
+ *      @Get("/api/products/{category}")
+ *      async getProducts(
+ *          @Header("x-http-auth")  category: number
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function Path
+ * @param {name} - Name of the parameter
+ */
+var Header:RestParamAttr = parameterBuilder("Header");
 
 /**
  * This will register Url query fragment on parameter.
@@ -110,7 +138,7 @@ var Path = parameterBuilder("Path");
  * @function Query
  * @param {name} - Name of the parameter
  */
-var Query = parameterBuilder("Query");
+var Query:RestParamAttr = parameterBuilder("Query");
 
 /**
  * This will register data fragment on ajax.
@@ -127,7 +155,7 @@ var Query = parameterBuilder("Query");
  * @export
  * @function Body
  */
-var Body = parameterBuilder("Body")("");
+var Body:RestAttr = parameterBuilder("Body")("");
 
 /**
  * Http Post method
@@ -143,7 +171,7 @@ var Body = parameterBuilder("Body")("");
  * @function Post
  * @param {url} - Url for the operation
  */
-var Post = methodBuilder("Post");
+var Post:RestMethodAttr = methodBuilder("Post");
 
 
 /**
@@ -160,7 +188,7 @@ var Post = methodBuilder("Post");
  * @export
  * @function Body
  */
-var Get = methodBuilder("Get");
+var Get:RestMethodAttr = methodBuilder("Get");
 
 /**
  * Http Delete method
@@ -176,7 +204,7 @@ var Get = methodBuilder("Get");
  * @function Delete
  * @param {url} - Url for the operation
  */
-var Delete = methodBuilder("Delete");
+var Delete:RestMethodAttr = methodBuilder("Delete");
 
 /**
  * Http Put method
@@ -192,7 +220,7 @@ var Delete = methodBuilder("Delete");
  * @function Put
  * @param {url} - Url for the operation
  */
-var Put = methodBuilder("Put");
+var Put:RestMethodAttr = methodBuilder("Put");
 
 
 /**
@@ -209,7 +237,7 @@ var Put = methodBuilder("Put");
  * @function Patch
  * @param {url} - Url for the operation
  */
-var Patch = methodBuilder("Patch");
+var Patch:RestMethodAttr = methodBuilder("Patch");
 
 /**
  * Cancellation token
@@ -241,12 +269,12 @@ var Cancel = function(target:WebAtoms.Rest.BaseService, propertyKey: string | sy
 
 
 
-if(!window["__atomSetLocalValue"]){
-    window["__atomSetLocalValue"] = function(bt){
-        return function(k,v,e,r){
-            var self = this;
+if(!window["__atomSetLocalValue"]) {
+    window["__atomSetLocalValue"] = function(bt:any):Function {
+        return function(k:any,v:any,e:any,r:any):void {
+            var self:any = this;
             if(v){
-                if(v.then && v.catch){
+                if(v.then && v.catch) {
 
                     e._promisesQueue = e._promisesQueue || {};
                     var c = e._promisesQueue[k];
@@ -254,14 +282,15 @@ if(!window["__atomSetLocalValue"]){
                         c.abort();
                     }
 
-                    v.then(function(pr){
-                        if(c && c.cancelled)
+                    v.then( pr => {
+                        if(c && c.cancelled) {
                             return;
+                        }
                         e._promisesQueue[k] = null;
                         bt.setLocalValue.call(self,k,pr,e,r);
                     });
 
-                    v.catch(function(er){
+                    v.catch( er => {
                         e._promisesQueue[k] = null;
                     });
                 }
@@ -271,10 +300,10 @@ if(!window["__atomSetLocalValue"]){
     };
 }
 
-namespace WebAtoms.Rest{
+namespace WebAtoms.Rest {
 
 
-    export class ServiceParameter{
+    export class ServiceParameter {
 
         public key:string;
         public type:string;
@@ -291,9 +320,12 @@ namespace WebAtoms.Rest{
         public data: any;
         public type: string;
         public cancel: CancelToken;
+        public headers: any;
+        public inputProcessed: boolean;
     }
 
-    var AtomPromise = window["AtomPromise"];
+    // tslint:disable-next-line:no-string-literal
+    var AtomPromise:any = window["AtomPromise"];
 
     /**
      *
@@ -303,9 +335,9 @@ namespace WebAtoms.Rest{
      * @implements {Promise<T>}
      * @template T
      */
-    export class CancellablePromise<T> implements Promise<T>{
+    export class CancellablePromise<T> implements Promise<T> {
 
-        [Symbol.toStringTag]: "Promise"
+        [Symbol.toStringTag]: "Promise";
 
         onCancel: () => void;
         p: Promise<T>;
@@ -314,12 +346,13 @@ namespace WebAtoms.Rest{
             this.onCancel = onCancel;
         }
 
-        abort(){
+        abort():void {
             this.onCancel();
         }
 
-        then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>
-        {
+        then<TResult1 = T, TResult2 = never>(
+            onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+            onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
             return this.p.then(onfulfilled,onrejected);
         }
 
@@ -351,13 +384,14 @@ namespace WebAtoms.Rest{
 
         public encodeData(o:AjaxOptions):AjaxOptions{
             o.type = "JSON";
+            o.inputProcessed = true;
             return o;
         }
 
         async sendResult(result:any,error?:any):Promise<any>{
             return new Promise((resolve,reject)=>{
-                if(error){
-                    setTimeout(()=>{
+                if(error) {
+                    setTimeout(()=> {
                         reject(error);
                     },1);
                     return;
@@ -381,22 +415,26 @@ namespace WebAtoms.Rest{
                     var p:ServiceParameter = bag[i];
                     var v = values[i];
                     switch(p.type){
-                        case 'path':
+                        case "path":
                             url = url.replace(`{${p.key}}`,encodeURIComponent(v));
                         break;
-                        case 'query':
-                            if(url.indexOf('?')===-1){
+                        case "query":
+                            if(url.indexOf("?")===-1){
                                 url += "?";
                             }
                             url += `&${p.key}=${encodeURIComponent(v)}`;
                         break;
-                        case 'body':
+                        case "body":
                             options.data = v;
                             options = this.encodeData(options);
                         break;
-                        case 'cancel':
+                        case "cancel":
                             options.cancel = v as CancelToken;
                         break;
+                        case "header":
+                            options.headers = options.headers = {};
+                            options.headers[p.key] = p;
+                            break;
                     }
                 }
             }
@@ -418,7 +456,7 @@ namespace WebAtoms.Rest{
 
                     // deep clone...
                     //var rv = new returns();
-                    //reject("Clone pending");
+                    // reject("Clone pending");
 
                     if(options.cancel){
                         if(options.cancel.cancelled){
