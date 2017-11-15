@@ -12,9 +12,9 @@ function methodBuilder(method:string) {
             var oldFunction:any = descriptor.value;
 
             // tslint:disable-next-line:typedef
-            descriptor.value = function(... args:any[]){
+            descriptor.value = function(... args:any[]) {
 
-                if(this.testMode || Atom.designMode ){
+                if(this.testMode || Atom.designMode ) {
 
                     console.log(`Test\Design Mode: ${url} .. ${args.join(",")}`);
 
@@ -25,7 +25,7 @@ function methodBuilder(method:string) {
                 }
 
                 var rn:any = null;
-                if(target.methodReturns){
+                if(target.methodReturns) {
                     rn = target.methodReturns[propertyKey];
                 }
                 var r:any = this.invoke(url, method ,a, args,rn);
@@ -42,11 +42,11 @@ function methodBuilder(method:string) {
 function Return(type: {new()}) {
     // tslint:disable-next-line
     return function(target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any){
-        if(!target.methodReturns){
+        if(!target.methodReturns) {
             target.methodReturns = {};
         }
         target.methodReturns[propertyKey] = type;
-    }
+    };
 }
 
 // tslint:disable-next-line
@@ -69,7 +69,7 @@ function parameterBuilder(paramName:string){
                 target.methods[propertyKey] = a;
             }
             a[parameterIndex] = new WebAtoms.Rest.ServiceParameter(paramName,key);
-        }
+        };
 
     };
 }
@@ -156,6 +156,23 @@ var Query:RestParamAttr = parameterBuilder("Query");
  * @function Body
  */
 var Body:RestAttr = parameterBuilder("Body")("");
+
+/**
+ * This will register data fragment on ajax in old formModel way.
+ *
+ * @example
+ *
+ *      @Post("/api/products")
+ *      async getProducts(
+ *          @Query("id")  id: number,
+ *          @BodyFormModel product: Product
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function BodyFormModel
+ */
+var BodyFormModel: RestAttr = parameterBuilder("BodyFormModel")("");
 
 /**
  * Http Post method
@@ -254,31 +271,34 @@ var Patch:RestMethodAttr = methodBuilder("Patch");
  * @function Put
  * @param {url} - Url for the operation
  */
-var Cancel = function(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number){
-    if(!target.methods){
+function Cancel(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number):void {
+    if(!target.methods) {
         target.methods = {};
     }
 
-    var a = target.methods[propertyKey];
-    if(!a){
+    var a:WebAtoms.Rest.ServiceParameter[] = target.methods[propertyKey];
+    if(!a) {
         a = [];
         target.methods[propertyKey] = a;
     }
     a[parameterIndex] = new WebAtoms.Rest.ServiceParameter("cancel","");
-};
+}
 
 
 
+// tslint:disable-next-line:no-string-literal
 if(!window["__atomSetLocalValue"]) {
+
+    // tslint:disable-next-line:no-string-literal
     window["__atomSetLocalValue"] = function(bt:any):Function {
         return function(k:any,v:any,e:any,r:any):void {
             var self:any = this;
-            if(v){
+            if(v) {
                 if(v.then && v.catch) {
 
                     e._promisesQueue = e._promisesQueue || {};
-                    var c = e._promisesQueue[k];
-                    if(c){
+                    var c:any = e._promisesQueue[k];
+                    if(c) {
                         c.abort();
                     }
 
@@ -296,7 +316,7 @@ if(!window["__atomSetLocalValue"]) {
                 }
             }
             bt.setLocalValue.call(this,k,v,e,r);
-        }
+        };
     };
 }
 
@@ -308,13 +328,13 @@ namespace WebAtoms.Rest {
         public key:string;
         public type:string;
 
-        constructor(type:string,key:string){
+        constructor(type:string,key:string) {
             this.type = type.toLowerCase();
             this.key = key;
         }
     }
 
-    export class AjaxOptions{
+    export class AjaxOptions {
         public method:string;
         public url:string;
         public data: any;
@@ -356,10 +376,22 @@ namespace WebAtoms.Rest {
             return this.p.then(onfulfilled,onrejected);
         }
 
-        catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>{
+        catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
             return this.p.catch(onrejected);
         }
     }
+
+    declare var AtomConfig:any;
+
+    AtomConfig.ajax.jsonPostEncode = function(o:AjaxOptions): AjaxOptions {
+        if(!o.inputProcessed) {
+            if(o.type) {
+                delete o.type;
+            }
+            o.data = { formModel: JSON.stringify(o.data) };
+        }
+        return o;
+    };
 
     /**
      *
@@ -367,7 +399,7 @@ namespace WebAtoms.Rest {
      * @export
      * @class BaseService
      */
-    export class BaseService{
+    export class BaseService {
 
 
         public testMode: boolean  = false;
@@ -376,27 +408,27 @@ namespace WebAtoms.Rest {
 
         public showError: boolean = true;
 
-        //bs
+        // bs
 
         public methods: any = {};
 
         public methodReturns: any = {};
 
-        public encodeData(o:AjaxOptions):AjaxOptions{
+        public encodeData(o:AjaxOptions):AjaxOptions {
             o.type = "JSON";
             o.inputProcessed = true;
             return o;
         }
 
-        async sendResult(result:any,error?:any):Promise<any>{
-            return new Promise((resolve,reject)=>{
+        async sendResult(result:any,error?:any):Promise<any> {
+            return new Promise((resolve,reject)=> {
                 if(error) {
                     setTimeout(()=> {
                         reject(error);
                     },1);
                     return;
                 }
-                setTimeout(()=>{
+                setTimeout(()=> {
                     resolve(result);
                 },1);
             });
@@ -406,20 +438,20 @@ namespace WebAtoms.Rest {
             url:string,
             method:string,
             bag:Array<ServiceParameter>,
-            values:Array<any>, returns: {new ()}):Promise<any>{
+            values:Array<any>, returns: {new ()}):Promise<any> {
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
-            if(bag){
-                for(var i=0;i<bag.length;i++){
+            if(bag) {
+                for(var i:number=0;i<bag.length;i++) {
                     var p:ServiceParameter = bag[i];
-                    var v = values[i];
-                    switch(p.type){
+                    var v:any = values[i];
+                    switch(p.type) {
                         case "path":
                             url = url.replace(`{${p.key}}`,encodeURIComponent(v));
                         break;
                         case "query":
-                            if(url.indexOf("?")===-1){
+                            if(url.indexOf("?")===-1) {
                                 url += "?";
                             }
                             url += `&${p.key}=${encodeURIComponent(v)}`;
@@ -427,6 +459,10 @@ namespace WebAtoms.Rest {
                         case "body":
                             options.data = v;
                             options = this.encodeData(options);
+                        break;
+                        case "bodyformmodel":
+                            options.inputProcessed = false;
+                            options.data = v;
                         break;
                         case "cancel":
                             options.cancel = v as CancelToken;
@@ -440,26 +476,26 @@ namespace WebAtoms.Rest {
             }
             options.url = url;
 
-            var pr = AtomPromise.json(url,null,options);
+            var pr:any = AtomPromise.json(url,null,options);
 
 
-            if(options.cancel){
-                options.cancel.registerForCancel(()=>{
+            if(options.cancel) {
+                options.cancel.registerForCancel(()=> {
                     pr.abort();
                 });
             }
 
-            var rp = new Promise((resolve: (v?: any | PromiseLike<any>) => void, reject: (reason?:any) => void)=>{
+            var rp:Promise<any> = new Promise((resolve: (v?: any | PromiseLike<any>) => void, reject: (reason?:any) => void)=> {
 
-                pr.then(()=>{
-                    var v = pr.value();
+                pr.then(()=> {
+                    var v:any = pr.value();
 
                     // deep clone...
-                    //var rv = new returns();
+                    // var rv = new returns();
                     // reject("Clone pending");
 
-                    if(options.cancel){
-                        if(options.cancel.cancelled){
+                    if(options.cancel) {
+                        if(options.cancel.cancelled) {
                             reject("cancelled");
                             return;
                         }
@@ -467,7 +503,7 @@ namespace WebAtoms.Rest {
 
                     resolve(v);
                 });
-                pr.failed( () =>{
+                pr.failed( () => {
                     reject(pr.error.msg);
                 });
 
@@ -477,7 +513,7 @@ namespace WebAtoms.Rest {
                 pr.invoke("Ok");
             });
 
-            return new CancellablePromise(rp, ()=>{
+            return new CancellablePromise(rp, ()=> {
                 pr.abort();
             });
         }
