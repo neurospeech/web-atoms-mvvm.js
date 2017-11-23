@@ -1,6 +1,6 @@
 namespace WebAtoms {
 
-	declare class AtomControl {
+	export declare class AtomControl {
 
 		_element:HTMLElement;
 

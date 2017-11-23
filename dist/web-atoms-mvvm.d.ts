@@ -662,6 +662,15 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
+    class AtomControl {
+        _element: HTMLElement;
+        constructor(e: HTMLElement);
+        init(): void;
+        dispose(): void;
+        createChildren(): void;
+        bindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string, method?: Function): void;
+        viewModel: any;
+    }
     /**
      * Core class as an replacement for jQuery
      * @class Core
@@ -932,7 +941,36 @@ declare namespace WebAtoms {
         private closePopup();
         private close(c);
         lastPopupID: number;
-        openPopupAsync<T>(p: any, vm: AtomWindowViewModel): Promise<T>;
+        /**
+         * This method will open a new popup identified by name of the popup or class of popup.
+         * Supplied view model has to be derived from AtomWindowViewModel.
+         *
+         *
+         * @example
+         *
+         *     var result = await windowService.openPopup<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
+         *
+         * @template T
+         * @param {(string | {new(e)})} windowType
+         * @param {AtomWindowViewModel} [viewModel]
+         * @returns {Promise<T>}
+         * @memberof WindowService
+         */
+        openPopup<T>(p: any, vm: AtomWindowViewModel): Promise<T>;
+        private _openPopupAsync<T>(p, vm);
         /**
          * Resolves current Window Service, you can use this method
          * to resolve service using DI, internally it calls

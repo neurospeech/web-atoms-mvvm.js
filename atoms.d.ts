@@ -1,20 +1,20 @@
 declare namespace WebAtoms {
 	
-	export class AtomControl {
+	// export class AtomControl {
 
-		_element:HTMLElement;
+	// 	_element:HTMLElement;
 
-		constructor(e:HTMLElement);
+	// 	constructor(e:HTMLElement);
 
-		init(): void;
+	// 	init(): void;
 
-		dispose(): void;
+	// 	dispose(): void;
 
-		createChildren():void;
+	// 	createChildren():void;
 
-		bindEvent(e:HTMLElement, eventName: string, methodName: (string|Function), key?: string, method?:Function):void;
+	// 	bindEvent(e:HTMLElement, eventName: string, methodName: (string|Function), key?: string, method?:Function):void;
 
 		
-		viewModel:any;
-	}
+	// 	viewModel:any;
+	// }
 }
