@@ -34,13 +34,14 @@ namespace WebAtoms {
             }
             var peek:AtomControl = this.popups[this.popups.length-1];
             var element:HTMLElement = peek._element;
+            var target:HTMLElement = this.currentTarget;
 
-            while(element) {
-                if(element === this.currentTarget) {
+            while(target) {
+                if(target === element) {
                     // do not close this popup....
                     return;
                 }
-                element = element.parentElement;
+                target = target.parentElement;
             }
             this.close(peek);
         }

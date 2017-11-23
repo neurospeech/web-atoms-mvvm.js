@@ -2194,12 +2194,13 @@ var WebAtoms;
             }
             var peek = this.popups[this.popups.length - 1];
             var element = peek._element;
-            while (element) {
-                if (element === this.currentTarget) {
+            var target = this.currentTarget;
+            while (target) {
+                if (target === element) {
                     // do not close this popup....
                     return;
                 }
-                element = element.parentElement;
+                target = target.parentElement;
             }
             this.close(peek);
         };
