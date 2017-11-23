@@ -55,7 +55,7 @@ namespace WebAtoms {
 
         lastPopupID:number = 0;
 
-        public openAsync<T>(p: any, vm: AtomWindowViewModel ): Promise<T> {
+        public openPopupAsync<T>(p: any, vm: AtomWindowViewModel ): Promise<T> {
             return new Promise((resolve,reject) => {
 
                 var parent:AtomControl = Core.atomParent(this.currentTarget);

@@ -932,7 +932,7 @@ declare namespace WebAtoms {
         private closePopup();
         private close(c);
         lastPopupID: number;
-        openAsync<T>(p: any, vm: AtomWindowViewModel): Promise<T>;
+        openPopupAsync<T>(p: any, vm: AtomWindowViewModel): Promise<T>;
         /**
          * Resolves current Window Service, you can use this method
          * to resolve service using DI, internally it calls

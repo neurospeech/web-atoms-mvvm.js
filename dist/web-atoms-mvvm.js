@@ -2210,7 +2210,7 @@ var WebAtoms;
                 cp();
             }
         };
-        WindowService.prototype.openAsync = function (p, vm) {
+        WindowService.prototype.openPopupAsync = function (p, vm) {
             var _this = this;
             return new Promise(function (resolve, reject) {
                 var parent = WebAtoms.Core.atomParent(_this.currentTarget);
