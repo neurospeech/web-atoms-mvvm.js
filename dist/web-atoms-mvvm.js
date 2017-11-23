@@ -2211,7 +2211,35 @@ var WebAtoms;
                 cp();
             }
         };
-        WindowService.prototype.openPopupAsync = function (p, vm) {
+        /**
+         * This method will open a new popup identified by name of the popup or class of popup.
+         * Supplied view model has to be derived from AtomWindowViewModel.
+         *
+         *
+         * @example
+         *
+         *     var result = await windowService.openPopup<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
+         *
+         * @template T
+         * @param {(string | {new(e)})} windowType
+         * @param {AtomWindowViewModel} [viewModel]
+         * @returns {Promise<T>}
+         * @memberof WindowService
+         */
+        WindowService.prototype.openPopup = function (p, vm) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     switch (_a.label) {

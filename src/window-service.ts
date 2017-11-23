@@ -56,7 +56,35 @@ namespace WebAtoms {
 
         lastPopupID:number = 0;
 
-        public async openPopupAsync<T>(p:any, vm: AtomWindowViewModel): Promise<T> {
+        /**
+         * This method will open a new popup identified by name of the popup or class of popup.
+         * Supplied view model has to be derived from AtomWindowViewModel.
+         *
+         *
+         * @example
+         *
+         *     var result = await windowService.openPopup<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
+         *
+         * @template T
+         * @param {(string | {new(e)})} windowType
+         * @param {AtomWindowViewModel} [viewModel]
+         * @returns {Promise<T>}
+         * @memberof WindowService
+         */
+        public async openPopup<T>(p:any, vm: AtomWindowViewModel): Promise<T> {
             await Atom.delay(5);
             return await this._openPopupAsync<T>(p,vm);
         }
