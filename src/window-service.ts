@@ -89,6 +89,8 @@ namespace WebAtoms {
                 ct.createChildren();
                 ct.init();
 
+                this.popups.push(ct);
+
                 var d:{ close?: AtomDisposable, cancel?: AtomDisposable } = {};
 
                 // tslint:disable-next-line:no-string-literal
@@ -97,6 +99,7 @@ namespace WebAtoms {
                     e.remove();
                     d.close.dispose();
                     d.cancel.dispose();
+                    this.popups = this.popups.filter( f => f !== ct);
                 };
 
 

@@ -2245,6 +2245,7 @@ var WebAtoms;
                 ct.viewModel = vm;
                 ct.createChildren();
                 ct.init();
+                _this.popups.push(ct);
                 var d = {};
                 // tslint:disable-next-line:no-string-literal
                 ct["closePopup"] = function () {
@@ -2252,6 +2253,7 @@ var WebAtoms;
                     e.remove();
                     d.close.dispose();
                     d.cancel.dispose();
+                    _this.popups = _this.popups.filter(function (f) { return f !== ct; });
                 };
                 d.close = WebAtoms.AtomDevice.instance.subscribe("atom-window-close:" + e.id, function (g, i) {
                     // tslint:disable-next-line:no-string-literal
