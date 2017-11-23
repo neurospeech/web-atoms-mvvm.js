@@ -2226,6 +2226,7 @@ var WebAtoms;
                 e.style.position = "absolute";
                 e.style.left = r.x + "px";
                 e.style.top = (r.y + r.height) + "px";
+                e.style.zIndex = 10000 + _this.lastPopupID + "";
                 document.body.appendChild(e);
                 var ct = new p(e);
                 ct.viewModel = vm;

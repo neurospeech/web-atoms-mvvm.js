@@ -76,6 +76,7 @@ namespace WebAtoms {
                 e.style.position = "absolute";
                 e.style.left = r.x + "px";
                 e.style.top = (r.y + r.height) + "px";
+                e.style.zIndex = 10000 + this.lastPopupID + "";
 
                 document.body.appendChild(e);
                 var ct:AtomControl = new p(e);
