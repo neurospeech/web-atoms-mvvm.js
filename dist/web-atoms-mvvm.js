@@ -2211,6 +2211,19 @@ var WebAtoms;
             }
         };
         WindowService.prototype.openPopupAsync = function (p, vm) {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, Atom.delay(5)];
+                        case 1:
+                            _a.sent();
+                            return [4 /*yield*/, this._openPopupAsync(p, vm)];
+                        case 2: return [2 /*return*/, _a.sent()];
+                    }
+                });
+            });
+        };
+        WindowService.prototype._openPopupAsync = function (p, vm) {
             var _this = this;
             return new Promise(function (resolve, reject) {
                 var parent = WebAtoms.Core.atomParent(_this.currentTarget);
