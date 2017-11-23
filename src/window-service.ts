@@ -37,10 +37,19 @@ namespace WebAtoms {
 
             while(element) {
                 if(element === this.currentTarget) {
-                    // close this popup....
+                    // do not close this popup....
                     return;
                 }
                 element = element.parentElement;
+            }
+            this.close(peek);
+        }
+
+        private close(c:AtomControl): void {
+            // tslint:disable-next-line:no-string-literal
+            var cp:Function = c["closePopup"];
+            if(cp) {
+                cp();
             }
         }
 
@@ -76,21 +85,26 @@ namespace WebAtoms {
 
                 var d:{ close?: AtomDisposable, cancel?: AtomDisposable } = {};
 
-                d.close = AtomDevice.instance.subscribe(`atom-window-close:${e.id}`,
-                (g,i) => {
+                // tslint:disable-next-line:no-string-literal
+                ct["closePopup"] = () => {
                     ct.dispose();
                     e.remove();
                     d.close.dispose();
                     d.cancel.dispose();
+                };
+
+
+                d.close = AtomDevice.instance.subscribe(`atom-window-close:${e.id}`,
+                (g,i) => {
+                    // tslint:disable-next-line:no-string-literal
+                    ct["closePopup"]();
                     resolve(i);
                 });
 
                 d.cancel = AtomDevice.instance.subscribe(`atom-window-cancel:${e.id}`,
                     (g,i)=> {
-                    ct.dispose();
-                    e.remove();
-                    d.close.dispose();
-                    d.cancel.dispose();
+                    // tslint:disable-next-line:no-string-literal
+                    ct["closePopup"]();
                     reject(i);
                 });
             });
