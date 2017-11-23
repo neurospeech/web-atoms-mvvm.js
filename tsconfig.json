@@ -12,7 +12,8 @@
         "src/**/*"
     ],
     "files": [
-        "node_modules/typescript/lib/lib.es6.d.ts"
+        "node_modules/typescript/lib/lib.es6.d.ts",
+        "atoms.d.ts"
     ],
     "exclude": [
         "node_modules",

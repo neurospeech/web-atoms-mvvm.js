@@ -808,10 +808,11 @@ var WebAtoms;
         AtomViewModel.prototype.privateInit = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var _this = this;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
+                var _i, _a, i;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            _a.trys.push([0, , 3, 4]);
+                            _b.trys.push([0, , 3, 4]);
                             return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
                                     return __generator(this, function (_a) {
                                         this.runDecoratorInits();
@@ -819,7 +820,7 @@ var WebAtoms;
                                     });
                                 }); })];
                         case 1:
-                            _a.sent();
+                            _b.sent();
                             return [4 /*yield*/, Atom.postAsync(function () { return __awaiter(_this, void 0, void 0, function () {
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
@@ -832,7 +833,14 @@ var WebAtoms;
                                     });
                                 }); })];
                         case 2:
-                            _a.sent();
+                            _b.sent();
+                            if (this.postInit) {
+                                for (_i = 0, _a = this.postInit; _i < _a.length; _i++) {
+                                    i = _a[_i];
+                                    i();
+                                }
+                                this.postInit = null;
+                            }
                             return [3 /*break*/, 4];
                         case 3:
                             this._isReady = true;
@@ -958,6 +966,12 @@ var WebAtoms;
                 // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
+                if (!this._isReady) {
+                    this.postInit = this.postInit || [];
+                    this.postInit.push(function () {
+                        d.runEvaluate();
+                    });
+                }
             }
             return new WebAtoms.DisposableAction(function () {
                 _this.disposables = _this.disposables.filter(function (f) { return !dfd.find(function (fd) { return f === fd; }); });
@@ -1442,13 +1456,12 @@ var WebAtoms;
                 if (runAfterSetup) {
                     this.evaluate();
                 }
-                else {
-                    // setup watcher...
-                    for (var _i = 0, _a = this.path; _i < _a.length; _i++) {
-                        var p = _a[_i];
-                        this.evaluatePath(this.target, p);
-                    }
-                }
+                // else {
+                //     // setup watcher...
+                //     for(var p of this.path) {
+                //         this.evaluatePath(this.target,p);
+                //     }
+                // }
             }
         }
         AtomWatcher.prototype.evaluatePath = function (target, path) {
@@ -1656,6 +1669,59 @@ var WebAtoms;
     }());
     WebAtoms.BrowserService = BrowserService;
 })(WebAtoms || (WebAtoms = {}));
+var WebAtoms;
+(function (WebAtoms) {
+    /**
+     * Core class as an replacement for jQuery
+     * @class Core
+     */
+    var Core = /** @class */ (function () {
+        function Core() {
+        }
+        Core.addClass = function (e, c) {
+            var ex = e.className;
+            var exa = ex ? ex.split(" ") : [];
+            if (exa.find(function (f) { return f === c; })) {
+                return;
+            }
+            exa.push(c);
+            e.className = exa.join(" ");
+        };
+        Core.removeClass = function (e, c) {
+            var ex = (e.className || "").split(" ");
+            if (ex.length === 0) {
+                return;
+            }
+            ex = ex.filter(function (cx) { return cx !== c; });
+            e.className = ex.join(" ");
+        };
+        Core.atomParent = function (element) {
+            if (element.atomControl) {
+                return element.atomControl;
+            }
+            if (element === document || element === window || !element.parentNode) {
+                return null;
+            }
+            return Core.atomParent(element._logicalParent || element.parentNode);
+        };
+        Core.getOffsetRect = function (e) {
+            var r = {
+                x: e.offsetLeft,
+                y: e.offsetTop,
+                width: e.offsetWidth,
+                height: e.offsetHeight
+            };
+            if (e.offsetParent) {
+                var rp = Core.getOffsetRect(e.offsetParent);
+                r.x += rp.x;
+                r.y += rp.y;
+            }
+            return r;
+        };
+        return Core;
+    }());
+    WebAtoms.Core = Core;
+})(WebAtoms || (WebAtoms = {}));
 // tslint:disable-next-line
 function methodBuilder(method) {
     // tslint:disable-next-line
@@ -1737,6 +1803,22 @@ function parameterBuilder(paramName) {
  */
 var Path = parameterBuilder("Path");
 /**
+ * This will register header on parameter.
+ *
+ * @example
+ *
+ *      @Get("/api/products/{category}")
+ *      async getProducts(
+ *          @Header("x-http-auth")  category: number
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function Path
+ * @param {name} - Name of the parameter
+ */
+var Header = parameterBuilder("Header");
+/**
  * This will register Url query fragment on parameter.
  *
  * @example
@@ -1768,6 +1850,22 @@ var Query = parameterBuilder("Query");
  * @function Body
  */
 var Body = parameterBuilder("Body")("");
+/**
+ * This will register data fragment on ajax in old formModel way.
+ *
+ * @example
+ *
+ *      @Post("/api/products")
+ *      async getProducts(
+ *          @Query("id")  id: number,
+ *          @BodyFormModel product: Product
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function BodyFormModel
+ */
+var BodyFormModel = parameterBuilder("BodyFormModel")("");
 /**
  * Http Post method
  * @example
@@ -1858,7 +1956,7 @@ var Patch = methodBuilder("Patch");
  * @function Put
  * @param {url} - Url for the operation
  */
-var Cancel = function (target, propertyKey, parameterIndex) {
+function Cancel(target, propertyKey, parameterIndex) {
     if (!target.methods) {
         target.methods = {};
     }
@@ -1868,8 +1966,10 @@ var Cancel = function (target, propertyKey, parameterIndex) {
         target.methods[propertyKey] = a;
     }
     a[parameterIndex] = new WebAtoms.Rest.ServiceParameter("cancel", "");
-};
+}
+// tslint:disable-next-line:no-string-literal
 if (!window["__atomSetLocalValue"]) {
+    // tslint:disable-next-line:no-string-literal
     window["__atomSetLocalValue"] = function (bt) {
         return function (k, v, e, r) {
             var self = this;
@@ -1881,8 +1981,9 @@ if (!window["__atomSetLocalValue"]) {
                         c.abort();
                     }
                     v.then(function (pr) {
-                        if (c && c.cancelled)
+                        if (c && c.cancelled) {
                             return;
+                        }
                         e._promisesQueue[k] = null;
                         bt.setLocalValue.call(self, k, pr, e, r);
                     });
@@ -1913,6 +2014,7 @@ var WebAtoms;
             return AjaxOptions;
         }());
         Rest.AjaxOptions = AjaxOptions;
+        // tslint:disable-next-line:no-string-literal
         var AtomPromise = window["AtomPromise"];
         /**
          *
@@ -1939,6 +2041,15 @@ var WebAtoms;
             return CancellablePromise;
         }());
         Rest.CancellablePromise = CancellablePromise;
+        AtomConfig.ajax.jsonPostEncode = function (o) {
+            if (!o.inputProcessed) {
+                if (o.type) {
+                    delete o.type;
+                }
+                o.data = { formModel: JSON.stringify(o.data) };
+            }
+            return o;
+        };
         /**
          *
          *
@@ -1950,12 +2061,13 @@ var WebAtoms;
                 this.testMode = false;
                 this.showProgress = true;
                 this.showError = true;
-                //bs
+                // bs
                 this.methods = {};
                 this.methodReturns = {};
             }
             BaseService.prototype.encodeData = function (o) {
                 o.type = "JSON";
+                o.inputProcessed = true;
                 return o;
             };
             BaseService.prototype.sendResult = function (result, error) {
@@ -1987,21 +2099,29 @@ var WebAtoms;
                                 p = bag[i];
                                 v = values[i];
                                 switch (p.type) {
-                                    case 'path':
+                                    case "path":
                                         url = url.replace("{" + p.key + "}", encodeURIComponent(v));
                                         break;
-                                    case 'query':
-                                        if (url.indexOf('?') === -1) {
+                                    case "query":
+                                        if (url.indexOf("?") === -1) {
                                             url += "?";
                                         }
                                         url += "&" + p.key + "=" + encodeURIComponent(v);
                                         break;
-                                    case 'body':
+                                    case "body":
                                         options.data = v;
                                         options = this.encodeData(options);
                                         break;
-                                    case 'cancel':
+                                    case "bodyformmodel":
+                                        options.inputProcessed = false;
+                                        options.data = v;
+                                        break;
+                                    case "cancel":
                                         options.cancel = v;
+                                        break;
+                                    case "header":
+                                        options.headers = options.headers = {};
+                                        options.headers[p.key] = p;
                                         break;
                                 }
                             }
@@ -2017,8 +2137,8 @@ var WebAtoms;
                             pr.then(function () {
                                 var v = pr.value();
                                 // deep clone...
-                                //var rv = new returns();
-                                //reject("Clone pending");
+                                // var rv = new returns();
+                                // reject("Clone pending");
                                 if (options.cancel) {
                                     if (options.cancel.cancelled) {
                                         reject("cancelled");
@@ -2054,10 +2174,128 @@ var WebAtoms;
      * @class WindowService
      */
     var WindowService = /** @class */ (function () {
+        /**
+         *
+         */
         function WindowService() {
+            var _this = this;
+            this.popups = [];
+            this.lastPopupID = 0;
             this.lastWindowID = 1;
+            window.addEventListener("click", function (e) {
+                _this.currentTarget = e.target;
+                _this.closePopup();
+            });
         }
         WindowService_1 = WindowService;
+        WindowService.prototype.closePopup = function () {
+            if (!this.popups.length) {
+                return;
+            }
+            var peek = this.popups[this.popups.length - 1];
+            var element = peek._element;
+            var target = this.currentTarget;
+            while (target) {
+                if (target === element) {
+                    // do not close this popup....
+                    return;
+                }
+                target = target.parentElement;
+            }
+            this.close(peek);
+        };
+        WindowService.prototype.close = function (c) {
+            // tslint:disable-next-line:no-string-literal
+            var cp = c["closePopup"];
+            if (cp) {
+                cp();
+            }
+        };
+        /**
+         * This method will open a new popup identified by name of the popup or class of popup.
+         * Supplied view model has to be derived from AtomWindowViewModel.
+         *
+         *
+         * @example
+         *
+         *     var result = await windowService.openPopup<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
+         *
+         * @template T
+         * @param {(string | {new(e)})} windowType
+         * @param {AtomWindowViewModel} [viewModel]
+         * @returns {Promise<T>}
+         * @memberof WindowService
+         */
+        WindowService.prototype.openPopup = function (p, vm) {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, Atom.delay(5)];
+                        case 1:
+                            _a.sent();
+                            return [4 /*yield*/, this._openPopupAsync(p, vm)];
+                        case 2: return [2 /*return*/, _a.sent()];
+                    }
+                });
+            });
+        };
+        WindowService.prototype._openPopupAsync = function (p, vm) {
+            var _this = this;
+            return new Promise(function (resolve, reject) {
+                var parent = WebAtoms.Core.atomParent(_this.currentTarget);
+                var e = document.createElement("div");
+                // tslint:disable-next-line:no-string-literal
+                e["_logicalParent"] = parent._element;
+                e.id = "atom_popup_" + _this.lastPopupID++;
+                if (vm) {
+                    // tslint:disable-next-line:no-string-literal
+                    vm["windowName"] = e.id;
+                }
+                var r = WebAtoms.Core.getOffsetRect(_this.currentTarget);
+                e.style.position = "absolute";
+                e.style.left = r.x + "px";
+                e.style.top = (r.y + r.height) + "px";
+                e.style.zIndex = 10000 + _this.lastPopupID + "";
+                document.body.appendChild(e);
+                var ct = new p(e);
+                ct.viewModel = vm;
+                ct.createChildren();
+                ct.init();
+                _this.popups.push(ct);
+                var d = {};
+                // tslint:disable-next-line:no-string-literal
+                ct["closePopup"] = function () {
+                    ct.dispose();
+                    e.remove();
+                    d.close.dispose();
+                    d.cancel.dispose();
+                    _this.popups = _this.popups.filter(function (f) { return f !== ct; });
+                };
+                d.close = WebAtoms.AtomDevice.instance.subscribe("atom-window-close:" + e.id, function (g, i) {
+                    // tslint:disable-next-line:no-string-literal
+                    ct["closePopup"]();
+                    resolve(i);
+                });
+                d.cancel = WebAtoms.AtomDevice.instance.subscribe("atom-window-cancel:" + e.id, function (g, i) {
+                    // tslint:disable-next-line:no-string-literal
+                    ct["closePopup"]();
+                    reject(i);
+                });
+            });
+        };
         Object.defineProperty(WindowService, "instance", {
             /**
              * Resolves current Window Service, you can use this method

@@ -10,6 +10,145 @@ namespace WebAtoms {
     export class WindowService {
 
         /**
+         * Reference used by popup opener as an anchor
+         * @type {HTMLElement}
+         * @memberof WindowService
+         */
+        currentTarget:HTMLElement;
+
+        popups:AtomControl[] = [];
+
+        /**
+         *
+         */
+        constructor() {
+			window.addEventListener("click", (e) => {
+                this.currentTarget = e.target as HTMLElement;
+                this.closePopup();
+			});
+        }
+
+        private closePopup():void {
+            if(!this.popups.length) {
+                return;
+            }
+            var peek:AtomControl = this.popups[this.popups.length-1];
+            var element:HTMLElement = peek._element;
+            var target:HTMLElement = this.currentTarget;
+
+            while(target) {
+                if(target === element) {
+                    // do not close this popup....
+                    return;
+                }
+                target = target.parentElement;
+            }
+            this.close(peek);
+        }
+
+        private close(c:AtomControl): void {
+            // tslint:disable-next-line:no-string-literal
+            var cp:Function = c["closePopup"];
+            if(cp) {
+                cp();
+            }
+        }
+
+        lastPopupID:number = 0;
+
+        /**
+         * This method will open a new popup identified by name of the popup or class of popup.
+         * Supplied view model has to be derived from AtomWindowViewModel.
+         *
+         *
+         * @example
+         *
+         *     var result = await windowService.openPopup<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
+         *
+         * @template T
+         * @param {(string | {new(e)})} windowType
+         * @param {AtomWindowViewModel} [viewModel]
+         * @returns {Promise<T>}
+         * @memberof WindowService
+         */
+        public async openPopup<T>(p:any, vm: AtomWindowViewModel): Promise<T> {
+            await Atom.delay(5);
+            return await this._openPopupAsync<T>(p,vm);
+        }
+
+        private _openPopupAsync<T>(p: any, vm: AtomWindowViewModel ): Promise<T> {
+            return new Promise((resolve,reject) => {
+
+                var parent:AtomControl = Core.atomParent(this.currentTarget);
+
+                var e:HTMLDivElement = document.createElement("div");
+                // tslint:disable-next-line:no-string-literal
+                e["_logicalParent"] = parent._element;
+
+                e.id = `atom_popup_${this.lastPopupID++}`;
+
+                if(vm) {
+                    // tslint:disable-next-line:no-string-literal
+                    vm["windowName"] = e.id;
+                }
+
+                var r:Rect = Core.getOffsetRect(this.currentTarget);
+
+                e.style.position = "absolute";
+                e.style.left = r.x + "px";
+                e.style.top = (r.y + r.height) + "px";
+                e.style.zIndex = 10000 + this.lastPopupID + "";
+
+                document.body.appendChild(e);
+                var ct:AtomControl = new p(e);
+                ct.viewModel = vm;
+                ct.createChildren();
+                ct.init();
+
+                this.popups.push(ct);
+
+                var d:{ close?: AtomDisposable, cancel?: AtomDisposable } = {};
+
+                // tslint:disable-next-line:no-string-literal
+                ct["closePopup"] = () => {
+                    ct.dispose();
+                    e.remove();
+                    d.close.dispose();
+                    d.cancel.dispose();
+                    this.popups = this.popups.filter( f => f !== ct);
+                };
+
+
+                d.close = AtomDevice.instance.subscribe(`atom-window-close:${e.id}`,
+                (g,i) => {
+                    // tslint:disable-next-line:no-string-literal
+                    ct["closePopup"]();
+                    resolve(i);
+                });
+
+                d.cancel = AtomDevice.instance.subscribe(`atom-window-cancel:${e.id}`,
+                    (g,i)=> {
+                    // tslint:disable-next-line:no-string-literal
+                    ct["closePopup"]();
+                    reject(i);
+                });
+            });
+        }
+
+        /**
          * Resolves current Window Service, you can use this method
          * to resolve service using DI, internally it calls
          * DI.resolve(WindowService).

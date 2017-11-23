@@ -1,14 +1,13 @@
 {
   "name": "web-atoms-mvvm",
-  "version": "1.4.3",
+  "version": "1.4.15",
   "description": "MVVM, REST Json Service, Message Subscriptions for Web Atoms",
   "main": "web-atoms-mvvm.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "npm install web-atoms-generator -g"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -30,7 +29,7 @@
     "@types/node": "^8.0.26",
     "systemjs": "^0.20.18",
     "tslint": "^5.7.0",
-    "web-atoms-unit": "^1.0.19",
+    "web-atoms-unit": "^1.0.20",
     "ts-promise": "^0.3.4",
     "typescript": "^2.4.2"
   }

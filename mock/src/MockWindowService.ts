@@ -88,6 +88,18 @@ namespace WebAtoms {
          * @returns {Promise<T>}
          * @memberof MockWindowService
          */
+        openPopup<T>(c: __windowType, vm: AtomViewModel ): Promise<T> {
+            return this.openWindow(c, vm);
+        }
+        
+        /**
+         * Internal usage
+         * @template T
+         * @param {__windowType} c
+         * @param {AtomViewModel} vm
+         * @returns {Promise<T>}
+         * @memberof MockWindowService
+         */
         openWindow<T>(c: __windowType, vm: AtomViewModel ): Promise<T> {
             return new Promise((resolve,reject)=> {
                 var w:any = this.windowStack.find(x => x.windowType === c);
@@ -131,6 +143,24 @@ namespace WebAtoms {
          */
         expectConfirm(msg:string, action: (vm:MockConfirmViewModel) => boolean):AtomDisposable {
             return this.expectWindow(`__ConfirmWindow_${msg}`, action);
+        }
+
+
+        /**
+         * Call this method before any method that should expect a window of given type.
+         * Each window will only be used once and return value in windowAction will be
+         * resolved in promise created by openWindow call.
+         * @template TViewModel
+         * @param {__windowType} windowType
+         * @param {(vm:TViewModel) => any} windowAction
+         * @param {number} [maxDelay=10000]
+         * @returns {AtomDisposable}
+         * @memberof MockWindowService
+         */
+        expectPopup<TViewModel extends AtomViewModel>(
+            popupType: __windowType,
+            windowAction: (vm:TViewModel) => any): AtomDisposable {
+            return this.expectWindow(popupType, windowAction);
         }
 
         /**

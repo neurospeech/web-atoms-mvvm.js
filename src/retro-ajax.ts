@@ -12,9 +12,9 @@ function methodBuilder(method:string) {
             var oldFunction:any = descriptor.value;
 
             // tslint:disable-next-line:typedef
-            descriptor.value = function(... args:any[]){
+            descriptor.value = function(... args:any[]) {
 
-                if(this.testMode || Atom.designMode ){
+                if(this.testMode || Atom.designMode ) {
 
                     console.log(`Test\Design Mode: ${url} .. ${args.join(",")}`);
 
@@ -25,7 +25,7 @@ function methodBuilder(method:string) {
                 }
 
                 var rn:any = null;
-                if(target.methodReturns){
+                if(target.methodReturns) {
                     rn = target.methodReturns[propertyKey];
                 }
                 var r:any = this.invoke(url, method ,a, args,rn);
@@ -34,19 +34,19 @@ function methodBuilder(method:string) {
 
             // console.log("methodBuilder called");
             // console.log({ url: url, propertyKey: propertyKey,descriptor: descriptor });
-        }
-    }
+        };
+    };
 }
 
 // tslint:disable-next-line
 function Return(type: {new()}) {
     // tslint:disable-next-line
     return function(target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any){
-        if(!target.methodReturns){
+        if(!target.methodReturns) {
             target.methodReturns = {};
         }
         target.methodReturns[propertyKey] = type;
-    }
+    };
 }
 
 // tslint:disable-next-line
@@ -69,13 +69,24 @@ function parameterBuilder(paramName:string){
                 target.methods[propertyKey] = a;
             }
             a[parameterIndex] = new WebAtoms.Rest.ServiceParameter(paramName,key);
-        }
+        };
 
     };
 }
 
 
 declare var Atom:any;
+
+type RestAttr =
+    (target:WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number)
+        => void;
+
+type RestParamAttr = (key:string)
+    => RestAttr;
+
+type RestMethodAttr = (key: string)
+    => (target:WebAtoms.Rest.BaseService, propertyKey: string | Symbol, descriptor: any)
+        => void;
 
 
 /**
@@ -93,7 +104,24 @@ declare var Atom:any;
  * @function Path
  * @param {name} - Name of the parameter
  */
-var Path = parameterBuilder("Path");
+var Path:RestParamAttr = parameterBuilder("Path");
+
+/**
+ * This will register header on parameter.
+ *
+ * @example
+ *
+ *      @Get("/api/products/{category}")
+ *      async getProducts(
+ *          @Header("x-http-auth")  category: number
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function Path
+ * @param {name} - Name of the parameter
+ */
+var Header:RestParamAttr = parameterBuilder("Header");
 
 /**
  * This will register Url query fragment on parameter.
@@ -110,7 +138,7 @@ var Path = parameterBuilder("Path");
  * @function Query
  * @param {name} - Name of the parameter
  */
-var Query = parameterBuilder("Query");
+var Query:RestParamAttr = parameterBuilder("Query");
 
 /**
  * This will register data fragment on ajax.
@@ -127,7 +155,24 @@ var Query = parameterBuilder("Query");
  * @export
  * @function Body
  */
-var Body = parameterBuilder("Body")("");
+var Body:RestAttr = parameterBuilder("Body")("");
+
+/**
+ * This will register data fragment on ajax in old formModel way.
+ *
+ * @example
+ *
+ *      @Post("/api/products")
+ *      async getProducts(
+ *          @Query("id")  id: number,
+ *          @BodyFormModel product: Product
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function BodyFormModel
+ */
+var BodyFormModel: RestAttr = parameterBuilder("BodyFormModel")("");
 
 /**
  * Http Post method
@@ -143,7 +188,7 @@ var Body = parameterBuilder("Body")("");
  * @function Post
  * @param {url} - Url for the operation
  */
-var Post = methodBuilder("Post");
+var Post:RestMethodAttr = methodBuilder("Post");
 
 
 /**
@@ -160,7 +205,7 @@ var Post = methodBuilder("Post");
  * @export
  * @function Body
  */
-var Get = methodBuilder("Get");
+var Get:RestMethodAttr = methodBuilder("Get");
 
 /**
  * Http Delete method
@@ -176,7 +221,7 @@ var Get = methodBuilder("Get");
  * @function Delete
  * @param {url} - Url for the operation
  */
-var Delete = methodBuilder("Delete");
+var Delete:RestMethodAttr = methodBuilder("Delete");
 
 /**
  * Http Put method
@@ -192,7 +237,7 @@ var Delete = methodBuilder("Delete");
  * @function Put
  * @param {url} - Url for the operation
  */
-var Put = methodBuilder("Put");
+var Put:RestMethodAttr = methodBuilder("Put");
 
 
 /**
@@ -209,7 +254,7 @@ var Put = methodBuilder("Put");
  * @function Patch
  * @param {url} - Url for the operation
  */
-var Patch = methodBuilder("Patch");
+var Patch:RestMethodAttr = methodBuilder("Patch");
 
 /**
  * Cancellation token
@@ -226,74 +271,81 @@ var Patch = methodBuilder("Patch");
  * @function Put
  * @param {url} - Url for the operation
  */
-var Cancel = function(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number){
-    if(!target.methods){
+function Cancel(target:WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number):void {
+    if(!target.methods) {
         target.methods = {};
     }
 
-    var a = target.methods[propertyKey];
-    if(!a){
+    var a:WebAtoms.Rest.ServiceParameter[] = target.methods[propertyKey];
+    if(!a) {
         a = [];
         target.methods[propertyKey] = a;
     }
     a[parameterIndex] = new WebAtoms.Rest.ServiceParameter("cancel","");
-};
+}
 
 
 
-if(!window["__atomSetLocalValue"]){
-    window["__atomSetLocalValue"] = function(bt){
-        return function(k,v,e,r){
-            var self = this;
-            if(v){
-                if(v.then && v.catch){
+// tslint:disable-next-line:no-string-literal
+if(!window["__atomSetLocalValue"]) {
+
+    // tslint:disable-next-line:no-string-literal
+    window["__atomSetLocalValue"] = function(bt:any):Function {
+        return function(k:any,v:any,e:any,r:any):void {
+            var self:any = this;
+            if(v) {
+                if(v.then && v.catch) {
 
                     e._promisesQueue = e._promisesQueue || {};
-                    var c = e._promisesQueue[k];
-                    if(c){
+                    var c:any = e._promisesQueue[k];
+                    if(c) {
                         c.abort();
                     }
 
-                    v.then(function(pr){
-                        if(c && c.cancelled)
+                    v.then( pr => {
+                        if(c && c.cancelled) {
                             return;
+                        }
                         e._promisesQueue[k] = null;
                         bt.setLocalValue.call(self,k,pr,e,r);
                     });
 
-                    v.catch(function(er){
+                    v.catch( er => {
                         e._promisesQueue[k] = null;
                     });
                 }
             }
             bt.setLocalValue.call(this,k,v,e,r);
-        }
+        };
     };
 }
 
-namespace WebAtoms.Rest{
+namespace WebAtoms.Rest {
 
 
-    export class ServiceParameter{
+    export class ServiceParameter {
 
         public key:string;
         public type:string;
 
-        constructor(type:string,key:string){
+        constructor(type:string,key:string) {
             this.type = type.toLowerCase();
             this.key = key;
         }
     }
 
-    export class AjaxOptions{
+    export class AjaxOptions {
         public method:string;
         public url:string;
         public data: any;
         public type: string;
         public cancel: CancelToken;
+        public headers: any;
+        public inputProcessed: boolean;
     }
 
-    var AtomPromise = window["AtomPromise"];
+    // tslint:disable-next-line:no-string-literal
+    var AtomPromise:any = window["AtomPromise"];
 
     /**
      *
@@ -303,9 +355,9 @@ namespace WebAtoms.Rest{
      * @implements {Promise<T>}
      * @template T
      */
-    export class CancellablePromise<T> implements Promise<T>{
+    export class CancellablePromise<T> implements Promise<T> {
 
-        [Symbol.toStringTag]: "Promise"
+        [Symbol.toStringTag]: "Promise";
 
         onCancel: () => void;
         p: Promise<T>;
@@ -314,19 +366,32 @@ namespace WebAtoms.Rest{
             this.onCancel = onCancel;
         }
 
-        abort(){
+        abort():void {
             this.onCancel();
         }
 
-        then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>
-        {
+        then<TResult1 = T, TResult2 = never>(
+            onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+            onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
             return this.p.then(onfulfilled,onrejected);
         }
 
-        catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>{
+        catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
             return this.p.catch(onrejected);
         }
     }
+
+    declare var AtomConfig:any;
+
+    AtomConfig.ajax.jsonPostEncode = function(o:AjaxOptions): AjaxOptions {
+        if(!o.inputProcessed) {
+            if(o.type) {
+                delete o.type;
+            }
+            o.data = { formModel: JSON.stringify(o.data) };
+        }
+        return o;
+    };
 
     /**
      *
@@ -334,7 +399,7 @@ namespace WebAtoms.Rest{
      * @export
      * @class BaseService
      */
-    export class BaseService{
+    export class BaseService {
 
 
         public testMode: boolean  = false;
@@ -343,26 +408,27 @@ namespace WebAtoms.Rest{
 
         public showError: boolean = true;
 
-        //bs
+        // bs
 
         public methods: any = {};
 
         public methodReturns: any = {};
 
-        public encodeData(o:AjaxOptions):AjaxOptions{
+        public encodeData(o:AjaxOptions):AjaxOptions {
             o.type = "JSON";
+            o.inputProcessed = true;
             return o;
         }
 
-        async sendResult(result:any,error?:any):Promise<any>{
-            return new Promise((resolve,reject)=>{
-                if(error){
-                    setTimeout(()=>{
+        async sendResult(result:any,error?:any):Promise<any> {
+            return new Promise((resolve,reject)=> {
+                if(error) {
+                    setTimeout(()=> {
                         reject(error);
                     },1);
                     return;
                 }
-                setTimeout(()=>{
+                setTimeout(()=> {
                     resolve(result);
                 },1);
             });
@@ -372,56 +438,64 @@ namespace WebAtoms.Rest{
             url:string,
             method:string,
             bag:Array<ServiceParameter>,
-            values:Array<any>, returns: {new ()}):Promise<any>{
+            values:Array<any>, returns: {new ()}):Promise<any> {
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
-            if(bag){
-                for(var i=0;i<bag.length;i++){
+            if(bag) {
+                for(var i:number=0;i<bag.length;i++) {
                     var p:ServiceParameter = bag[i];
-                    var v = values[i];
-                    switch(p.type){
-                        case 'path':
+                    var v:any = values[i];
+                    switch(p.type) {
+                        case "path":
                             url = url.replace(`{${p.key}}`,encodeURIComponent(v));
                         break;
-                        case 'query':
-                            if(url.indexOf('?')===-1){
+                        case "query":
+                            if(url.indexOf("?")===-1) {
                                 url += "?";
                             }
                             url += `&${p.key}=${encodeURIComponent(v)}`;
                         break;
-                        case 'body':
+                        case "body":
                             options.data = v;
                             options = this.encodeData(options);
                         break;
-                        case 'cancel':
+                        case "bodyformmodel":
+                            options.inputProcessed = false;
+                            options.data = v;
+                        break;
+                        case "cancel":
                             options.cancel = v as CancelToken;
                         break;
+                        case "header":
+                            options.headers = options.headers = {};
+                            options.headers[p.key] = p;
+                            break;
                     }
                 }
             }
             options.url = url;
 
-            var pr = AtomPromise.json(url,null,options);
+            var pr:any = AtomPromise.json(url,null,options);
 
 
-            if(options.cancel){
-                options.cancel.registerForCancel(()=>{
+            if(options.cancel) {
+                options.cancel.registerForCancel(()=> {
                     pr.abort();
                 });
             }
 
-            var rp = new Promise((resolve: (v?: any | PromiseLike<any>) => void, reject: (reason?:any) => void)=>{
+            var rp:Promise<any> = new Promise((resolve: (v?: any | PromiseLike<any>) => void, reject: (reason?:any) => void)=> {
 
-                pr.then(()=>{
-                    var v = pr.value();
+                pr.then(()=> {
+                    var v:any = pr.value();
 
                     // deep clone...
-                    //var rv = new returns();
-                    //reject("Clone pending");
+                    // var rv = new returns();
+                    // reject("Clone pending");
 
-                    if(options.cancel){
-                        if(options.cancel.cancelled){
+                    if(options.cancel) {
+                        if(options.cancel.cancelled) {
                             reject("cancelled");
                             return;
                         }
@@ -429,7 +503,7 @@ namespace WebAtoms.Rest{
 
                     resolve(v);
                 });
-                pr.failed( () =>{
+                pr.failed( () => {
                     reject(pr.error.msg);
                 });
 
@@ -439,7 +513,7 @@ namespace WebAtoms.Rest{
                 pr.invoke("Ok");
             });
 
-            return new CancellablePromise(rp, ()=>{
+            return new CancellablePromise(rp, ()=> {
                 pr.abort();
             });
         }

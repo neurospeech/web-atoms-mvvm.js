@@ -66,6 +66,13 @@ namespace WebAtoms {
                     await this.init();
                     this.onReady();
                 });
+
+                if(this.postInit){
+                    for(var i of this.postInit) {
+                        i();
+                    }
+                    this.postInit = null;
+                }
             }
             finally {
                 this._isReady = true;
@@ -80,6 +87,8 @@ namespace WebAtoms {
 
         // tslint:disable-next-line:no-empty
         protected onReady():void {}
+
+        postInit:Array<Function>;
 
         private runDecoratorInits():void {
             var v:any = this.constructor.prototype;
@@ -173,6 +182,13 @@ namespace WebAtoms {
                 // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
+
+                if(!this._isReady){
+                    this.postInit = this.postInit || [];
+                    this.postInit.push(() => {
+                        d.runEvaluate();
+                    });
+                }
             }
             return new DisposableAction(()=> {
                 this.disposables = this.disposables.filter( f => ! dfd.find(fd => f === fd) );

@@ -67,7 +67,7 @@ namespace WebAtoms {
 
     Atom.post = function(f:()=>void):void {
         (WebAtoms as any).dispatcher.callLater(f);
-    }
+    };
 
     Atom.postAsync = function(f:()=>any):Promise<any> {
         return new Promise((resolve,reject)=> {

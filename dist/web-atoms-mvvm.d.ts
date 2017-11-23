@@ -314,6 +314,7 @@ declare namespace WebAtoms {
         private privateInit();
         waitForReady(): Promise<any>;
         protected onReady(): void;
+        postInit: Array<Function>;
         private runDecoratorInits();
         private validations;
         /**
@@ -660,12 +661,42 @@ declare namespace WebAtoms {
         readonly appScope: any;
     }
 }
+declare namespace WebAtoms {
+    class AtomControl {
+        _element: HTMLElement;
+        constructor(e: HTMLElement);
+        init(): void;
+        dispose(): void;
+        createChildren(): void;
+        bindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string, method?: Function): void;
+        viewModel: any;
+    }
+    /**
+     * Core class as an replacement for jQuery
+     * @class Core
+     */
+    class Core {
+        static addClass(e: HTMLElement, c: string): void;
+        static removeClass(e: HTMLElement, c: string): void;
+        static atomParent(element: any): AtomControl;
+        static getOffsetRect(e: HTMLElement): Rect;
+    }
+    type Rect = {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
+}
 declare function methodBuilder(method: string): (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function Return(type: {
     new ();
 }): (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function parameterBuilder(paramName: string): (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
 declare var Atom: any;
+declare type RestAttr = (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number) => void;
+declare type RestParamAttr = (key: string) => RestAttr;
+declare type RestMethodAttr = (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, descriptor: any) => void;
 /**
  * This will register Url path fragment on parameter.
  *
@@ -681,7 +712,23 @@ declare var Atom: any;
  * @function Path
  * @param {name} - Name of the parameter
  */
-declare var Path: (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
+declare var Path: RestParamAttr;
+/**
+ * This will register header on parameter.
+ *
+ * @example
+ *
+ *      @Get("/api/products/{category}")
+ *      async getProducts(
+ *          @Header("x-http-auth")  category: number
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function Path
+ * @param {name} - Name of the parameter
+ */
+declare var Header: RestParamAttr;
 /**
  * This will register Url query fragment on parameter.
  *
@@ -697,7 +744,7 @@ declare var Path: (key: string) => (target: WebAtoms.Rest.BaseService, propertyK
  * @function Query
  * @param {name} - Name of the parameter
  */
-declare var Query: (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
+declare var Query: RestParamAttr;
 /**
  * This will register data fragment on ajax.
  *
@@ -713,7 +760,23 @@ declare var Query: (key: string) => (target: WebAtoms.Rest.BaseService, property
  * @export
  * @function Body
  */
-declare var Body: (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
+declare var Body: RestAttr;
+/**
+ * This will register data fragment on ajax in old formModel way.
+ *
+ * @example
+ *
+ *      @Post("/api/products")
+ *      async getProducts(
+ *          @Query("id")  id: number,
+ *          @BodyFormModel product: Product
+ *      ): Promise<Product[]> {
+ *      }
+ *
+ * @export
+ * @function BodyFormModel
+ */
+declare var BodyFormModel: RestAttr;
 /**
  * Http Post method
  * @example
@@ -728,7 +791,7 @@ declare var Body: (target: WebAtoms.Rest.BaseService, propertyKey: string | symb
  * @function Post
  * @param {url} - Url for the operation
  */
-declare var Post: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
+declare var Post: RestMethodAttr;
 /**
  * Http Get Method
  *
@@ -743,7 +806,7 @@ declare var Post: (url: string) => (target: WebAtoms.Rest.BaseService, propertyK
  * @export
  * @function Body
  */
-declare var Get: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
+declare var Get: RestMethodAttr;
 /**
  * Http Delete method
  * @example
@@ -758,7 +821,7 @@ declare var Get: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKe
  * @function Delete
  * @param {url} - Url for the operation
  */
-declare var Delete: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
+declare var Delete: RestMethodAttr;
 /**
  * Http Put method
  * @example
@@ -773,7 +836,7 @@ declare var Delete: (url: string) => (target: WebAtoms.Rest.BaseService, propert
  * @function Put
  * @param {url} - Url for the operation
  */
-declare var Put: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
+declare var Put: RestMethodAttr;
 /**
  * Http Patch method
  * @example
@@ -788,7 +851,7 @@ declare var Put: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKe
  * @function Patch
  * @param {url} - Url for the operation
  */
-declare var Patch: (url: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
+declare var Patch: RestMethodAttr;
 /**
  * Cancellation token
  * @example
@@ -804,7 +867,7 @@ declare var Patch: (url: string) => (target: WebAtoms.Rest.BaseService, property
  * @function Put
  * @param {url} - Url for the operation
  */
-declare var Cancel: (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
+declare function Cancel(target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number): void;
 declare namespace WebAtoms.Rest {
     class ServiceParameter {
         key: string;
@@ -817,6 +880,8 @@ declare namespace WebAtoms.Rest {
         data: any;
         type: string;
         cancel: CancelToken;
+        headers: any;
+        inputProcessed: boolean;
     }
     /**
      *
@@ -862,6 +927,50 @@ declare namespace WebAtoms {
      * @class WindowService
      */
     class WindowService {
+        /**
+         * Reference used by popup opener as an anchor
+         * @type {HTMLElement}
+         * @memberof WindowService
+         */
+        currentTarget: HTMLElement;
+        popups: AtomControl[];
+        /**
+         *
+         */
+        constructor();
+        private closePopup();
+        private close(c);
+        lastPopupID: number;
+        /**
+         * This method will open a new popup identified by name of the popup or class of popup.
+         * Supplied view model has to be derived from AtomWindowViewModel.
+         *
+         *
+         * @example
+         *
+         *     var result = await windowService.openPopup<Task>(NewTaskWindow, new NewTaskWindowViewModel() );
+         *
+         *      class NewTaskWindowViewModel extends AtomWindowViewModel{
+         *
+         *          ....
+         *          save(){
+         *
+         *              // close and send result
+         *              this.close(task);
+         *
+         *          }
+         *          ....
+         *
+         *      }
+         *
+         * @template T
+         * @param {(string | {new(e)})} windowType
+         * @param {AtomWindowViewModel} [viewModel]
+         * @returns {Promise<T>}
+         * @memberof WindowService
+         */
+        openPopup<T>(p: any, vm: AtomWindowViewModel): Promise<T>;
+        private _openPopupAsync<T>(p, vm);
         /**
          * Resolves current Window Service, you can use this method
          * to resolve service using DI, internally it calls
