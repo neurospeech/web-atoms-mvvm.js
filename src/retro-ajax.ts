@@ -85,7 +85,7 @@ type RestParamAttr = (key:string)
     => RestAttr;
 
 type RestMethodAttr = (key: string)
-    => (target:WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number)
+    => (target:WebAtoms.Rest.BaseService, propertyKey: string | Symbol, descriptor: any)
         => void;
 
 

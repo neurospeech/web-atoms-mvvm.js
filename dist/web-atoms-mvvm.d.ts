@@ -687,7 +687,7 @@ declare function parameterBuilder(paramName: string): (key: string) => (target: 
 declare var Atom: any;
 declare type RestAttr = (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number) => void;
 declare type RestParamAttr = (key: string) => RestAttr;
-declare type RestMethodAttr = (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number) => void;
+declare type RestMethodAttr = (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, descriptor: any) => void;
 /**
  * This will register Url path fragment on parameter.
  *
