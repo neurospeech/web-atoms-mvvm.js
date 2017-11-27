@@ -18,6 +18,19 @@ namespace WebAtoms {
 		viewModel:any;
 	}
 
+	export declare class AtomItemsControl extends AtomControl {
+		items: any;
+		selectedItem: any;
+		readonly selectedItems: any[];
+
+		itemTemplate: any;
+		itemsPresenter: any;
+	}
+
+	export declare class AtomListBox extends AtomItemsControl {
+
+	}
+
 	export declare class AtomPromise {
 		static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
 

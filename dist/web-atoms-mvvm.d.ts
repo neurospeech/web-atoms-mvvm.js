@@ -671,6 +671,15 @@ declare namespace WebAtoms {
         bindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string, method?: Function): void;
         viewModel: any;
     }
+    class AtomItemsControl extends AtomControl {
+        items: any;
+        selectedItem: any;
+        readonly selectedItems: any[];
+        itemTemplate: any;
+        itemsPresenter: any;
+    }
+    class AtomListBox extends AtomItemsControl {
+    }
     class AtomPromise {
         static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
         abort(): void;
