@@ -671,6 +671,19 @@ declare namespace WebAtoms {
         bindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string, method?: Function): void;
         viewModel: any;
     }
+    class AtomPromise {
+        static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
+        abort(): void;
+        then(f: Function): AtomPromise;
+        failed(f: Function): AtomPromise;
+        showError(v: boolean): void;
+        showProgress(v: boolean): void;
+        invoke(s: string): void;
+        value(v?: any): any;
+        error: {
+            msg?: string;
+        };
+    }
     /**
      * Core class as an replacement for jQuery
      * @class Core

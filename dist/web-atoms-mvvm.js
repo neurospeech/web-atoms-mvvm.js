@@ -2014,8 +2014,6 @@ var WebAtoms;
             return AjaxOptions;
         }());
         Rest.AjaxOptions = AjaxOptions;
-        // tslint:disable-next-line:no-string-literal
-        var AtomPromise = window["AtomPromise"];
         /**
          *
          *
@@ -2127,7 +2125,7 @@ var WebAtoms;
                             }
                         }
                         options.url = url;
-                        pr = AtomPromise.json(url, null, options);
+                        pr = WebAtoms.AtomPromise.json(url, null, options);
                         if (options.cancel) {
                             options.cancel.registerForCancel(function () {
                                 pr.abort();
