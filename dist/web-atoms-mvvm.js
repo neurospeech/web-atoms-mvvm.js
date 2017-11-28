@@ -1704,6 +1704,9 @@ var WebAtoms;
             }
             return Core.atomParent(element._logicalParent || element.parentNode);
         };
+        Core.hasClass = function (e, className) {
+            return e.classList.contains(className);
+        };
         Core.getOffsetRect = function (e) {
             var r = {
                 x: e.offsetLeft,
@@ -2194,6 +2197,9 @@ var WebAtoms;
             var element = peek._element;
             var target = this.currentTarget;
             while (target) {
+                if (WebAtoms.Core.hasClass(element, "close-popup")) {
+                    break;
+                }
                 if (target === element) {
                     // do not close this popup....
                     return;

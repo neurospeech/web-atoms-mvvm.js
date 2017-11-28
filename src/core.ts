@@ -80,6 +80,10 @@ namespace WebAtoms {
 			return Core.atomParent(element._logicalParent || element.parentNode);
 		}
 
+		static hasClass(e:HTMLElement, className: string): any {
+			return e.classList.contains(className);
+        }
+
 		static getOffsetRect(e:HTMLElement): Rect {
 			var r:Rect = {
 				x: e.offsetLeft,

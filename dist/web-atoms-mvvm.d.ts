@@ -701,6 +701,7 @@ declare namespace WebAtoms {
         static addClass(e: HTMLElement, c: string): void;
         static removeClass(e: HTMLElement, c: string): void;
         static atomParent(element: any): AtomControl;
+        static hasClass(e: HTMLElement, className: string): any;
         static getOffsetRect(e: HTMLElement): Rect;
     }
     type Rect = {
