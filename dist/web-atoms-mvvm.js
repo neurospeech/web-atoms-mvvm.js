@@ -2203,7 +2203,7 @@ var WebAtoms;
             var element = peek._element;
             var target = this.currentTarget;
             while (target) {
-                if (WebAtoms.Core.hasClass(element, "close-popup")) {
+                if (WebAtoms.Core.hasClass(target, "close-popup")) {
                     break;
                 }
                 if (target === element) {
@@ -2216,7 +2216,7 @@ var WebAtoms;
         };
         WindowService.prototype.close = function (c) {
             // tslint:disable-next-line:no-string-literal
-            var cp = c["closePopup"];
+            var cp = c["close"];
             if (cp) {
                 cp();
             }
@@ -2280,14 +2280,25 @@ var WebAtoms;
                 e.style.top = (r.y + r.height) + "px";
                 e.style.zIndex = 10000 + _this.lastPopupID + "";
                 document.body.appendChild(e);
-                var ct = (p instanceof HTMLElement) ? new WebAtoms.AtomControl(e) : new p(e);
+                var ct;
+                if (p instanceof HTMLElement) {
+                    e.appendChild(p);
+                    ct = new WebAtoms.AtomControl(e);
+                }
+                else {
+                    ct = new p(e);
+                }
                 ct.viewModel = vm;
                 ct.createChildren();
                 ct.init();
+                // tslint:disable-next-line:no-string-literal
+                ct["close"] = function () {
+                    WebAtoms.AtomDevice.instance.broadcast("atom-window-cancel:" + e.id, "cancelled");
+                };
                 _this.popups.push(ct);
                 var d = {};
                 // tslint:disable-next-line:no-string-literal
-                ct["closePopup"] = function () {
+                var closeFunction = function () {
                     ct.dispose();
                     e.remove();
                     d.close.dispose();
@@ -2295,13 +2306,11 @@ var WebAtoms;
                     _this.popups = _this.popups.filter(function (f) { return f !== ct; });
                 };
                 d.close = WebAtoms.AtomDevice.instance.subscribe("atom-window-close:" + e.id, function (g, i) {
-                    // tslint:disable-next-line:no-string-literal
-                    ct["closePopup"]();
+                    closeFunction();
                     resolve(i);
                 });
                 d.cancel = WebAtoms.AtomDevice.instance.subscribe("atom-window-cancel:" + e.id, function (g, i) {
-                    // tslint:disable-next-line:no-string-literal
-                    ct["closePopup"]();
+                    closeFunction();
                     reject(i);
                 });
             });

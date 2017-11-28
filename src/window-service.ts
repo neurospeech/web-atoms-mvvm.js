@@ -39,7 +39,7 @@ namespace WebAtoms {
             var target:HTMLElement = this.currentTarget;
 
             while(target) {
-                if(Core.hasClass(element,"close-popup")) {
+                if(Core.hasClass(target,"close-popup")) {
                     break;
                 }
                 if(target === element) {
@@ -53,7 +53,7 @@ namespace WebAtoms {
 
         private close(c:AtomControl): void {
             // tslint:disable-next-line:no-string-literal
-            var cp:Function = c["closePopup"];
+            var cp:Function = c["close"];
             if(cp) {
                 cp();
             }
@@ -119,18 +119,29 @@ namespace WebAtoms {
 
                 document.body.appendChild(e);
 
-                var ct:AtomControl = (p instanceof HTMLElement) ? new AtomControl(e) : new p(e);
+                var ct:AtomControl;
+                if(p instanceof HTMLElement) {
+                    e.appendChild(p);
+                    ct = new AtomControl(e);
+                } else {
+                    ct = new p(e);
+                }
 
                 ct.viewModel = vm;
                 ct.createChildren();
                 ct.init();
+
+                // tslint:disable-next-line:no-string-literal
+                ct["close"] = () => {
+                    AtomDevice.instance.broadcast(`atom-window-cancel:${e.id}`,"cancelled");
+                };
 
                 this.popups.push(ct);
 
                 var d:{ close?: AtomDisposable, cancel?: AtomDisposable } = {};
 
                 // tslint:disable-next-line:no-string-literal
-                ct["closePopup"] = () => {
+                var closeFunction:Function = () => {
                     ct.dispose();
                     e.remove();
                     d.close.dispose();
@@ -141,15 +152,13 @@ namespace WebAtoms {
 
                 d.close = AtomDevice.instance.subscribe(`atom-window-close:${e.id}`,
                 (g,i) => {
-                    // tslint:disable-next-line:no-string-literal
-                    ct["closePopup"]();
+                    closeFunction();
                     resolve(i);
                 });
 
                 d.cancel = AtomDevice.instance.subscribe(`atom-window-cancel:${e.id}`,
                     (g,i)=> {
-                    // tslint:disable-next-line:no-string-literal
-                    ct["closePopup"]();
+                    closeFunction();
                     reject(i);
                 });
             });
