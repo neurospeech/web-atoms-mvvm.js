@@ -2268,7 +2268,7 @@ var WebAtoms;
                 e.style.top = (r.y + r.height) + "px";
                 e.style.zIndex = 10000 + _this.lastPopupID + "";
                 document.body.appendChild(e);
-                var ct = new p(e);
+                var ct = (p instanceof HTMLElement) ? new WebAtoms.AtomControl(e) : new p(e);
                 ct.viewModel = vm;
                 ct.createChildren();
                 ct.init();

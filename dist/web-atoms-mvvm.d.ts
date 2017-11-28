@@ -942,6 +942,7 @@ declare namespace WebAtoms.Rest {
     }
 }
 declare namespace WebAtoms {
+    type AtomControlType = new (e: HTMLElement) => AtomControl;
     /**
      *
      *
@@ -991,7 +992,7 @@ declare namespace WebAtoms {
          * @returns {Promise<T>}
          * @memberof WindowService
          */
-        openPopup<T>(p: any, vm: AtomWindowViewModel): Promise<T>;
+        openPopup<T>(p: (HTMLElement | AtomControlType), vm: AtomWindowViewModel): Promise<T>;
         private _openPopupAsync<T>(p, vm);
         /**
          * Resolves current Window Service, you can use this method

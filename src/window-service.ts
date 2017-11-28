@@ -1,5 +1,7 @@
 namespace WebAtoms {
 
+    export declare type AtomControlType = new (e:HTMLElement) => AtomControl;
+
     /**
      *
      *
@@ -84,12 +86,12 @@ namespace WebAtoms {
          * @returns {Promise<T>}
          * @memberof WindowService
          */
-        public async openPopup<T>(p:any, vm: AtomWindowViewModel): Promise<T> {
+        public async openPopup<T>(p: (HTMLElement | AtomControlType), vm: AtomWindowViewModel): Promise<T> {
             await Atom.delay(5);
             return await this._openPopupAsync<T>(p,vm);
         }
 
-        private _openPopupAsync<T>(p: any, vm: AtomWindowViewModel ): Promise<T> {
+        private _openPopupAsync<T>(p: (HTMLElement | AtomControlType), vm: AtomWindowViewModel ): Promise<T> {
             return new Promise((resolve,reject) => {
 
                 var parent:AtomControl = Core.atomParent(this.currentTarget);
@@ -113,7 +115,9 @@ namespace WebAtoms {
                 e.style.zIndex = 10000 + this.lastPopupID + "";
 
                 document.body.appendChild(e);
-                var ct:AtomControl = new p(e);
+
+                var ct:AtomControl = (p instanceof HTMLElement) ? new AtomControl(e) : new p(e);
+
                 ct.viewModel = vm;
                 ct.createChildren();
                 ct.init();
