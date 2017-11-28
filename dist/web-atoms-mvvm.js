@@ -2203,7 +2203,7 @@ var WebAtoms;
             var element = peek._element;
             var target = this.currentTarget;
             while (target) {
-                if (WebAtoms.Core.hasClass(element, "close-popup")) {
+                if (WebAtoms.Core.hasClass(target, "close-popup")) {
                     break;
                 }
                 if (target === element) {

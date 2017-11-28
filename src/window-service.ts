@@ -39,7 +39,7 @@ namespace WebAtoms {
             var target:HTMLElement = this.currentTarget;
 
             while(target) {
-                if(Core.hasClass(element,"close-popup")) {
+                if(Core.hasClass(target,"close-popup")) {
                     break;
                 }
                 if(target === element) {
