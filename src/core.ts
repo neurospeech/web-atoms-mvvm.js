@@ -14,6 +14,13 @@ namespace WebAtoms {
 
 		bindEvent(e:HTMLElement, eventName: string, methodName: (string|Function), key?: string, method?:Function):void;
 
+		unbindEvent(e:HTMLElement, eventName: string, methodName: (string | Function), key?: string): void;
+
+		bind(e:HTMLElement,
+			key: string,
+			value: (Array<string[]> | string[]),
+			twoWays?: boolean , vf?: () => any,
+			events?: string | string[] ): void;
 
 		viewModel:any;
 	}
