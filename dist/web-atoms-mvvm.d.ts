@@ -669,6 +669,8 @@ declare namespace WebAtoms {
         dispose(): void;
         createChildren(): void;
         bindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string, method?: Function): void;
+        unbindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string): void;
+        bind(e: HTMLElement, key: string, value: (Array<string[]> | string[]), twoWays?: boolean, vf?: () => any, events?: string | string[]): void;
         viewModel: any;
     }
     class AtomItemsControl extends AtomControl {
@@ -1027,6 +1029,12 @@ declare namespace WebAtoms {
          */
         confirm(msg: string, title?: string): Promise<boolean>;
         private showAlert(msg, title, confirm);
+        /**
+         * zIndex of next window
+         * @type {number}
+         * @memberof WindowService
+         */
+        private zIndex;
         /**
          * This method will open a new window identified by name of the window or class of window.
          * Supplied view model has to be derived from AtomWindowViewModel.

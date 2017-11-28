@@ -2183,6 +2183,12 @@ var WebAtoms;
             this.popups = [];
             this.lastPopupID = 0;
             this.lastWindowID = 1;
+            /**
+             * zIndex of next window
+             * @type {number}
+             * @memberof WindowService
+             */
+            this.zIndex = 10001;
             window.addEventListener("click", function (e) {
                 _this.currentTarget = e.target;
                 _this.closePopup();
@@ -2410,6 +2416,7 @@ var WebAtoms;
                     return [2 /*return*/, new Promise(function (resolve, reject) {
                             var windowDiv = document.createElement("div");
                             windowDiv.id = "atom_window_" + _this.lastWindowID++;
+                            windowDiv.style.zIndex = "" + _this.zIndex++;
                             // tslint:disable-next-line:no-string-literal
                             var atomApplication = window["atomApplication"];
                             // tslint:disable-next-line:no-string-literal
@@ -2447,6 +2454,7 @@ var WebAtoms;
                                     console.error(e);
                                 }
                                 dispatcher.callLater(function () {
+                                    _this.zIndex = Number.parseInt(windowDiv.style.zIndex);
                                     windowCtrl.dispose();
                                     windowDiv.remove();
                                 });
@@ -2461,6 +2469,7 @@ var WebAtoms;
                                     console.error(e);
                                 }
                                 dispatcher.callLater(function () {
+                                    _this.zIndex = Number.parseInt(windowDiv.style.zIndex);
                                     windowCtrl.dispose();
                                     windowDiv.remove();
                                 });
