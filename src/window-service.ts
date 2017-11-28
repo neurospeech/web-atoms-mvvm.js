@@ -119,7 +119,13 @@ namespace WebAtoms {
 
                 document.body.appendChild(e);
 
-                var ct:AtomControl = (p instanceof HTMLElement) ? new AtomControl(e) : new p(e);
+                var ct:AtomControl;
+                if(p instanceof HTMLElement) {
+                    e.appendChild(p);
+                    ct = new AtomControl(e);
+                } else {
+                    ct = new p(e);
+                }
 
                 ct.viewModel = vm;
                 ct.createChildren();
