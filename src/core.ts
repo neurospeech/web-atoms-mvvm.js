@@ -14,8 +14,42 @@ namespace WebAtoms {
 
 		bindEvent(e:HTMLElement, eventName: string, methodName: (string|Function), key?: string, method?:Function):void;
 
+		unbindEvent(e:HTMLElement, eventName: string, methodName: (string | Function), key?: string): void;
+
+		bind(e:HTMLElement,
+			key: string,
+			value: (Array<string[]> | string[]),
+			twoWays?: boolean , vf?: () => any,
+			events?: string | string[] ): void;
 
 		viewModel:any;
+	}
+
+	export declare class AtomItemsControl extends AtomControl {
+		items: any;
+		selectedItem: any;
+		readonly selectedItems: any[];
+
+		itemTemplate: any;
+		itemsPresenter: any;
+	}
+
+	export declare class AtomListBox extends AtomItemsControl {
+
+	}
+
+	export declare class AtomPromise {
+		static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
+
+		abort(): void;
+		then(f:Function): AtomPromise;
+		failed(f:Function): AtomPromise;
+		showError(v:boolean): void;
+		showProgress(v:boolean): void;
+		invoke(s:string): void;
+		value(v?:any):any;
+
+		error: { msg?:string };
 	}
 
 	/**
@@ -52,6 +86,10 @@ namespace WebAtoms {
 			}
 			return Core.atomParent(element._logicalParent || element.parentNode);
 		}
+
+		static hasClass(e:HTMLElement, className: string): any {
+			return e.classList.contains(className);
+        }
 
 		static getOffsetRect(e:HTMLElement): Rect {
 			var r:Rect = {

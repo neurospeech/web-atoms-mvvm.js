@@ -344,9 +344,6 @@ namespace WebAtoms.Rest {
         public inputProcessed: boolean;
     }
 
-    // tslint:disable-next-line:no-string-literal
-    var AtomPromise:any = window["AtomPromise"];
-
     /**
      *
      *
@@ -476,7 +473,7 @@ namespace WebAtoms.Rest {
             }
             options.url = url;
 
-            var pr:any = AtomPromise.json(url,null,options);
+            var pr:AtomPromise = AtomPromise.json(url,null,options);
 
 
             if(options.cancel) {

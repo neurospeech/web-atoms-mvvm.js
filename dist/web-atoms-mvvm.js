@@ -1704,6 +1704,9 @@ var WebAtoms;
             }
             return Core.atomParent(element._logicalParent || element.parentNode);
         };
+        Core.hasClass = function (e, className) {
+            return e.classList.contains(className);
+        };
         Core.getOffsetRect = function (e) {
             var r = {
                 x: e.offsetLeft,
@@ -2014,8 +2017,6 @@ var WebAtoms;
             return AjaxOptions;
         }());
         Rest.AjaxOptions = AjaxOptions;
-        // tslint:disable-next-line:no-string-literal
-        var AtomPromise = window["AtomPromise"];
         /**
          *
          *
@@ -2127,7 +2128,7 @@ var WebAtoms;
                             }
                         }
                         options.url = url;
-                        pr = AtomPromise.json(url, null, options);
+                        pr = WebAtoms.AtomPromise.json(url, null, options);
                         if (options.cancel) {
                             options.cancel.registerForCancel(function () {
                                 pr.abort();
@@ -2182,6 +2183,12 @@ var WebAtoms;
             this.popups = [];
             this.lastPopupID = 0;
             this.lastWindowID = 1;
+            /**
+             * zIndex of next window
+             * @type {number}
+             * @memberof WindowService
+             */
+            this.zIndex = 10001;
             window.addEventListener("click", function (e) {
                 _this.currentTarget = e.target;
                 _this.closePopup();
@@ -2196,6 +2203,9 @@ var WebAtoms;
             var element = peek._element;
             var target = this.currentTarget;
             while (target) {
+                if (WebAtoms.Core.hasClass(element, "close-popup")) {
+                    break;
+                }
                 if (target === element) {
                     // do not close this popup....
                     return;
@@ -2270,7 +2280,7 @@ var WebAtoms;
                 e.style.top = (r.y + r.height) + "px";
                 e.style.zIndex = 10000 + _this.lastPopupID + "";
                 document.body.appendChild(e);
-                var ct = new p(e);
+                var ct = (p instanceof HTMLElement) ? new WebAtoms.AtomControl(e) : new p(e);
                 ct.viewModel = vm;
                 ct.createChildren();
                 ct.init();
@@ -2337,6 +2347,7 @@ var WebAtoms;
             return this.showAlert(msg, title || "Confirm", true);
         };
         WindowService.prototype.showAlert = function (msg, title, confirm) {
+            var _this = this;
             return new Promise(function (resolve, reject) {
                 // tslint:disable-next-line:no-string-literal
                 var AtomUI = window["AtomUI"];
@@ -2344,6 +2355,7 @@ var WebAtoms;
                 var AtomWindow = window["WebAtoms"]["AtomWindow"];
                 var d = { Message: msg, ConfirmValue: false, Confirm: confirm };
                 var e = document.createElement("DIV");
+                e.style.zIndex = "" + _this.zIndex++;
                 document.body.appendChild(e);
                 var w = AtomUI.createControl(e, AtomWindow, d);
                 w.set_windowWidth(380);
@@ -2351,6 +2363,7 @@ var WebAtoms;
                 w.set_windowTemplate(w.getTemplate("alertTemplate"));
                 w.set_title(title);
                 w.set_next(function () {
+                    this.zIndex = Number.parseInt(e.style.zIndex);
                     w.dispose();
                     // $(e).remove();
                     e.remove();
@@ -2362,6 +2375,7 @@ var WebAtoms;
                     }
                 });
                 w.set_cancelNext(function () {
+                    _this.zIndex = Number.parseInt(e.style.zIndex);
                     w.dispose();
                     // $(e).remove();
                     e.remove();
@@ -2406,6 +2420,7 @@ var WebAtoms;
                     return [2 /*return*/, new Promise(function (resolve, reject) {
                             var windowDiv = document.createElement("div");
                             windowDiv.id = "atom_window_" + _this.lastWindowID++;
+                            windowDiv.style.zIndex = "" + _this.zIndex++;
                             // tslint:disable-next-line:no-string-literal
                             var atomApplication = window["atomApplication"];
                             // tslint:disable-next-line:no-string-literal
@@ -2443,6 +2458,7 @@ var WebAtoms;
                                     console.error(e);
                                 }
                                 dispatcher.callLater(function () {
+                                    _this.zIndex = Number.parseInt(windowDiv.style.zIndex);
                                     windowCtrl.dispose();
                                     windowDiv.remove();
                                 });
@@ -2457,6 +2473,7 @@ var WebAtoms;
                                     console.error(e);
                                 }
                                 dispatcher.callLater(function () {
+                                    _this.zIndex = Number.parseInt(windowDiv.style.zIndex);
                                     windowCtrl.dispose();
                                     windowDiv.remove();
                                 });

@@ -669,7 +669,31 @@ declare namespace WebAtoms {
         dispose(): void;
         createChildren(): void;
         bindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string, method?: Function): void;
+        unbindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string): void;
+        bind(e: HTMLElement, key: string, value: (Array<string[]> | string[]), twoWays?: boolean, vf?: () => any, events?: string | string[]): void;
         viewModel: any;
+    }
+    class AtomItemsControl extends AtomControl {
+        items: any;
+        selectedItem: any;
+        readonly selectedItems: any[];
+        itemTemplate: any;
+        itemsPresenter: any;
+    }
+    class AtomListBox extends AtomItemsControl {
+    }
+    class AtomPromise {
+        static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
+        abort(): void;
+        then(f: Function): AtomPromise;
+        failed(f: Function): AtomPromise;
+        showError(v: boolean): void;
+        showProgress(v: boolean): void;
+        invoke(s: string): void;
+        value(v?: any): any;
+        error: {
+            msg?: string;
+        };
     }
     /**
      * Core class as an replacement for jQuery
@@ -679,6 +703,7 @@ declare namespace WebAtoms {
         static addClass(e: HTMLElement, c: string): void;
         static removeClass(e: HTMLElement, c: string): void;
         static atomParent(element: any): AtomControl;
+        static hasClass(e: HTMLElement, className: string): any;
         static getOffsetRect(e: HTMLElement): Rect;
     }
     type Rect = {
@@ -920,6 +945,7 @@ declare namespace WebAtoms.Rest {
     }
 }
 declare namespace WebAtoms {
+    type AtomControlType = new (e: HTMLElement) => AtomControl;
     /**
      *
      *
@@ -969,7 +995,7 @@ declare namespace WebAtoms {
          * @returns {Promise<T>}
          * @memberof WindowService
          */
-        openPopup<T>(p: any, vm: AtomWindowViewModel): Promise<T>;
+        openPopup<T>(p: (HTMLElement | AtomControlType), vm: AtomWindowViewModel): Promise<T>;
         private _openPopupAsync<T>(p, vm);
         /**
          * Resolves current Window Service, you can use this method
@@ -1003,6 +1029,12 @@ declare namespace WebAtoms {
          */
         confirm(msg: string, title?: string): Promise<boolean>;
         private showAlert(msg, title, confirm);
+        /**
+         * zIndex of next window
+         * @type {number}
+         * @memberof WindowService
+         */
+        private zIndex;
         /**
          * This method will open a new window identified by name of the window or class of window.
          * Supplied view model has to be derived from AtomWindowViewModel.

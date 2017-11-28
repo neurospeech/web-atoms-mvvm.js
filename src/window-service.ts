@@ -1,5 +1,7 @@
 namespace WebAtoms {
 
+    export declare type AtomControlType = new (e:HTMLElement) => AtomControl;
+
     /**
      *
      *
@@ -37,6 +39,9 @@ namespace WebAtoms {
             var target:HTMLElement = this.currentTarget;
 
             while(target) {
+                if(Core.hasClass(element,"close-popup")) {
+                    break;
+                }
                 if(target === element) {
                     // do not close this popup....
                     return;
@@ -84,12 +89,12 @@ namespace WebAtoms {
          * @returns {Promise<T>}
          * @memberof WindowService
          */
-        public async openPopup<T>(p:any, vm: AtomWindowViewModel): Promise<T> {
+        public async openPopup<T>(p: (HTMLElement | AtomControlType), vm: AtomWindowViewModel): Promise<T> {
             await Atom.delay(5);
             return await this._openPopupAsync<T>(p,vm);
         }
 
-        private _openPopupAsync<T>(p: any, vm: AtomWindowViewModel ): Promise<T> {
+        private _openPopupAsync<T>(p: (HTMLElement | AtomControlType), vm: AtomWindowViewModel ): Promise<T> {
             return new Promise((resolve,reject) => {
 
                 var parent:AtomControl = Core.atomParent(this.currentTarget);
@@ -113,7 +118,9 @@ namespace WebAtoms {
                 e.style.zIndex = 10000 + this.lastPopupID + "";
 
                 document.body.appendChild(e);
-                var ct:AtomControl = new p(e);
+
+                var ct:AtomControl = (p instanceof HTMLElement) ? new AtomControl(e) : new p(e);
+
                 ct.viewModel = vm;
                 ct.createChildren();
                 ct.init();
@@ -201,6 +208,9 @@ namespace WebAtoms {
                 var d:any = { Message: msg, ConfirmValue: false, Confirm: confirm };
 
                     var e:any = document.createElement("DIV");
+
+                    e.style.zIndex = `${this.zIndex++}`;
+
                     document.body.appendChild(e);
                     var w:any = AtomUI.createControl(e, AtomWindow, d);
 
@@ -210,7 +220,7 @@ namespace WebAtoms {
                     w.set_title(title);
 
                     w.set_next(function ():void {
-
+                        this.zIndex = Number.parseInt(e.style.zIndex);
                         w.dispose();
                         // $(e).remove();
                         e.remove();
@@ -223,6 +233,7 @@ namespace WebAtoms {
                     });
 
                     w.set_cancelNext(()=> {
+                        this.zIndex = Number.parseInt(e.style.zIndex);
                         w.dispose();
                         // $(e).remove();
                         e.remove();
@@ -235,6 +246,12 @@ namespace WebAtoms {
             });
         }
 
+        /**
+         * zIndex of next window
+         * @type {number}
+         * @memberof WindowService
+         */
+        private zIndex: number = 10001;
 
         /**
          * This method will open a new window identified by name of the window or class of window.
@@ -269,10 +286,11 @@ namespace WebAtoms {
 
             return new  Promise<T>((resolve,reject)=> {
 
-                var windowDiv:any = document.createElement("div");
+                var windowDiv:HTMLDivElement = document.createElement("div");
 
                 windowDiv.id = `atom_window_${this.lastWindowID++}`;
 
+                windowDiv.style.zIndex = `${this.zIndex++}`;
 
                 // tslint:disable-next-line:no-string-literal
                 var atomApplication:any = window["atomApplication"];
@@ -322,6 +340,7 @@ namespace WebAtoms {
                         console.error(e);
                     }
                     dispatcher.callLater(()=> {
+                        this.zIndex = Number.parseInt(windowDiv.style.zIndex);
                         windowCtrl.dispose();
                         windowDiv.remove();
                     });
@@ -336,8 +355,10 @@ namespace WebAtoms {
                         console.error(e);
                     }
                     dispatcher.callLater(()=> {
+                        this.zIndex = Number.parseInt(windowDiv.style.zIndex);
                         windowCtrl.dispose();
                         windowDiv.remove();
+
                     });
                 });
 
