@@ -208,6 +208,9 @@ namespace WebAtoms {
                 var d:any = { Message: msg, ConfirmValue: false, Confirm: confirm };
 
                     var e:any = document.createElement("DIV");
+
+                    e.style.zIndex = `${this.zIndex++}`;
+
                     document.body.appendChild(e);
                     var w:any = AtomUI.createControl(e, AtomWindow, d);
 
@@ -217,7 +220,7 @@ namespace WebAtoms {
                     w.set_title(title);
 
                     w.set_next(function ():void {
-
+                        this.zIndex = Number.parseInt(e.style.zIndex);
                         w.dispose();
                         // $(e).remove();
                         e.remove();
@@ -230,6 +233,7 @@ namespace WebAtoms {
                     });
 
                     w.set_cancelNext(()=> {
+                        this.zIndex = Number.parseInt(e.style.zIndex);
                         w.dispose();
                         // $(e).remove();
                         e.remove();
@@ -248,7 +252,6 @@ namespace WebAtoms {
          * @memberof WindowService
          */
         private zIndex: number = 10001;
-
 
         /**
          * This method will open a new window identified by name of the window or class of window.

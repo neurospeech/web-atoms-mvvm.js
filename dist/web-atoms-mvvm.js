@@ -2347,6 +2347,7 @@ var WebAtoms;
             return this.showAlert(msg, title || "Confirm", true);
         };
         WindowService.prototype.showAlert = function (msg, title, confirm) {
+            var _this = this;
             return new Promise(function (resolve, reject) {
                 // tslint:disable-next-line:no-string-literal
                 var AtomUI = window["AtomUI"];
@@ -2354,6 +2355,7 @@ var WebAtoms;
                 var AtomWindow = window["WebAtoms"]["AtomWindow"];
                 var d = { Message: msg, ConfirmValue: false, Confirm: confirm };
                 var e = document.createElement("DIV");
+                e.style.zIndex = "" + _this.zIndex++;
                 document.body.appendChild(e);
                 var w = AtomUI.createControl(e, AtomWindow, d);
                 w.set_windowWidth(380);
@@ -2361,6 +2363,7 @@ var WebAtoms;
                 w.set_windowTemplate(w.getTemplate("alertTemplate"));
                 w.set_title(title);
                 w.set_next(function () {
+                    this.zIndex = Number.parseInt(e.style.zIndex);
                     w.dispose();
                     // $(e).remove();
                     e.remove();
@@ -2372,6 +2375,7 @@ var WebAtoms;
                     }
                 });
                 w.set_cancelNext(function () {
+                    _this.zIndex = Number.parseInt(e.style.zIndex);
                     w.dispose();
                     // $(e).remove();
                     e.remove();
