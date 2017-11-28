@@ -2216,7 +2216,7 @@ var WebAtoms;
         };
         WindowService.prototype.close = function (c) {
             // tslint:disable-next-line:no-string-literal
-            var cp = c["closePopup"];
+            var cp = c["close"];
             if (cp) {
                 cp();
             }
@@ -2291,10 +2291,14 @@ var WebAtoms;
                 ct.viewModel = vm;
                 ct.createChildren();
                 ct.init();
+                // tslint:disable-next-line:no-string-literal
+                ct["close"] = function () {
+                    WebAtoms.AtomDevice.instance.broadcast("atom-window-cancel:" + e.id, "cancelled");
+                };
                 _this.popups.push(ct);
                 var d = {};
                 // tslint:disable-next-line:no-string-literal
-                ct["closePopup"] = function () {
+                var closeFunction = function () {
                     ct.dispose();
                     e.remove();
                     d.close.dispose();
@@ -2302,13 +2306,11 @@ var WebAtoms;
                     _this.popups = _this.popups.filter(function (f) { return f !== ct; });
                 };
                 d.close = WebAtoms.AtomDevice.instance.subscribe("atom-window-close:" + e.id, function (g, i) {
-                    // tslint:disable-next-line:no-string-literal
-                    ct["closePopup"]();
+                    closeFunction();
                     resolve(i);
                 });
                 d.cancel = WebAtoms.AtomDevice.instance.subscribe("atom-window-cancel:" + e.id, function (g, i) {
-                    // tslint:disable-next-line:no-string-literal
-                    ct["closePopup"]();
+                    closeFunction();
                     reject(i);
                 });
             });
