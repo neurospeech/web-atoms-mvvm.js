@@ -3,6 +3,9 @@ var Atom:any = window["Atom"];
 // tslint:disable-next-line:no-string-literal
 var AtomBinder:any = window["AtomBinder"];
 
+if(location) {
+    Atom.designMode = /file/i.test(location.protocol);
+}
 
 /**
  * This decorator will mark given property as bindable, it will define

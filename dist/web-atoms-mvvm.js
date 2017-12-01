@@ -156,6 +156,9 @@ var __extends = (this && this.__extends) || (function () {
 var Atom = window["Atom"];
 // tslint:disable-next-line:no-string-literal
 var AtomBinder = window["AtomBinder"];
+if (location) {
+    Atom.designMode = /file/i.test(location.protocol);
+}
 /**
  * This decorator will mark given property as bindable, it will define
  * getter and setter, and in the setter, it will refresh the property.
