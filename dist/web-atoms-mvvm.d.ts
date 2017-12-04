@@ -661,6 +661,19 @@ declare namespace WebAtoms {
         readonly appScope: any;
     }
 }
+declare class AtomPromise {
+    static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;
+    abort(): void;
+    then(f: Function): AtomPromise;
+    failed(f: Function): AtomPromise;
+    showError(v: boolean): void;
+    showProgress(v: boolean): void;
+    invoke(s: string): void;
+    value(v?: any): any;
+    error: {
+        msg?: string;
+    };
+}
 declare namespace WebAtoms {
     class AtomControl {
         _element: HTMLElement;
@@ -681,19 +694,6 @@ declare namespace WebAtoms {
         itemsPresenter: any;
     }
     class AtomListBox extends AtomItemsControl {
-    }
-    class AtomPromise {
-        static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
-        abort(): void;
-        then(f: Function): AtomPromise;
-        failed(f: Function): AtomPromise;
-        showError(v: boolean): void;
-        showProgress(v: boolean): void;
-        invoke(s: string): void;
-        value(v?: any): any;
-        error: {
-            msg?: string;
-        };
     }
     /**
      * Core class as an replacement for jQuery

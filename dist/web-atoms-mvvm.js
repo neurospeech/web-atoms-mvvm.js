@@ -2131,7 +2131,7 @@ var WebAtoms;
                             }
                         }
                         options.url = url;
-                        pr = WebAtoms.AtomPromise.json(url, null, options);
+                        pr = AtomPromise.json(url, null, options);
                         if (options.cancel) {
                             options.cancel.registerForCancel(function () {
                                 pr.abort();
