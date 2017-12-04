@@ -153,8 +153,6 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 // tslint:disable-next-line:no-string-literal
-var Atom = window["Atom"];
-// tslint:disable-next-line:no-string-literal
 var AtomBinder = window["AtomBinder"];
 if (location) {
     Atom.designMode = /file/i.test(location.protocol);
@@ -398,7 +396,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var WebAtoms;
 (function (WebAtoms) {
     // tslint:disable-next-line
-    var Atom = window["Atom"];
+    // var Atom = window["Atom"];
     // tslint:disable-next-line
     var AtomBinder = window["AtomBinder"];
     // tslint:disable-next-line
@@ -2135,7 +2133,7 @@ var WebAtoms;
                             }
                         }
                         options.url = url;
-                        pr = WebAtoms.AtomPromise.json(url, null, options);
+                        pr = AtomPromise.json(url, null, options);
                         if (options.cancel) {
                             options.cancel.registerForCancel(function () {
                                 pr.abort();

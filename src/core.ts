@@ -1,3 +1,18 @@
+declare class AtomPromise {
+	static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;
+
+	abort(): void;
+	then(f:Function): AtomPromise;
+	failed(f:Function): AtomPromise;
+	showError(v:boolean): void;
+	showProgress(v:boolean): void;
+	invoke(s:string): void;
+	value(v?:any):any;
+
+	error: { msg?:string };
+}
+
+
 namespace WebAtoms {
 
 	export declare class AtomControl {
@@ -36,20 +51,6 @@ namespace WebAtoms {
 
 	export declare class AtomListBox extends AtomItemsControl {
 
-	}
-
-	export declare class AtomPromise {
-		static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
-
-		abort(): void;
-		then(f:Function): AtomPromise;
-		failed(f:Function): AtomPromise;
-		showError(v:boolean): void;
-		showProgress(v:boolean): void;
-		invoke(s:string): void;
-		value(v?:any):any;
-
-		error: { msg?:string };
 	}
 
 	/**

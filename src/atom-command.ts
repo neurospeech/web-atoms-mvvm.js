@@ -1,5 +1,124 @@
-// tslint:disable-next-line:no-string-literal
-var Atom:any = window["Atom"];
+
+/**
+ * Atom helper class
+ * @class Atom
+ */
+declare class Atom {
+
+    /**
+     * Set this true to return mock in RestServices
+     * @static
+     * @type {boolean}
+     * @memberof Atom
+     */
+    static designMode: boolean;
+
+    /**
+     * Set this true to return mock in test mode
+     * @static
+     * @type {boolean}
+     * @memberof Atom
+     */
+    static testMode: boolean;
+
+    /**
+     * Refreshes bindings for specified property of the target
+     * @static
+     * @param {*} target
+     * @param {string} property
+     * @memberof Atom
+     */
+    static refresh(target:any, property: string):void;
+
+    /**
+     * Display given error message to user, this must be set by
+     * the app developer
+     * @static
+     * @param {string} msg
+     * @memberof Atom
+     */
+    static showError(msg: string): void;
+
+    /**
+     * [Obsolete] do not use, this will retrieve value at given path for target
+     * @static
+     * @param {*} target
+     * @param {string} path
+     * @returns {*}
+     * @memberof Atom
+     */
+    static get(target: any, path: string): any;
+
+    /**
+     * [Obsolete] do not use, this will set value at given path for target
+     * @static
+     * @param {*} target
+     * @param {string} path
+     * @param {*} value
+     * @memberof Atom
+     */
+    static set(target: any, path: string, value: any): void;
+
+    /**
+     * Schedules given call in next available callLater slot
+     * @static
+     * @param {()=>void} f
+     * @memberof Atom
+     */
+    static post (f:()=>void): void;
+
+    /**
+     * Schedules given call in next available callLater slot and also returns
+     * promise that can be awaited, calling `Atom.postAsync` inside `Atom.postAsync`
+     * will create deadlock
+     * @static
+     * @param {()=>Promise<any>} f
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static postAsync(f:()=>Promise<any>): Promise<any>;
+
+    /**
+     * Invokes given function and disposes given object after execution
+     * @static
+     * @param {WebAtoms.AtomDisposable} d
+     * @param {()=>void} f
+     * @memberof Atom
+     */
+    static using(d:WebAtoms.AtomDisposable, f:()=>void): void;
+
+    /**
+     * Invokes given function and disposes given object after execution asynchronously
+     * @static
+     * @param {WebAtoms.AtomDisposable} d
+     * @param {()=>Promise<any>} f
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static usingAsync(d:WebAtoms.AtomDisposable, f:()=>Promise<any>): Promise<any>;
+
+    /**
+     * Sets up watch and returns disposable to destroy watch
+     * @static
+     * @param {*} item
+     * @param {string} property
+     * @param {()=>void} f
+     * @returns {WebAtoms.AtomDisposable}
+     * @memberof Atom
+     */
+    static watch(item:any, property:string, f:()=>void):WebAtoms.AtomDisposable;
+
+    /**
+     * await for delay for given number of milliseconds
+     * @static
+     * @param {number} n
+     * @param {WebAtoms.CancelToken} [ct]
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static delay(n:number, ct?:WebAtoms.CancelToken): Promise<any>;
+}
+
 // tslint:disable-next-line:no-string-literal
 var AtomBinder:any = window["AtomBinder"];
 
@@ -85,13 +204,13 @@ namespace WebAtoms {
         listeners:Array<()=>void> = [];
 
         private _cancelled:boolean;
-        get cancelled():boolean{
+        get cancelled():boolean {
             return this._cancelled;
         }
 
         cancel():void {
             this._cancelled = true;
-            for(var fx of this.listeners){
+            for(var fx of this.listeners) {
                 fx();
             }
         }
@@ -113,7 +232,7 @@ namespace WebAtoms {
     }
 
     export class AtomModel {
-        public refresh(name: String): void {
+        public refresh(name: string): void {
             Atom.refresh(this, name);
         }
     }
@@ -163,10 +282,10 @@ namespace WebAtoms {
          * @type {boolean}
          * @memberof AtomCommand
          */
-        get busy(): boolean{
+        get busy(): boolean {
             return this._busy;
         }
-        set busy(v:boolean){
+        set busy(v:boolean) {
             this._busy = v;
             this.refresh("busy");
         }
