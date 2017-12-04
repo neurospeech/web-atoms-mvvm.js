@@ -75,7 +75,7 @@ function parameterBuilder(paramName:string){
 }
 
 
-declare var Atom:any;
+// declare var Atom:any;
 
 type RestAttr =
     (target:WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number)

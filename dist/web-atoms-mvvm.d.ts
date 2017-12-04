@@ -68,7 +68,106 @@ declare namespace WebAtoms {
 }
 declare var DIGlobal: any;
 declare var DIAlwaysNew: any;
-declare var Atom: any;
+/**
+ * Atom helper class
+ * @class Atom
+ */
+declare class Atom {
+    /**
+     * Set this true to return mock in RestServices
+     * @static
+     * @type {boolean}
+     * @memberof Atom
+     */
+    static designMode: boolean;
+    /**
+     * Refreshes bindings for specified property of the target
+     * @static
+     * @param {*} target
+     * @param {string} property
+     * @memberof Atom
+     */
+    static refresh(target: any, property: string): void;
+    /**
+     * Display given error message to user, this must be set by
+     * the app developer
+     * @static
+     * @param {string} msg
+     * @memberof Atom
+     */
+    static showError(msg: string): void;
+    /**
+     * [Obsolete] do not use, this will retrieve value at given path for target
+     * @static
+     * @param {*} target
+     * @param {string} path
+     * @returns {*}
+     * @memberof Atom
+     */
+    static get(target: any, path: string): any;
+    /**
+     * [Obsolete] do not use, this will set value at given path for target
+     * @static
+     * @param {*} target
+     * @param {string} path
+     * @param {*} value
+     * @memberof Atom
+     */
+    static set(target: any, path: string, value: any): void;
+    /**
+     * Schedules given call in next available callLater slot
+     * @static
+     * @param {()=>void} f
+     * @memberof Atom
+     */
+    static post(f: () => void): void;
+    /**
+     * Schedules given call in next available callLater slot and also returns
+     * promise that can be awaited, calling `Atom.postAsync` inside `Atom.postAsync`
+     * will create deadlock
+     * @static
+     * @param {()=>Promise<any>} f
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static postAsync(f: () => Promise<any>): Promise<any>;
+    /**
+     * Invokes given function and disposes given object after execution
+     * @static
+     * @param {WebAtoms.AtomDisposable} d
+     * @param {()=>void} f
+     * @memberof Atom
+     */
+    static using(d: WebAtoms.AtomDisposable, f: () => void): void;
+    /**
+     * Invokes given function and disposes given object after execution asynchronously
+     * @static
+     * @param {WebAtoms.AtomDisposable} d
+     * @param {()=>Promise<any>} f
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static usingAsync(d: WebAtoms.AtomDisposable, f: () => Promise<any>): Promise<any>;
+    /**
+     * Sets up watch and returns disposable to destroy watch
+     * @static
+     * @param {*} item
+     * @param {string} property
+     * @param {()=>void} f
+     * @returns {WebAtoms.AtomDisposable}
+     * @memberof Atom
+     */
+    static watch(item: any, property: string, f: () => void): WebAtoms.AtomDisposable;
+    /**
+     * await for delay for given number of milliseconds
+     * @static
+     * @param {number} n
+     * @param {WebAtoms.CancelToken} [ct]
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static delay(n: number, ct?: WebAtoms.CancelToken): Promise<any>;
+}
 declare var AtomBinder: any;
 /**
  * This decorator will mark given property as bindable, it will define
@@ -101,7 +200,7 @@ declare namespace WebAtoms {
         registerForCancel(f: () => void): void;
     }
     class AtomModel {
-        refresh(name: String): void;
+        refresh(name: string): void;
     }
     /**
      * Though you can directly call methods of view model in binding expression,
@@ -718,7 +817,6 @@ declare function Return(type: {
     new ();
 }): (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function parameterBuilder(paramName: string): (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
-declare var Atom: any;
 declare type RestAttr = (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number) => void;
 declare type RestParamAttr = (key: string) => RestAttr;
 declare type RestMethodAttr = (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, descriptor: any) => void;
