@@ -174,6 +174,93 @@ declare class Atom {
      * @memberof Atom
      */
     static delay(n: number, ct?: WebAtoms.CancelToken): Promise<any>;
+    /**
+     * Version
+     * @static
+     * @type {{
+     *         text: string,
+     *         major: number,
+     *         minor: number,
+     *         build: number
+     *     }}
+     * @memberof Atom
+     */
+    static version: {
+        text: string;
+        major: number;
+        minor: number;
+        build: number;
+    };
+    /**
+     * Current time in milliseconds
+     * @static
+     * @returns {number}
+     * @memberof Atom
+     */
+    static time(): number;
+    /**
+     * Combine and prepare given url from fragments
+     * @static
+     * @param {string} url
+     * @param {*} queryString
+     * @param {*} hash
+     * @returns {string}
+     * @memberof Atom
+     */
+    static url(url: string, queryString: any, hash: any): string;
+    /**
+     * Creates secure version of the given url with fragments
+     * @static
+     * @param {string} url
+     * @param {...string[]} padding
+     * @returns {string}
+     * @memberof Atom
+     */
+    static secureUrl(url: string, ...padding: string[]): string;
+}
+declare class AtomDate {
+    static zoneOffsetMinutes: number;
+    static zoneOffset: number;
+    static toLocalTime(d: Date): string;
+    static setTime(d: Date, time: string): Date;
+    static toMMDDYY(d: Date): string;
+    static toShortDateString(d: Date | string): string;
+    static toDateTimeString(d: Date | string): string;
+    static toTimeString(d: Date | string): string;
+    static smartDate(d: Date | string): string;
+    static smartDateUTC(d: Date | string): string;
+    static jsonDate(d: Date | string): {
+        Year: number;
+        Month: number;
+        Date: number;
+        Hours: number;
+        Minutes: number;
+        Seconds: number;
+        Offset: number;
+    };
+    static toUTC(d: Date | string): Date;
+    static parse(d: any): Date;
+    static monthList: Array<{
+        label: string;
+        value: number;
+    }>;
+}
+declare class AtomPhone {
+    static toSmallPhoneString(v: string): string;
+    static toPhoneString(v: string): string;
+}
+declare class AtomUri {
+    constructor(v: string);
+    host: string;
+    protocol: string;
+    port: number;
+    path: string;
+    query: {
+        [s: string]: string;
+    };
+    hash: {
+        [s: string]: string;
+    };
 }
 declare var AtomBinder: any;
 /**
