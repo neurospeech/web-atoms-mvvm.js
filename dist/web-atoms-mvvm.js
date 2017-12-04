@@ -208,6 +208,10 @@ function bindableProperty(target, key) {
             enumerable: true,
             configurable: true
         });
+        if (target._element) {
+            target["get_" + key] = getter;
+            target["set_" + key] = setter;
+        }
     }
 }
 var WebAtoms;

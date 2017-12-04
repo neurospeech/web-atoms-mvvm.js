@@ -64,6 +64,11 @@ function bindableProperty(target: any, key: string):void {
                 enumerable: true,
                 configurable: true
             });
+
+            if(target._element) {
+                target["get_" + key] = getter;
+                target["set_" + key] = setter;
+            }
         }
     }
 
