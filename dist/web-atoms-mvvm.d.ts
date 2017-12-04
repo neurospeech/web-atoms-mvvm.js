@@ -81,6 +81,13 @@ declare class Atom {
      */
     static designMode: boolean;
     /**
+     * Set this true to return mock in test mode
+     * @static
+     * @type {boolean}
+     * @memberof Atom
+     */
+    static testMode: boolean;
+    /**
      * Refreshes bindings for specified property of the target
      * @static
      * @param {*} target
