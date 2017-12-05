@@ -285,7 +285,8 @@ function bindableProperty(target: any, key: string):void {
                 configurable: true
             });
 
-            if(target.constructor.prototype.atomParent) {
+            // tslint:disable-next-line:no-string-literal
+            if(target.constructor.prototype["get_atomParent"]) {
                 target["get_" + key] = getter;
                 target["set_" + key] = setter;
             }
