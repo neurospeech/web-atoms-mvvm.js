@@ -206,7 +206,7 @@ function bindableProperty(target, key) {
             enumerable: true,
             configurable: true
         });
-        if (target._element) {
+        if (target.constructor.prototype.atomParent) {
             target["get_" + key] = getter;
             target["set_" + key] = setter;
         }
