@@ -313,6 +313,8 @@ if(!window["__atomSetLocalValue"]) {
                     v.catch( er => {
                         e._promisesQueue[k] = null;
                     });
+
+                    return;
                 }
             }
             bt.setLocalValue.call(this,k,v,e,r);

@@ -4,8 +4,6 @@ namespace WebAtoms {
     // var Atom = window["Atom"];
     // tslint:disable-next-line
     var AtomBinder = window["AtomBinder"];
-    // tslint:disable-next-line
-    var AtomPromise = window["AtomPromise"];
 
     /**
      * DisposableAction holds an action that

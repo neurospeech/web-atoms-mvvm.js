@@ -400,8 +400,6 @@ var WebAtoms;
     // var Atom = window["Atom"];
     // tslint:disable-next-line
     var AtomBinder = window["AtomBinder"];
-    // tslint:disable-next-line
-    var AtomPromise = window["AtomPromise"];
     /**
      * DisposableAction holds an action that
      * will be executed when dispose will be called.
@@ -633,8 +631,6 @@ var WebAtoms;
 (function (WebAtoms) {
     // tslint:disable-next-line
     var AtomBinder = window["AtomBinder"];
-    // tslint:disable-next-line
-    var AtomPromise = window["AtomPromise"];
     /**
      *
      *
@@ -1999,6 +1995,7 @@ if (!window["__atomSetLocalValue"]) {
                     v.catch(function (er) {
                         e._promisesQueue[k] = null;
                     });
+                    return;
                 }
             }
             bt.setLocalValue.call(this, k, v, e, r);
