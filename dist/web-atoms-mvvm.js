@@ -2100,6 +2100,7 @@ var WebAtoms;
                     return __generator(this, function (_a) {
                         options = new AjaxOptions();
                         options.method = method;
+                        options.type = method;
                         if (bag) {
                             for (i = 0; i < bag.length; i++) {
                                 p = bag[i];

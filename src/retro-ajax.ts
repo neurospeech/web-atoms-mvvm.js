@@ -445,6 +445,7 @@ namespace WebAtoms.Rest {
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
+            options.type = method;
             if(bag) {
                 for(var i:number=0;i<bag.length;i++) {
                     var p:ServiceParameter = bag[i];
