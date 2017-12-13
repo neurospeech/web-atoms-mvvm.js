@@ -1092,6 +1092,8 @@ declare namespace WebAtoms.Rest {
         constructor(type: string, key: string);
     }
     class AjaxOptions {
+        dataType: string;
+        contentType: string;
         method: string;
         url: string;
         data: any;

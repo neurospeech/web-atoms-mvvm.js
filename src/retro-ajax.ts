@@ -337,6 +337,8 @@ namespace WebAtoms.Rest {
     }
 
     export class AjaxOptions {
+        public dataType: string;
+        public contentType: string;
         public method:string;
         public url:string;
         public data: any;
@@ -414,8 +416,10 @@ namespace WebAtoms.Rest {
         public methodReturns: any = {};
 
         public encodeData(o:AjaxOptions):AjaxOptions {
-            o.type = "JSON";
+            o.contentType = "application/json";
+            o.data = JSON.stringify(o.data);
             o.inputProcessed = true;
+            o.dataType = "json";
             return o;
         }
 
