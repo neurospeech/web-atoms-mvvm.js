@@ -391,6 +391,8 @@ namespace WebAtoms.Rest {
             }
             o.data = { formModel: JSON.stringify(o.data) };
         }
+        o.contentType = "application/json";
+        o.data = JSON.stringify(o.data);
         return o;
     };
 
@@ -416,8 +418,6 @@ namespace WebAtoms.Rest {
         public methodReturns: any = {};
 
         public encodeData(o:AjaxOptions):AjaxOptions {
-            o.contentType = "application/json";
-            o.data = JSON.stringify(o.data);
             o.inputProcessed = true;
             o.dataType = "json";
             return o;

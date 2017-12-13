@@ -2052,6 +2052,8 @@ var WebAtoms;
                 }
                 o.data = { formModel: JSON.stringify(o.data) };
             }
+            o.contentType = "application/json";
+            o.data = JSON.stringify(o.data);
             return o;
         };
         /**
@@ -2070,8 +2072,6 @@ var WebAtoms;
                 this.methodReturns = {};
             }
             BaseService.prototype.encodeData = function (o) {
-                o.contentType = "application/json";
-                o.data = JSON.stringify(o.data);
                 o.inputProcessed = true;
                 o.dataType = "json";
                 return o;
