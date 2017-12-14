@@ -120,7 +120,7 @@ declare class Atom {
 
 
     /**
-     * Version 
+     * Version
      * @static
      * @type {{
      *         text: string,
