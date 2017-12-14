@@ -176,7 +176,6 @@ function bindableProperty(target, key) {
     var _val = this[key];
     var keyName = "_" + key;
     this[keyName] = _val;
-    // debugger
     // property getter
     var getter = function () {
         // console.log(`Get: ${key} => ${_val}`);
@@ -192,7 +191,10 @@ function bindableProperty(target, key) {
             return;
         }
         this[keyName] = newVal;
-        Atom.refresh(this, key);
+        var c = this._$_supressRefresh;
+        if (!(c && c[key])) {
+            Atom.refresh(this, key);
+        }
         if (this.onPropertyChanged) {
             this.onPropertyChanged(key);
         }
@@ -1673,6 +1675,18 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
+    var oldFunction = AtomBindingHelper.setValue;
+    AtomBindingHelper.setValue = function (target, key, value) {
+        target._$_supressRefresh = target._$_supressRefresh || {};
+        target._$_supressRefresh[key] = 1;
+        try {
+            oldFunction(target, key, value);
+        }
+        finally {
+            target._$_supressRefresh[key] = 0;
+        }
+    };
+    Atom.set = AtomBindingHelper.setValue;
     /**
      * Core class as an replacement for jQuery
      * @class Core

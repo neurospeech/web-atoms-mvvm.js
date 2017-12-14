@@ -888,6 +888,9 @@ declare namespace WebAtoms {
     }
     class AtomListBox extends AtomItemsControl {
     }
+    class AtomBindingHelper {
+        static setValue(target: any, key: string, value: any): void;
+    }
     /**
      * Core class as an replacement for jQuery
      * @class Core

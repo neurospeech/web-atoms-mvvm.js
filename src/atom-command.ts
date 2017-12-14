@@ -249,7 +249,6 @@ function bindableProperty(target: any, key: string):void {
         var keyName:string = "_" + key;
 
         this[keyName] = _val;
-        // debugger
 
         // property getter
         var getter:()=>any = function ():any {
@@ -267,7 +266,11 @@ function bindableProperty(target: any, key: string):void {
                 return;
             }
             this[keyName] = newVal;
-            Atom.refresh(this, key);
+
+            var c:any = this._$_supressRefresh;
+            if(!(c && c[key])) {
+                Atom.refresh(this, key);
+            }
 
             if(this.onPropertyChanged) {
                 this.onPropertyChanged(key);

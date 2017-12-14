@@ -57,6 +57,19 @@ namespace WebAtoms {
 		static setValue(target:any, key: string, value: any): void;
 	}
 
+	var oldFunction:(target:any, key: string, value:any) => void = AtomBindingHelper.setValue;
+	AtomBindingHelper.setValue = (target:any, key: string, value: any) => {
+		target._$_supressRefresh = target._$_supressRefresh || {};
+		target._$_supressRefresh[key] = 1;
+		try {
+			oldFunction(target,key,value);
+		} finally {
+			target._$_supressRefresh[key] = 0;
+		}
+	};
+
+	Atom.set = AtomBindingHelper.setValue;
+
 	/**
 	 * Core class as an replacement for jQuery
 	 * @class Core
