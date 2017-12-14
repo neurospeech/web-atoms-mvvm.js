@@ -13,14 +13,20 @@ function loadScript(file){
 }
 
 global.window = {
+    addEventListener: function(){},
+    location: {
+
+    },
     Atom: {
 
     },
-    AtomBinder:{
-        
-    },
     AtomUI:{
         createControl: function(){
+
+        }
+    },
+    AtomConfig: {
+        ajax: {
 
         }
     },
@@ -30,6 +36,8 @@ global.window = {
 };
 
 global.WebAtoms = global.window.WebAtoms;
+global.location = window.location;
+global.AtomConfig = window.AtomConfig;
 
 loadScript("./node_modules/web-atoms-unit/web-atoms-mock.js")
 loadScript("./dist/web-atoms-mvvm.js");

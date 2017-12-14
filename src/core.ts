@@ -1,3 +1,31 @@
+declare class AtomBinder {
+
+	static add_CollectionChanged(target: any, f: Function): void;
+	static remove_CollectionChanged(target: any, f: Function): void;
+
+	static add_WatchHandler(target: any, key: string, f:Function): void;
+	static remove_WatchHandler(target: any, key: string, f:Function): void;
+
+	static invokeItemsEvent(targe: any, key: string, index: number, item:any ):void;
+
+	static setValue(target:any, key: string, value: any): void;
+}
+
+declare class AtomPromise {
+	static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;
+
+	abort(): void;
+	then(f:Function): AtomPromise;
+	failed(f:Function): AtomPromise;
+	showError(v:boolean): void;
+	showProgress(v:boolean): void;
+	invoke(s:string): void;
+	value(v?:any):any;
+
+	error: { msg?:string };
+}
+
+
 namespace WebAtoms {
 
 	export declare class AtomControl {
@@ -38,19 +66,16 @@ namespace WebAtoms {
 
 	}
 
-	export declare class AtomPromise {
-		static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
-
-		abort(): void;
-		then(f:Function): AtomPromise;
-		failed(f:Function): AtomPromise;
-		showError(v:boolean): void;
-		showProgress(v:boolean): void;
-		invoke(s:string): void;
-		value(v?:any):any;
-
-		error: { msg?:string };
-	}
+	var oldFunction:(target:any, key: string, value:any) => void = AtomBinder.setValue;
+	AtomBinder.setValue = (target:any, key: string, value: any) => {
+		target._$_supressRefresh = target._$_supressRefresh || {};
+		target._$_supressRefresh[key] = 1;
+		try {
+			oldFunction(target,key,value);
+		} finally {
+			target._$_supressRefresh[key] = 0;
+		}
+	};
 
 	/**
 	 * Core class as an replacement for jQuery
@@ -109,6 +134,7 @@ namespace WebAtoms {
 		}
 
 	}
+
 
 	export type Rect = {
 		x: number,

@@ -75,7 +75,7 @@ function parameterBuilder(paramName:string){
 }
 
 
-declare var Atom:any;
+// declare var Atom:any;
 
 type RestAttr =
     (target:WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number)
@@ -313,6 +313,8 @@ if(!window["__atomSetLocalValue"]) {
                     v.catch( er => {
                         e._promisesQueue[k] = null;
                     });
+
+                    return;
                 }
             }
             bt.setLocalValue.call(this,k,v,e,r);
@@ -335,6 +337,8 @@ namespace WebAtoms.Rest {
     }
 
     export class AjaxOptions {
+        public dataType: string;
+        public contentType: string;
         public method:string;
         public url:string;
         public data: any;
@@ -387,6 +391,8 @@ namespace WebAtoms.Rest {
             }
             o.data = { formModel: JSON.stringify(o.data) };
         }
+        o.contentType = "application/json";
+        o.data = JSON.stringify(o.data);
         return o;
     };
 
@@ -412,8 +418,8 @@ namespace WebAtoms.Rest {
         public methodReturns: any = {};
 
         public encodeData(o:AjaxOptions):AjaxOptions {
-            o.type = "JSON";
             o.inputProcessed = true;
+            o.dataType = "json";
             return o;
         }
 
@@ -439,6 +445,7 @@ namespace WebAtoms.Rest {
 
             var options:AjaxOptions = new AjaxOptions();
             options.method = method;
+            options.type = method;
             if(bag) {
                 for(var i:number=0;i<bag.length;i++) {
                     var p:ServiceParameter = bag[i];

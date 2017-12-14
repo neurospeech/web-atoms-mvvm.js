@@ -68,8 +68,200 @@ declare namespace WebAtoms {
 }
 declare var DIGlobal: any;
 declare var DIAlwaysNew: any;
-declare var Atom: any;
-declare var AtomBinder: any;
+/**
+ * Atom helper class
+ * @class Atom
+ */
+declare class Atom {
+    /**
+     * Set this true to return mock in RestServices
+     * @static
+     * @type {boolean}
+     * @memberof Atom
+     */
+    static designMode: boolean;
+    /**
+     * Set this true to return mock in test mode
+     * @static
+     * @type {boolean}
+     * @memberof Atom
+     */
+    static testMode: boolean;
+    /**
+     * Refreshes bindings for specified property of the target
+     * @static
+     * @param {*} target
+     * @param {string} property
+     * @memberof Atom
+     */
+    static refresh(target: any, property: string): void;
+    /**
+     * Display given error message to user, this must be set by
+     * the app developer
+     * @static
+     * @param {string} msg
+     * @memberof Atom
+     */
+    static showError(msg: string): void;
+    /**
+     * [Obsolete] do not use, this will retrieve value at given path for target
+     * @static
+     * @param {*} target
+     * @param {string} path
+     * @returns {*}
+     * @memberof Atom
+     */
+    static get(target: any, path: string): any;
+    /**
+     * [Obsolete] do not use, this will set value at given path for target
+     * @static
+     * @param {*} target
+     * @param {string} path
+     * @param {*} value
+     * @memberof Atom
+     */
+    static set(target: any, path: string, value: any): void;
+    /**
+     * Schedules given call in next available callLater slot
+     * @static
+     * @param {()=>void} f
+     * @memberof Atom
+     */
+    static post(f: () => void): void;
+    /**
+     * Schedules given call in next available callLater slot and also returns
+     * promise that can be awaited, calling `Atom.postAsync` inside `Atom.postAsync`
+     * will create deadlock
+     * @static
+     * @param {()=>Promise<any>} f
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static postAsync(f: () => Promise<any>): Promise<any>;
+    /**
+     * Invokes given function and disposes given object after execution
+     * @static
+     * @param {WebAtoms.AtomDisposable} d
+     * @param {()=>void} f
+     * @memberof Atom
+     */
+    static using(d: WebAtoms.AtomDisposable, f: () => void): void;
+    /**
+     * Invokes given function and disposes given object after execution asynchronously
+     * @static
+     * @param {WebAtoms.AtomDisposable} d
+     * @param {()=>Promise<any>} f
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static usingAsync(d: WebAtoms.AtomDisposable, f: () => Promise<any>): Promise<any>;
+    /**
+     * Sets up watch and returns disposable to destroy watch
+     * @static
+     * @param {*} item
+     * @param {string} property
+     * @param {()=>void} f
+     * @returns {WebAtoms.AtomDisposable}
+     * @memberof Atom
+     */
+    static watch(item: any, property: string, f: () => void): WebAtoms.AtomDisposable;
+    /**
+     * await for delay for given number of milliseconds
+     * @static
+     * @param {number} n
+     * @param {WebAtoms.CancelToken} [ct]
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static delay(n: number, ct?: WebAtoms.CancelToken): Promise<any>;
+    /**
+     * Version
+     * @static
+     * @type {{
+     *         text: string,
+     *         major: number,
+     *         minor: number,
+     *         build: number
+     *     }}
+     * @memberof Atom
+     */
+    static version: {
+        text: string;
+        major: number;
+        minor: number;
+        build: number;
+    };
+    /**
+     * Current time in milliseconds
+     * @static
+     * @returns {number}
+     * @memberof Atom
+     */
+    static time(): number;
+    /**
+     * Combine and prepare given url from fragments
+     * @static
+     * @param {string} url
+     * @param {*} queryString
+     * @param {*} hash
+     * @returns {string}
+     * @memberof Atom
+     */
+    static url(url: string, queryString: any, hash: any): string;
+    /**
+     * Creates secure version of the given url with fragments
+     * @static
+     * @param {string} url
+     * @param {...string[]} padding
+     * @returns {string}
+     * @memberof Atom
+     */
+    static secureUrl(url: string, ...padding: string[]): string;
+}
+declare class AtomDate {
+    static zoneOffsetMinutes: number;
+    static zoneOffset: number;
+    static toLocalTime(d: Date): string;
+    static setTime(d: Date, time: string): Date;
+    static toMMDDYY(d: Date): string;
+    static toShortDateString(d: Date | string): string;
+    static toDateTimeString(d: Date | string): string;
+    static toTimeString(d: Date | string): string;
+    static smartDate(d: Date | string): string;
+    static smartDateUTC(d: Date | string): string;
+    static jsonDate(d: Date | string): {
+        Year: number;
+        Month: number;
+        Date: number;
+        Hours: number;
+        Minutes: number;
+        Seconds: number;
+        Offset: number;
+    };
+    static toUTC(d: Date | string): Date;
+    static parse(d: any): Date;
+    static monthList: Array<{
+        label: string;
+        value: number;
+    }>;
+}
+declare class AtomPhone {
+    static toSmallPhoneString(v: string): string;
+    static toPhoneString(v: string): string;
+}
+declare class AtomUri {
+    constructor(v: string);
+    host: string;
+    protocol: string;
+    port: number;
+    path: string;
+    query: {
+        [s: string]: string;
+    };
+    hash: {
+        [s: string]: string;
+    };
+}
 /**
  * This decorator will mark given property as bindable, it will define
  * getter and setter, and in the setter, it will refresh the property.
@@ -101,7 +293,7 @@ declare namespace WebAtoms {
         registerForCancel(f: () => void): void;
     }
     class AtomModel {
-        refresh(name: String): void;
+        refresh(name: string): void;
     }
     /**
      * Though you can directly call methods of view model in binding expression,
@@ -661,6 +853,27 @@ declare namespace WebAtoms {
         readonly appScope: any;
     }
 }
+declare class AtomBinder {
+    static add_CollectionChanged(target: any, f: Function): void;
+    static remove_CollectionChanged(target: any, f: Function): void;
+    static add_WatchHandler(target: any, key: string, f: Function): void;
+    static remove_WatchHandler(target: any, key: string, f: Function): void;
+    static invokeItemsEvent(targe: any, key: string, index: number, item: any): void;
+    static setValue(target: any, key: string, value: any): void;
+}
+declare class AtomPromise {
+    static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;
+    abort(): void;
+    then(f: Function): AtomPromise;
+    failed(f: Function): AtomPromise;
+    showError(v: boolean): void;
+    showProgress(v: boolean): void;
+    invoke(s: string): void;
+    value(v?: any): any;
+    error: {
+        msg?: string;
+    };
+}
 declare namespace WebAtoms {
     class AtomControl {
         _element: HTMLElement;
@@ -681,19 +894,6 @@ declare namespace WebAtoms {
         itemsPresenter: any;
     }
     class AtomListBox extends AtomItemsControl {
-    }
-    class AtomPromise {
-        static json(url: string, query: any, options: Rest.AjaxOptions): AtomPromise;
-        abort(): void;
-        then(f: Function): AtomPromise;
-        failed(f: Function): AtomPromise;
-        showError(v: boolean): void;
-        showProgress(v: boolean): void;
-        invoke(s: string): void;
-        value(v?: any): any;
-        error: {
-            msg?: string;
-        };
     }
     /**
      * Core class as an replacement for jQuery
@@ -718,7 +918,6 @@ declare function Return(type: {
     new ();
 }): (target: WebAtoms.Rest.BaseService, propertyKey: string, descriptor: any) => void;
 declare function parameterBuilder(paramName: string): (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | symbol, parameterIndex: number) => void;
-declare var Atom: any;
 declare type RestAttr = (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, parameterIndex: number) => void;
 declare type RestParamAttr = (key: string) => RestAttr;
 declare type RestMethodAttr = (key: string) => (target: WebAtoms.Rest.BaseService, propertyKey: string | Symbol, descriptor: any) => void;
@@ -900,6 +1099,8 @@ declare namespace WebAtoms.Rest {
         constructor(type: string, key: string);
     }
     class AjaxOptions {
+        dataType: string;
+        contentType: string;
         method: string;
         url: string;
         data: any;

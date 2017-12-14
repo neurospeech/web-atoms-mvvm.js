@@ -1,12 +1,5 @@
 namespace WebAtoms {
 
-    // tslint:disable-next-line
-    var Atom = window["Atom"];
-    // tslint:disable-next-line
-    var AtomBinder = window["AtomBinder"];
-    // tslint:disable-next-line
-    var AtomPromise = window["AtomPromise"];
-
     /**
      * DisposableAction holds an action that
      * will be executed when dispose will be called.
@@ -78,17 +71,17 @@ namespace WebAtoms {
                         await p;
                     }
                     resolve();
-                }catch(e) {
+                } catch(e) {
                     reject(e);
                 }
             });
         });
     };
 
-    Atom.using = function(d:AtomDisposable, f:()=>{}):void {
+    Atom.using = function(d:AtomDisposable, f:()=>void):void {
         try {
             f();
-        }finally {
+        } finally {
             d.dispose();
         }
     };
@@ -96,19 +89,19 @@ namespace WebAtoms {
     Atom.usingAsync = async function(d:AtomDisposable, f:()=>Promise<any>):Promise<any> {
         try {
             await f();
-        }finally {
+        } finally {
             d.dispose();
         }
     };
 
-    Atom.watch = function(item:any, property:string, f: ()=>void):AtomDisposable{
+    Atom.watch = function(item:any, property:string, f: ()=>void):AtomDisposable {
         AtomBinder.add_WatchHandler(item,property,f);
         return new DisposableAction(()=> {
             AtomBinder.remove_WatchHandler(item,property,f);
         });
     };
 
-    Atom.delay = function(n:number, ct?:CancelToken):Promise<any>{
+    Atom.delay = function(n:number, ct?:CancelToken):Promise<any> {
         return new Promise((resolve,reject)=> {
             var t:any = setTimeout(function():void {
                 resolve();

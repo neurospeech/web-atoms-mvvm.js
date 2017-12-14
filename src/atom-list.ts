@@ -1,10 +1,5 @@
 namespace WebAtoms {
 
-    // tslint:disable-next-line
-    var AtomBinder = window["AtomBinder"];
-    // tslint:disable-next-line
-    var AtomPromise = window["AtomPromise"];
-
 
     /**
      *

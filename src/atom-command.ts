@@ -1,8 +1,228 @@
-// tslint:disable-next-line:no-string-literal
-var Atom:any = window["Atom"];
-// tslint:disable-next-line:no-string-literal
-var AtomBinder:any = window["AtomBinder"];
 
+/**
+ * Atom helper class
+ * @class Atom
+ */
+declare class Atom {
+
+    /**
+     * Set this true to return mock in RestServices
+     * @static
+     * @type {boolean}
+     * @memberof Atom
+     */
+    static designMode: boolean;
+
+    /**
+     * Set this true to return mock in test mode
+     * @static
+     * @type {boolean}
+     * @memberof Atom
+     */
+    static testMode: boolean;
+
+    /**
+     * Refreshes bindings for specified property of the target
+     * @static
+     * @param {*} target
+     * @param {string} property
+     * @memberof Atom
+     */
+    static refresh(target:any, property: string):void;
+
+    /**
+     * Display given error message to user, this must be set by
+     * the app developer
+     * @static
+     * @param {string} msg
+     * @memberof Atom
+     */
+    static showError(msg: string): void;
+
+    /**
+     * [Obsolete] do not use, this will retrieve value at given path for target
+     * @static
+     * @param {*} target
+     * @param {string} path
+     * @returns {*}
+     * @memberof Atom
+     */
+    static get(target: any, path: string): any;
+
+    /**
+     * [Obsolete] do not use, this will set value at given path for target
+     * @static
+     * @param {*} target
+     * @param {string} path
+     * @param {*} value
+     * @memberof Atom
+     */
+    static set(target: any, path: string, value: any): void;
+
+    /**
+     * Schedules given call in next available callLater slot
+     * @static
+     * @param {()=>void} f
+     * @memberof Atom
+     */
+    static post (f:()=>void): void;
+
+    /**
+     * Schedules given call in next available callLater slot and also returns
+     * promise that can be awaited, calling `Atom.postAsync` inside `Atom.postAsync`
+     * will create deadlock
+     * @static
+     * @param {()=>Promise<any>} f
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static postAsync(f:()=>Promise<any>): Promise<any>;
+
+    /**
+     * Invokes given function and disposes given object after execution
+     * @static
+     * @param {WebAtoms.AtomDisposable} d
+     * @param {()=>void} f
+     * @memberof Atom
+     */
+    static using(d:WebAtoms.AtomDisposable, f:()=>void): void;
+
+    /**
+     * Invokes given function and disposes given object after execution asynchronously
+     * @static
+     * @param {WebAtoms.AtomDisposable} d
+     * @param {()=>Promise<any>} f
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static usingAsync(d:WebAtoms.AtomDisposable, f:()=>Promise<any>): Promise<any>;
+
+    /**
+     * Sets up watch and returns disposable to destroy watch
+     * @static
+     * @param {*} item
+     * @param {string} property
+     * @param {()=>void} f
+     * @returns {WebAtoms.AtomDisposable}
+     * @memberof Atom
+     */
+    static watch(item:any, property:string, f:()=>void):WebAtoms.AtomDisposable;
+
+    /**
+     * await for delay for given number of milliseconds
+     * @static
+     * @param {number} n
+     * @param {WebAtoms.CancelToken} [ct]
+     * @returns {Promise<any>}
+     * @memberof Atom
+     */
+    static delay(n:number, ct?:WebAtoms.CancelToken): Promise<any>;
+
+
+    /**
+     * Version
+     * @static
+     * @type {{
+     *         text: string,
+     *         major: number,
+     *         minor: number,
+     *         build: number
+     *     }}
+     * @memberof Atom
+     */
+    static version: {
+        text: string,
+        major: number,
+        minor: number,
+        build: number
+    };
+
+    /**
+     * Current time in milliseconds
+     * @static
+     * @returns {number}
+     * @memberof Atom
+     */
+
+    static time():number;
+    /**
+     * Combine and prepare given url from fragments
+     * @static
+     * @param {string} url
+     * @param {*} queryString
+     * @param {*} hash
+     * @returns {string}
+     * @memberof Atom
+     */
+    static url(url: string, queryString:any, hash:any): string;
+
+    /**
+     * Creates secure version of the given url with fragments
+     * @static
+     * @param {string} url
+     * @param {...string[]} padding
+     * @returns {string}
+     * @memberof Atom
+     */
+    static secureUrl(url: string, ... padding: string[]): string;
+
+
+}
+
+declare class AtomDate {
+
+    static zoneOffsetMinutes: number;
+
+    static zoneOffset: number;
+
+    static toLocalTime(d:Date): string;
+
+    static setTime(d:Date, time: string): Date;
+
+    static toMMDDYY(d:Date): string;
+
+    static toShortDateString(d:Date | string): string;
+
+    static toDateTimeString(d:Date | string): string;
+
+    static toTimeString(d:Date | string): string;
+
+    static smartDate(d:Date | string): string;
+
+    static smartDateUTC(d:Date | string): string;
+
+    static jsonDate(d: Date | string): {
+        Year: number, Month: number, Date: number, Hours: number, Minutes: number, Seconds: number, Offset: number};
+
+    static toUTC(d: Date | string): Date;
+
+    static parse(d:any): Date;
+
+    static monthList:Array<{ label: string, value: number }>;
+}
+
+declare class AtomPhone {
+
+    static toSmallPhoneString(v:string): string;
+
+    static toPhoneString(v:string): string;
+}
+
+declare class AtomUri {
+
+    constructor(v:string);
+
+    host: string;
+    protocol: string;
+    port: number;
+    path: string;
+    query: {[s:string]: string};
+    hash: {[s:string]: string};
+}
+
+if(location) {
+    Atom.designMode = /file/i.test(location.protocol);
+}
 
 /**
  * This decorator will mark given property as bindable, it will define
@@ -26,7 +246,6 @@ function bindableProperty(target: any, key: string):void {
         var keyName:string = "_" + key;
 
         this[keyName] = _val;
-        // debugger
 
         // property getter
         var getter:()=>any = function ():any {
@@ -44,7 +263,11 @@ function bindableProperty(target: any, key: string):void {
                 return;
             }
             this[keyName] = newVal;
-            Atom.refresh(this, key);
+
+            var c:any = this._$_supressRefresh;
+            if(!(c && c[key])) {
+                Atom.refresh(this, key);
+            }
 
             if(this.onPropertyChanged) {
                 this.onPropertyChanged(key);
@@ -61,6 +284,12 @@ function bindableProperty(target: any, key: string):void {
                 enumerable: true,
                 configurable: true
             });
+
+            // tslint:disable-next-line:no-string-literal
+            if(target.constructor.prototype["get_atomParent"]) {
+                target["get_" + key] = getter;
+                target["set_" + key] = setter;
+            }
         }
     }
 
@@ -77,13 +306,13 @@ namespace WebAtoms {
         listeners:Array<()=>void> = [];
 
         private _cancelled:boolean;
-        get cancelled():boolean{
+        get cancelled():boolean {
             return this._cancelled;
         }
 
         cancel():void {
             this._cancelled = true;
-            for(var fx of this.listeners){
+            for(var fx of this.listeners) {
                 fx();
             }
         }
@@ -105,7 +334,7 @@ namespace WebAtoms {
     }
 
     export class AtomModel {
-        public refresh(name: String): void {
+        public refresh(name: string): void {
             Atom.refresh(this, name);
         }
     }
@@ -155,10 +384,10 @@ namespace WebAtoms {
          * @type {boolean}
          * @memberof AtomCommand
          */
-        get busy(): boolean{
+        get busy(): boolean {
             return this._busy;
         }
-        set busy(v:boolean){
+        set busy(v:boolean) {
             this._busy = v;
             this.refresh("busy");
         }

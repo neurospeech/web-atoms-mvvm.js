@@ -152,10 +152,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-// tslint:disable-next-line:no-string-literal
-var Atom = window["Atom"];
-// tslint:disable-next-line:no-string-literal
-var AtomBinder = window["AtomBinder"];
+if (location) {
+    Atom.designMode = /file/i.test(location.protocol);
+}
 /**
  * This decorator will mark given property as bindable, it will define
  * getter and setter, and in the setter, it will refresh the property.
@@ -175,7 +174,6 @@ function bindableProperty(target, key) {
     var _val = this[key];
     var keyName = "_" + key;
     this[keyName] = _val;
-    // debugger
     // property getter
     var getter = function () {
         // console.log(`Get: ${key} => ${_val}`);
@@ -191,7 +189,10 @@ function bindableProperty(target, key) {
             return;
         }
         this[keyName] = newVal;
-        Atom.refresh(this, key);
+        var c = this._$_supressRefresh;
+        if (!(c && c[key])) {
+            Atom.refresh(this, key);
+        }
         if (this.onPropertyChanged) {
             this.onPropertyChanged(key);
         }
@@ -205,6 +206,11 @@ function bindableProperty(target, key) {
             enumerable: true,
             configurable: true
         });
+        // tslint:disable-next-line:no-string-literal
+        if (target.constructor.prototype["get_atomParent"]) {
+            target["get_" + key] = getter;
+            target["set_" + key] = setter;
+        }
     }
 }
 var WebAtoms;
@@ -390,12 +396,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var WebAtoms;
 (function (WebAtoms) {
-    // tslint:disable-next-line
-    var Atom = window["Atom"];
-    // tslint:disable-next-line
-    var AtomBinder = window["AtomBinder"];
-    // tslint:disable-next-line
-    var AtomPromise = window["AtomPromise"];
     /**
      * DisposableAction holds an action that
      * will be executed when dispose will be called.
@@ -625,10 +625,6 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
-    // tslint:disable-next-line
-    var AtomBinder = window["AtomBinder"];
-    // tslint:disable-next-line
-    var AtomPromise = window["AtomPromise"];
     /**
      *
      *
@@ -1671,6 +1667,17 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
+    var oldFunction = AtomBinder.setValue;
+    AtomBinder.setValue = function (target, key, value) {
+        target._$_supressRefresh = target._$_supressRefresh || {};
+        target._$_supressRefresh[key] = 1;
+        try {
+            oldFunction(target, key, value);
+        }
+        finally {
+            target._$_supressRefresh[key] = 0;
+        }
+    };
     /**
      * Core class as an replacement for jQuery
      * @class Core
@@ -1993,6 +2000,7 @@ if (!window["__atomSetLocalValue"]) {
                     v.catch(function (er) {
                         e._promisesQueue[k] = null;
                     });
+                    return;
                 }
             }
             bt.setLocalValue.call(this, k, v, e, r);
@@ -2049,6 +2057,8 @@ var WebAtoms;
                 }
                 o.data = { formModel: JSON.stringify(o.data) };
             }
+            o.contentType = "application/json";
+            o.data = JSON.stringify(o.data);
             return o;
         };
         /**
@@ -2067,8 +2077,8 @@ var WebAtoms;
                 this.methodReturns = {};
             }
             BaseService.prototype.encodeData = function (o) {
-                o.type = "JSON";
                 o.inputProcessed = true;
+                o.dataType = "json";
                 return o;
             };
             BaseService.prototype.sendResult = function (result, error) {
@@ -2095,6 +2105,7 @@ var WebAtoms;
                     return __generator(this, function (_a) {
                         options = new AjaxOptions();
                         options.method = method;
+                        options.type = method;
                         if (bag) {
                             for (i = 0; i < bag.length; i++) {
                                 p = bag[i];
@@ -2128,7 +2139,7 @@ var WebAtoms;
                             }
                         }
                         options.url = url;
-                        pr = WebAtoms.AtomPromise.json(url, null, options);
+                        pr = AtomPromise.json(url, null, options);
                         if (options.cancel) {
                             options.cancel.registerForCancel(function () {
                                 pr.abort();
