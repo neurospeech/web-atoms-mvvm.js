@@ -53,6 +53,11 @@ namespace WebAtoms {
 
 	}
 
+	export declare class AtomBindingHelper {
+		static setValue(target:any, key: string, value: any): void;
+	}
+
+
 	/**
 	 * Core class as an replacement for jQuery
 	 * @class Core
@@ -110,6 +115,7 @@ namespace WebAtoms {
 		}
 
 	}
+
 
 	export type Rect = {
 		x: number,
