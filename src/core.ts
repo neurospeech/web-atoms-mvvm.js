@@ -77,8 +77,6 @@ namespace WebAtoms {
 		}
 	};
 
-	Atom.set = AtomBinder.setValue;
-
 	/**
 	 * Core class as an replacement for jQuery
 	 * @class Core
