@@ -262,7 +262,6 @@ declare class AtomUri {
         [s: string]: string;
     };
 }
-declare var AtomBinder: any;
 /**
  * This decorator will mark given property as bindable, it will define
  * getter and setter, and in the setter, it will refresh the property.
@@ -854,6 +853,14 @@ declare namespace WebAtoms {
         readonly appScope: any;
     }
 }
+declare class AtomBinder {
+    static add_CollectionChanged(target: any, f: Function): void;
+    static remove_CollectionChanged(target: any, f: Function): void;
+    static add_WatchHandler(target: any, key: string, f: Function): void;
+    static remove_WatchHandler(target: any, key: string, f: Function): void;
+    static invokeItemsEvent(targe: any, key: string, index: number, item: any): void;
+    static setValue(target: any, key: string, value: any): void;
+}
 declare class AtomPromise {
     static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;
     abort(): void;
@@ -887,9 +894,6 @@ declare namespace WebAtoms {
         itemsPresenter: any;
     }
     class AtomListBox extends AtomItemsControl {
-    }
-    class AtomBindingHelper {
-        static setValue(target: any, key: string, value: any): void;
     }
     /**
      * Core class as an replacement for jQuery

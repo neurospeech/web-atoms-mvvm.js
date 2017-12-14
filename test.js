@@ -22,8 +22,6 @@ global.window = {
     },
     AtomBinder:{
         
-    },
-    AtomBindingHelper: {
         setValue: function(target, key, value){
             if(!target)
                 return;

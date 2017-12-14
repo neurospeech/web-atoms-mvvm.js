@@ -1,3 +1,16 @@
+declare class AtomBinder {
+
+	static add_CollectionChanged(target: any, f: Function): void;
+	static remove_CollectionChanged(target: any, f: Function): void;
+
+	static add_WatchHandler(target: any, key: string, f:Function): void;
+	static remove_WatchHandler(target: any, key: string, f:Function): void;
+
+	static invokeItemsEvent(targe: any, key: string, index: number, item:any ):void;
+
+	static setValue(target:any, key: string, value: any): void;
+}
+
 declare class AtomPromise {
 	static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;
 
@@ -53,12 +66,8 @@ namespace WebAtoms {
 
 	}
 
-	export declare class AtomBindingHelper {
-		static setValue(target:any, key: string, value: any): void;
-	}
-
-	var oldFunction:(target:any, key: string, value:any) => void = AtomBindingHelper.setValue;
-	AtomBindingHelper.setValue = (target:any, key: string, value: any) => {
+	var oldFunction:(target:any, key: string, value:any) => void = AtomBinder.setValue;
+	AtomBinder.setValue = (target:any, key: string, value: any) => {
 		target._$_supressRefresh = target._$_supressRefresh || {};
 		target._$_supressRefresh[key] = 1;
 		try {
@@ -68,7 +77,7 @@ namespace WebAtoms {
 		}
 	};
 
-	Atom.set = AtomBindingHelper.setValue;
+	Atom.set = AtomBinder.setValue;
 
 	/**
 	 * Core class as an replacement for jQuery

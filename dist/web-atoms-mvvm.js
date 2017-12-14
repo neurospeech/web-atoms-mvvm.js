@@ -152,8 +152,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-// tslint:disable-next-line:no-string-literal
-var AtomBinder = window["AtomBinder"];
 if (location) {
     Atom.designMode = /file/i.test(location.protocol);
 }
@@ -398,10 +396,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var WebAtoms;
 (function (WebAtoms) {
-    // tslint:disable-next-line
-    // var Atom = window["Atom"];
-    // tslint:disable-next-line
-    var AtomBinder = window["AtomBinder"];
     /**
      * DisposableAction holds an action that
      * will be executed when dispose will be called.
@@ -631,8 +625,6 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
-    // tslint:disable-next-line
-    var AtomBinder = window["AtomBinder"];
     /**
      *
      *
@@ -1675,8 +1667,8 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
-    var oldFunction = AtomBindingHelper.setValue;
-    AtomBindingHelper.setValue = function (target, key, value) {
+    var oldFunction = AtomBinder.setValue;
+    AtomBinder.setValue = function (target, key, value) {
         target._$_supressRefresh = target._$_supressRefresh || {};
         target._$_supressRefresh[key] = 1;
         try {
@@ -1686,7 +1678,7 @@ var WebAtoms;
             target._$_supressRefresh[key] = 0;
         }
     };
-    Atom.set = AtomBindingHelper.setValue;
+    Atom.set = AtomBinder.setValue;
     /**
      * Core class as an replacement for jQuery
      * @class Core

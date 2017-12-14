@@ -220,9 +220,6 @@ declare class AtomUri {
     hash: {[s:string]: string};
 }
 
-// tslint:disable-next-line:no-string-literal
-var AtomBinder:any = window["AtomBinder"];
-
 if(location) {
     Atom.designMode = /file/i.test(location.protocol);
 }

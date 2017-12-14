@@ -1,10 +1,5 @@
 namespace WebAtoms {
 
-    // tslint:disable-next-line
-    // var Atom = window["Atom"];
-    // tslint:disable-next-line
-    var AtomBinder = window["AtomBinder"];
-
     /**
      * DisposableAction holds an action that
      * will be executed when dispose will be called.
