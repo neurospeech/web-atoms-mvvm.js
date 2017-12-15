@@ -9,6 +9,8 @@ declare class AtomBinder {
 	static invokeItemsEvent(targe: any, key: string, index: number, item:any ):void;
 
 	static setValue(target:any, key: string, value: any): void;
+
+	static getValue(target:any, key: string): any;
 }
 
 declare class AtomPromise {

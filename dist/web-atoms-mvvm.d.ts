@@ -73,6 +73,9 @@ declare var DIAlwaysNew: any;
  * @class Atom
  */
 declare class Atom {
+    static pageQuery: {
+        [key: string]: any;
+    };
     /**
      * Set this true to return mock in RestServices
      * @static
@@ -860,6 +863,7 @@ declare class AtomBinder {
     static remove_WatchHandler(target: any, key: string, f: Function): void;
     static invokeItemsEvent(targe: any, key: string, index: number, item: any): void;
     static setValue(target: any, key: string, value: any): void;
+    static getValue(target: any, key: string): any;
 }
 declare class AtomPromise {
     static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;

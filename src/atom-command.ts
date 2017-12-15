@@ -5,6 +5,8 @@
  */
 declare class Atom {
 
+    static pageQuery: { [key:string]: any };
+
     /**
      * Set this true to return mock in RestServices
      * @static
