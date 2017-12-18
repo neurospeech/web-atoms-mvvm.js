@@ -389,10 +389,14 @@ namespace WebAtoms.Rest {
             if(o.type) {
                 delete o.type;
             }
-            o.data = { formModel: JSON.stringify(o.data) };
+            if(o.data) {
+                o.data = { formModel: JSON.stringify(o.data) };
+            }
         }
-        o.contentType = "application/json";
-        o.data = JSON.stringify(o.data);
+        if(o.data) {
+            o.contentType = "application/json";
+            o.data = JSON.stringify(o.data);
+        }
         return o;
     };
 
