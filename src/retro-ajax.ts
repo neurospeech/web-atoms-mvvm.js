@@ -392,10 +392,10 @@ namespace WebAtoms.Rest {
             if(o.data) {
                 o.data = { formModel: JSON.stringify(o.data) };
             }
+            return o;
         }
         if(o.data) {
             o.contentType = "application/json";
-            o.data = AtomBinder.getClone(o.data);
             o.data = JSON.stringify(o.data);
         }
         return o;
