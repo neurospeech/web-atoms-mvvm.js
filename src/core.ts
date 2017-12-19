@@ -1,5 +1,7 @@
 declare class AtomBinder {
 
+	static getClone(a:any): any;
+
 	static add_CollectionChanged(target: any, f: Function): void;
 	static remove_CollectionChanged(target: any, f: Function): void;
 

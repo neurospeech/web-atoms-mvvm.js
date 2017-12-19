@@ -857,6 +857,7 @@ declare namespace WebAtoms {
     }
 }
 declare class AtomBinder {
+    static getClone(a: any): any;
     static add_CollectionChanged(target: any, f: Function): void;
     static remove_CollectionChanged(target: any, f: Function): void;
     static add_WatchHandler(target: any, key: string, f: Function): void;
