@@ -386,9 +386,6 @@ namespace WebAtoms.Rest {
 
     AtomConfig.ajax.jsonPostEncode = function(o:AjaxOptions): AjaxOptions {
         if(!o.inputProcessed) {
-            if(o.type) {
-                delete o.type;
-            }
             if(o.data) {
                 o.data = { formModel: JSON.stringify(o.data) };
             }
