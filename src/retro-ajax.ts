@@ -411,7 +411,7 @@ namespace WebAtoms.Rest {
 
         public showProgress: boolean = true;
 
-        public showError: boolean = true;
+        public showError: boolean = false;
 
         // bs
 

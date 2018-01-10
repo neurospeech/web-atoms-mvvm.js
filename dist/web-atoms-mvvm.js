@@ -2073,7 +2073,7 @@ var WebAtoms;
             function BaseService() {
                 this.testMode = false;
                 this.showProgress = true;
-                this.showError = true;
+                this.showError = false;
                 // bs
                 this.methods = {};
                 this.methodReturns = {};
