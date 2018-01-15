@@ -67,7 +67,7 @@ namespace WebAtoms {
                     this.onReady();
                 });
 
-                if(this.postInit){
+                if(this.postInit) {
                     for(var i of this.postInit) {
                         i();
                     }
@@ -97,7 +97,7 @@ namespace WebAtoms {
             }
             var ris: Function[] = v._$_inits;
             if(ris) {
-                for(var ri of ris){
+                for(var ri of ris) {
                     ri.call(this, this);
                 }
             }
@@ -111,7 +111,7 @@ namespace WebAtoms {
          * @memberof AtomViewModel
          */
         validate():void {
-            for(var v of this.validations){
+            for(var v of this.validations) {
                 v.evaluate(true);
             }
         }
@@ -142,7 +142,7 @@ namespace WebAtoms {
 
             var ds: Array<AtomDisposable> = [];
 
-            for(var ft of fts){
+            for(var ft of fts) {
                 var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, false, true);
                 this.validations.push(d);
                 this.registerDisposable(d);
@@ -150,7 +150,7 @@ namespace WebAtoms {
             }
             return new DisposableAction(()=> {
                 this.disposables = this.disposables.filter( f => !ds.find(fd => f === fd) );
-                for(var dispsoable of ds){
+                for(var dispsoable of ds) {
                     dispsoable.dispose();
                 }
             });
@@ -177,13 +177,13 @@ namespace WebAtoms {
         protected watch(...fts:(() => any)[]): AtomDisposable {
 
             var dfd:AtomDisposable[] = [];
-            for(var ft of fts){
+            for(var ft of fts) {
                 var d:AtomWatcher<any> = new AtomWatcher<any>(this,ft, this._isReady );
                 // debugger;
                 this.registerDisposable(d);
                 dfd.push(d);
 
-                if(!this._isReady){
+                if(!this._isReady) {
                     this.postInit = this.postInit || [];
                     this.postInit.push(() => {
                         d.runEvaluate();
@@ -192,7 +192,7 @@ namespace WebAtoms {
             }
             return new DisposableAction(()=> {
                 this.disposables = this.disposables.filter( f => ! dfd.find(fd => f === fd) );
-                for(var disposable of dfd){
+                for(var disposable of dfd) {
                     disposable.dispose();
                 }
             });
@@ -433,7 +433,7 @@ function receive(...channel:string[]):Function {
             };
             // tslint:disable-next-line:no-string-literal
             var s:Function = vm["subscribe"];
-            for(var c of channel){
+            for(var c of channel) {
                 s.call(vm,c, a);
             }
         });
