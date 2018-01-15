@@ -631,11 +631,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var WebAtoms;
 (function (WebAtoms) {
-    var AtomFrameStack = /** @class */ (function (_super) {
-        __extends(AtomFrameStack, _super);
-        function AtomFrameStack(e) {
+    var AtomPageView = /** @class */ (function (_super) {
+        __extends(AtomPageView, _super);
+        function AtomPageView(e) {
             var _this = _super.call(this, e) || this;
             _this.stack = [];
+            _this.keepStack = true;
             _this.current = null;
             e.style.position = "relative";
             _this.backCommand = function () {
@@ -643,7 +644,7 @@ var WebAtoms;
             };
             return _this;
         }
-        AtomFrameStack.prototype.onBackCommand = function () {
+        AtomPageView.prototype.onBackCommand = function () {
             if (!this.stack.length) {
                 console.warn("FrameStack is empty !!");
                 return;
@@ -656,10 +657,41 @@ var WebAtoms;
             this.current = this.stack.pop();
             this.current._element.style.display = "";
         };
-        AtomFrameStack.prototype.push = function (ctrl) {
+        AtomPageView.prototype.canChange = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var ctrl, vm;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!this.current) {
+                                return [2 /*return*/, true];
+                            }
+                            ctrl = this.current;
+                            vm = ctrl.viewModel;
+                            if (!vm.closeWarning) return [3 /*break*/, 2];
+                            return [4 /*yield*/, WebAtoms.WindowService.instance.confirm(vm.closeWarning, "Are you sure?")];
+                        case 1:
+                            if (_a.sent()) {
+                                return [2 /*return*/, true];
+                            }
+                            return [2 /*return*/, false];
+                        case 2: return [2 /*return*/, true];
+                    }
+                });
+            });
+        };
+        AtomPageView.prototype.push = function (ctrl) {
             if (this.current) {
-                this.current._element.style.display = "none";
-                this.stack.push(this.current);
+                if (this.keepStack) {
+                    this.current._element.style.display = "none";
+                    this.stack.push(this.current);
+                }
+                else {
+                    var ctrl = this.current;
+                    var e = ctrl._element;
+                    ctrl.dispose();
+                    e.remove();
+                }
             }
             var element = ctrl._element;
             element.style.position = "absolute";
@@ -672,10 +704,13 @@ var WebAtoms;
         };
         __decorate([
             bindableProperty
-        ], AtomFrameStack.prototype, "current", void 0);
-        return AtomFrameStack;
+        ], AtomPageView.prototype, "keepStack", void 0);
+        __decorate([
+            bindableProperty
+        ], AtomPageView.prototype, "current", void 0);
+        return AtomPageView;
     }(WebAtoms.AtomControl));
-    WebAtoms.AtomFrameStack = AtomFrameStack;
+    WebAtoms.AtomPageView = AtomPageView;
 })(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
@@ -1222,17 +1257,33 @@ var WebAtoms;
         return AtomWindowViewModel;
     }(AtomViewModel));
     WebAtoms.AtomWindowViewModel = AtomWindowViewModel;
-    var AtomFrameStackViewModel = /** @class */ (function (_super) {
-        __extends(AtomFrameStackViewModel, _super);
-        function AtomFrameStackViewModel() {
+    var AtomPageViewModel = /** @class */ (function (_super) {
+        __extends(AtomPageViewModel, _super);
+        function AtomPageViewModel() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        AtomFrameStackViewModel.prototype.cancel = function () {
-            this.broadcast("pop-frame:" + this.frameId, null);
+        AtomPageViewModel.prototype.cancel = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!this.closeWarning) {
+                                this.broadcast("pop-page:" + this.pageId, null);
+                                return [2 /*return*/];
+                            }
+                            return [4 /*yield*/, WebAtoms.WindowService.instance.confirm(this.closeWarning, "Are you sure?")];
+                        case 1:
+                            if (_a.sent()) {
+                                this.broadcast("pop-page:" + this.pageId, null);
+                            }
+                            return [2 /*return*/];
+                    }
+                });
+            });
         };
-        return AtomFrameStackViewModel;
+        return AtomPageViewModel;
     }(AtomViewModel));
-    WebAtoms.AtomFrameStackViewModel = AtomFrameStackViewModel;
+    WebAtoms.AtomPageViewModel = AtomPageViewModel;
 })(WebAtoms || (WebAtoms = {}));
 function registerInit(target, fx) {
     var t = target;
@@ -2475,31 +2526,47 @@ var WebAtoms;
          * @memberof WindowService
          */
         WindowService.prototype.pushFrame = function (frameHostId, frameType, viewModel) {
-            return new Promise(function (resolve, reject) {
-                var host = window.document.getElementById(frameHostId);
-                if (!host) {
-                    reject("FrameView Host " + frameHostId + " not found on the current page");
-                }
-                // tslint:disable-next-line:no-string-literal
-                var ctrl = host["atomControl"];
-                var windowDiv = document.createElement("div");
-                windowDiv.id = "atom_frame_" + frameHostId + "_" + (ctrl.stack.length + 1);
-                var windowCtrl = AtomUI.createControl(windowDiv, frameType);
-                windowDiv.setAttribute("atom-local-scope", "true");
-                windowCtrl.init();
-                // tslint:disable-next-line:no-string-literal
-                var dispatcher = WebAtoms["dispatcher"];
-                if (viewModel !== undefined) {
-                    viewModel.frameId = windowDiv.id;
-                    Atom.set(windowCtrl, "viewModel", viewModel);
-                }
-                ctrl.push(windowCtrl);
-                var d = {};
-                d.disposable = WebAtoms.AtomDevice.instance.subscribe("pop-frame:" + windowDiv.id, function () {
-                    ctrl.backCommand();
-                    d.disposable.dispose();
+            return __awaiter(this, void 0, void 0, function () {
+                var host, ctrl, canClose;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            host = window.document.getElementById(frameHostId);
+                            if (!host) {
+                                throw new Error("FrameView Host " + frameHostId + " not found on the current page");
+                            }
+                            ctrl = host["atomControl"];
+                            return [4 /*yield*/, ctrl.canChange()];
+                        case 1:
+                            canClose = _a.sent();
+                            if (!canClose) {
+                                throw new Error("Cancelled");
+                            }
+                            return [4 /*yield*/, new Promise(function (resolve, reject) {
+                                    var windowDiv = document.createElement("div");
+                                    windowDiv.id = "atom_frame_" + frameHostId + "_" + (ctrl.stack.length + 1);
+                                    var windowCtrl = AtomUI.createControl(windowDiv, frameType);
+                                    windowDiv.setAttribute("atom-local-scope", "true");
+                                    windowCtrl.init();
+                                    // tslint:disable-next-line:no-string-literal
+                                    var dispatcher = WebAtoms["dispatcher"];
+                                    if (viewModel !== undefined) {
+                                        viewModel.pageId = windowDiv.id;
+                                        Atom.set(windowCtrl, "viewModel", viewModel);
+                                    }
+                                    ctrl.push(windowCtrl);
+                                    var d = {};
+                                    d.disposable = WebAtoms.AtomDevice.instance.subscribe("pop-page:" + windowDiv.id, function () {
+                                        ctrl.backCommand();
+                                        d.disposable.dispose();
+                                    });
+                                    resolve();
+                                })];
+                        case 2:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
                 });
-                resolve();
             });
         };
         /**

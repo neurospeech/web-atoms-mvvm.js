@@ -436,12 +436,14 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
-    class AtomFrameStack extends AtomControl {
+    class AtomPageView extends AtomControl {
         stack: AtomControl[];
+        keepStack: boolean;
         current: AtomControl;
         backCommand: Function;
         constructor(e: HTMLElement);
         onBackCommand(): void;
+        canChange(): Promise<boolean>;
         push(ctrl: AtomControl): void;
     }
 }
@@ -683,9 +685,10 @@ declare namespace WebAtoms {
          */
         cancel(): void;
     }
-    class AtomFrameStackViewModel extends AtomViewModel {
-        frameId: string;
-        cancel(): void;
+    class AtomPageViewModel extends AtomViewModel {
+        pageId: string;
+        closeWarning: string;
+        cancel(): Promise<any>;
     }
 }
 declare type viewModelInit = (vm: WebAtoms.AtomViewModel) => void;
@@ -1265,7 +1268,7 @@ declare namespace WebAtoms {
          */
         pushFrame(frameHostId: string, frameType: (string | {
             new (e: any);
-        }), viewModel?: AtomFrameStackViewModel): Promise<any>;
+        }), viewModel?: AtomPageViewModel): Promise<any>;
         /**
          * zIndex of next window
          * @type {number}

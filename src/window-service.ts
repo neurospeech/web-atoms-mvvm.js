@@ -264,14 +264,21 @@ namespace WebAtoms {
          * @returns {Promise<any>}
          * @memberof WindowService
          */
-        pushFrame(frameHostId: string, frameType: (string | {new (e:any)}), viewModel?: AtomFrameStackViewModel): Promise<any> {
-            return new Promise((resolve,reject) => {
-                var host:HTMLElement = window.document.getElementById(frameHostId);
-                if(!host) {
-                    reject(`FrameView Host ${frameHostId} not found on the current page`);
-                }
-                // tslint:disable-next-line:no-string-literal
-                var ctrl: AtomFrameStack = host["atomControl"];
+        async pushFrame(frameHostId: string, frameType: (string | {new (e:any)}), viewModel?: AtomPageViewModel): Promise<any> {
+
+            var host:HTMLElement = window.document.getElementById(frameHostId);
+            if(!host) {
+                throw new Error(`FrameView Host ${frameHostId} not found on the current page`);
+            }
+            // tslint:disable-next-line:no-string-literal
+            var ctrl: AtomPageView = host["atomControl"];
+
+            var canClose:boolean = await ctrl.canChange();
+            if(!canClose) {
+                throw new Error("Cancelled");
+            }
+
+            await new Promise((resolve,reject) => {
 
                 var windowDiv:HTMLDivElement = document.createElement("div");
                 windowDiv.id = `atom_frame_${frameHostId}_${ctrl.stack.length+1}`;
@@ -287,7 +294,7 @@ namespace WebAtoms {
                 var dispatcher:any = WebAtoms["dispatcher"];
 
                 if(viewModel !== undefined) {
-                    viewModel.frameId = windowDiv.id;
+                    viewModel.pageId = windowDiv.id;
                     Atom.set(windowCtrl,"viewModel",viewModel);
                 }
 
@@ -295,7 +302,7 @@ namespace WebAtoms {
 
                 var d:any = {};
 
-                d.disposable = AtomDevice.instance.subscribe(`pop-frame:${windowDiv.id}`, () => {
+                d.disposable = AtomDevice.instance.subscribe(`pop-page:${windowDiv.id}`, () => {
                     ctrl.backCommand();
                     d.disposable.dispose();
                 });

@@ -1,8 +1,11 @@
 namespace WebAtoms {
 
-    export class AtomFrameStack extends AtomControl {
+    export class AtomPageView extends AtomControl {
 
         stack:AtomControl[] = [];
+
+        @bindableProperty
+        keepStack: boolean = true;
 
         @bindableProperty
         current:AtomControl = null;
@@ -33,11 +36,33 @@ namespace WebAtoms {
             this.current._element.style.display = "";
         }
 
+        async canChange(): Promise<boolean> {
+            if(!this.current) {
+                return true;
+            }
+            var ctrl:AtomControl = this.current;
+            var vm:AtomPageViewModel = ctrl.viewModel;
+            if(vm.closeWarning) {
+                if( await WindowService.instance.confirm(vm.closeWarning,"Are you sure?")) {
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+
         push(ctrl:AtomControl): void {
 
             if(this.current) {
-                this.current._element.style.display = "none";
-                this.stack.push(this.current);
+                if(this.keepStack) {
+                    this.current._element.style.display = "none";
+                    this.stack.push(this.current);
+                } else {
+                    var ctrl:AtomControl = this.current;
+                    var e:HTMLElement = ctrl._element;
+                    ctrl.dispose();
+                    e.remove();
+                }
             }
 
             var element:HTMLElement = ctrl._element;

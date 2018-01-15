@@ -396,12 +396,20 @@ namespace WebAtoms {
 
 
 
-    export class AtomFrameStackViewModel extends AtomViewModel {
+    export class AtomPageViewModel extends AtomViewModel {
 
-        frameId: string;
+        pageId: string;
 
-        cancel(): void {
-            this.broadcast(`pop-frame:${this.frameId}`,null);
+        closeWarning: string;
+
+        async cancel(): Promise<any> {
+            if(!this.closeWarning) {
+                this.broadcast(`pop-page:${this.pageId}`,null);
+                return;
+            }
+            if( await WindowService.instance.confirm(this.closeWarning,"Are you sure?")) {
+                this.broadcast(`pop-page:${this.pageId}`,null);
+            }
         }
 
     }
