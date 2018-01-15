@@ -631,17 +631,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var WebAtoms;
 (function (WebAtoms) {
-    var AtomFrameStackViewModel = /** @class */ (function (_super) {
-        __extends(AtomFrameStackViewModel, _super);
-        function AtomFrameStackViewModel() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        AtomFrameStackViewModel.prototype.cancel = function () {
-            this.broadcast("pop-frame:" + this.frameId, null);
-        };
-        return AtomFrameStackViewModel;
-    }(WebAtoms.AtomViewModel));
-    WebAtoms.AtomFrameStackViewModel = AtomFrameStackViewModel;
     var AtomFrameStack = /** @class */ (function (_super) {
         __extends(AtomFrameStack, _super);
         function AtomFrameStack(e) {
@@ -1233,6 +1222,17 @@ var WebAtoms;
         return AtomWindowViewModel;
     }(AtomViewModel));
     WebAtoms.AtomWindowViewModel = AtomWindowViewModel;
+    var AtomFrameStackViewModel = /** @class */ (function (_super) {
+        __extends(AtomFrameStackViewModel, _super);
+        function AtomFrameStackViewModel() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        AtomFrameStackViewModel.prototype.cancel = function () {
+            this.broadcast("pop-frame:" + this.frameId, null);
+        };
+        return AtomFrameStackViewModel;
+    }(AtomViewModel));
+    WebAtoms.AtomFrameStackViewModel = AtomFrameStackViewModel;
 })(WebAtoms || (WebAtoms = {}));
 function registerInit(target, fx) {
     var t = target;

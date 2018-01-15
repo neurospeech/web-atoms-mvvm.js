@@ -394,6 +394,18 @@ namespace WebAtoms {
 
     }
 
+
+
+    export class AtomFrameStackViewModel extends AtomViewModel {
+
+        frameId: string;
+
+        cancel(): void {
+            this.broadcast(`pop-frame:${this.frameId}`,null);
+        }
+
+    }
+
 }
 
 
@@ -475,6 +487,7 @@ function bindableBroadcast(...channel: string[]): Function {
 
         return bp;
     };
+
 }
 
 

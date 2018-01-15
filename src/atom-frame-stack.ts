@@ -1,15 +1,5 @@
 namespace WebAtoms {
 
-    export class AtomFrameStackViewModel extends AtomViewModel {
-
-        frameId: string;
-
-        cancel(): void {
-            this.broadcast(`pop-frame:${this.frameId}`,null);
-        }
-
-    }
-
     export class AtomFrameStack extends AtomControl {
 
         stack:AtomControl[] = [];

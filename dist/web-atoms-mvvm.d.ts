@@ -436,10 +436,6 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
-    class AtomFrameStackViewModel extends AtomViewModel {
-        frameId: string;
-        cancel(): void;
-    }
     class AtomFrameStack extends AtomControl {
         stack: AtomControl[];
         current: AtomControl;
@@ -685,6 +681,10 @@ declare namespace WebAtoms {
          *
          * @memberof AtomWindowViewModel
          */
+        cancel(): void;
+    }
+    class AtomFrameStackViewModel extends AtomViewModel {
+        frameId: string;
         cancel(): void;
     }
 }
