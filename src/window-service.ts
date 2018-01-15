@@ -174,7 +174,7 @@ namespace WebAtoms {
          * @type {WindowService}
          * @memberof WindowService
          */
-        static get instance(): WindowService{
+        static get instance(): WindowService {
             return WebAtoms.DI.resolve(WindowService);
         }
 
@@ -236,7 +236,7 @@ namespace WebAtoms {
 
                         if (d.ConfirmValue) {
                             resolve(true);
-                        }else {
+                        } else {
                             resolve(false);
                         }
                     });
@@ -251,6 +251,56 @@ namespace WebAtoms {
                     });
 
                     w.refresh();
+
+            });
+        }
+
+        /**
+         *
+         *
+         * @param {string} frameHostId
+         * @param {((string | {new (e:any)}))} frameType
+         * @param {AtomViewModel} [viewModel]
+         * @returns {Promise<any>}
+         * @memberof WindowService
+         */
+        pushFrame(frameHostId: string, frameType: (string | {new (e:any)}), viewModel?: AtomFrameStackViewModel): Promise<any> {
+            return new Promise((resolve,reject) => {
+                var host:HTMLElement = window.document.getElementById(frameHostId);
+                if(!host) {
+                    reject(`FrameView Host ${frameHostId} not found on the current page`);
+                }
+                // tslint:disable-next-line:no-string-literal
+                var ctrl: AtomFrameStack = host["atomControl"];
+
+                var windowDiv:HTMLDivElement = document.createElement("div");
+                windowDiv.id = `atom_frame_${frameHostId}_${ctrl.stack.length+1}`;
+
+
+                var windowCtrl:any = AtomUI.createControl(windowDiv,frameType);
+
+                windowDiv.setAttribute("atom-local-scope","true");
+
+                windowCtrl.init();
+
+                // tslint:disable-next-line:no-string-literal
+                var dispatcher:any = WebAtoms["dispatcher"];
+
+                if(viewModel !== undefined) {
+                    viewModel.frameId = windowDiv.id;
+                    Atom.set(windowCtrl,"viewModel",viewModel);
+                }
+
+                ctrl.push(windowCtrl);
+
+                var d:any = {};
+
+                d.disposable = AtomDevice.instance.subscribe(`pop-frame:${windowDiv.id}`, () => {
+                    ctrl.backCommand();
+                    d.disposable.dispose();
+                });
+
+                resolve();
 
             });
         }
@@ -345,7 +395,7 @@ namespace WebAtoms {
                     closeSubscription.dispose();
                     try {
                         resolve(windowCtrl.get_value());
-                    }catch(e) {
+                    } catch(e) {
                         console.error(e);
                     }
                     dispatcher.callLater(()=> {
@@ -360,7 +410,7 @@ namespace WebAtoms {
                     closeSubscription.dispose();
                     try {
                         reject("cancelled");
-                    }catch(e) {
+                    } catch(e) {
                         console.error(e);
                     }
                     dispatcher.callLater(()=> {

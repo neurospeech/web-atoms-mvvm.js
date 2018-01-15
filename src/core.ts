@@ -1,3 +1,7 @@
+declare class AtomUI {
+	static createControl(e:HTMLElement, ctrl: (string | {new (e:any)})): WebAtoms.AtomControl;
+}
+
 declare class AtomBinder {
 
 	static getClone(a:any): any;

@@ -436,6 +436,20 @@ declare namespace WebAtoms {
     }
 }
 declare namespace WebAtoms {
+    class AtomFrameStackViewModel extends AtomViewModel {
+        frameId: string;
+        cancel(): void;
+    }
+    class AtomFrameStack extends AtomControl {
+        stack: AtomControl[];
+        current: AtomControl;
+        backCommand: Function;
+        constructor(e: HTMLElement);
+        onBackCommand(): void;
+        push(ctrl: AtomControl): void;
+    }
+}
+declare namespace WebAtoms {
     /**
      *
      *
@@ -856,6 +870,11 @@ declare namespace WebAtoms {
         readonly appScope: any;
     }
 }
+declare class AtomUI {
+    static createControl(e: HTMLElement, ctrl: (string | {
+        new (e: any);
+    })): WebAtoms.AtomControl;
+}
 declare class AtomBinder {
     static getClone(a: any): any;
     static add_CollectionChanged(target: any, f: Function): void;
@@ -1235,6 +1254,18 @@ declare namespace WebAtoms {
          */
         confirm(msg: string, title?: string): Promise<boolean>;
         private showAlert(msg, title, confirm);
+        /**
+         *
+         *
+         * @param {string} frameHostId
+         * @param {((string | {new (e:any)}))} frameType
+         * @param {AtomViewModel} [viewModel]
+         * @returns {Promise<any>}
+         * @memberof WindowService
+         */
+        pushFrame(frameHostId: string, frameType: (string | {
+            new (e: any);
+        }), viewModel?: AtomFrameStackViewModel): Promise<any>;
         /**
          * zIndex of next window
          * @type {number}

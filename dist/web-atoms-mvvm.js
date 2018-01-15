@@ -623,6 +623,71 @@ var WebAtoms;
     }());
     WebAtoms.AtomDevice = AtomDevice;
 })(WebAtoms || (WebAtoms = {}));
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var WebAtoms;
+(function (WebAtoms) {
+    var AtomFrameStackViewModel = /** @class */ (function (_super) {
+        __extends(AtomFrameStackViewModel, _super);
+        function AtomFrameStackViewModel() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        AtomFrameStackViewModel.prototype.cancel = function () {
+            this.broadcast("pop-frame:" + this.frameId, null);
+        };
+        return AtomFrameStackViewModel;
+    }(WebAtoms.AtomViewModel));
+    WebAtoms.AtomFrameStackViewModel = AtomFrameStackViewModel;
+    var AtomFrameStack = /** @class */ (function (_super) {
+        __extends(AtomFrameStack, _super);
+        function AtomFrameStack(e) {
+            var _this = _super.call(this, e) || this;
+            _this.stack = [];
+            _this.current = null;
+            e.style.position = "relative";
+            _this.backCommand = function () {
+                _this.onBackCommand();
+            };
+            return _this;
+        }
+        AtomFrameStack.prototype.onBackCommand = function () {
+            if (!this.stack.length) {
+                console.warn("FrameStack is empty !!");
+                return;
+            }
+            var ctrl = this.current;
+            var e = ctrl._element;
+            // tslint:disable-next-line:no-string-literal
+            ctrl.dispose();
+            e.remove();
+            this.current = this.stack.pop();
+            this.current._element.style.display = "";
+        };
+        AtomFrameStack.prototype.push = function (ctrl) {
+            if (this.current) {
+                this.current._element.style.display = "none";
+                this.stack.push(this.current);
+            }
+            var element = ctrl._element;
+            element.style.position = "absolute";
+            element.style.top =
+                element.style.bottom =
+                    element.style.left =
+                        element.style.right = "0";
+            this._element.appendChild(element);
+            this.current = ctrl;
+        };
+        __decorate([
+            bindableProperty
+        ], AtomFrameStack.prototype, "current", void 0);
+        return AtomFrameStack;
+    }(WebAtoms.AtomControl));
+    WebAtoms.AtomFrameStack = AtomFrameStack;
+})(WebAtoms || (WebAtoms = {}));
 var WebAtoms;
 (function (WebAtoms) {
     /**
@@ -1558,12 +1623,6 @@ var WebAtoms;
     }());
     WebAtoms.AtomWatcher = AtomWatcher;
 })(WebAtoms || (WebAtoms = {}));
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 var WebAtoms;
 (function (WebAtoms) {
     /**
@@ -2404,6 +2463,43 @@ var WebAtoms;
                     resolve(false);
                 });
                 w.refresh();
+            });
+        };
+        /**
+         *
+         *
+         * @param {string} frameHostId
+         * @param {((string | {new (e:any)}))} frameType
+         * @param {AtomViewModel} [viewModel]
+         * @returns {Promise<any>}
+         * @memberof WindowService
+         */
+        WindowService.prototype.pushFrame = function (frameHostId, frameType, viewModel) {
+            return new Promise(function (resolve, reject) {
+                var host = window.document.getElementById(frameHostId);
+                if (!host) {
+                    reject("FrameView Host " + frameHostId + " not found on the current page");
+                }
+                // tslint:disable-next-line:no-string-literal
+                var ctrl = host["atomControl"];
+                var windowDiv = document.createElement("div");
+                windowDiv.id = "atom_frame_" + frameHostId + "_" + (ctrl.stack.length + 1);
+                var windowCtrl = AtomUI.createControl(windowDiv, frameType);
+                windowDiv.setAttribute("atom-local-scope", "true");
+                windowCtrl.init();
+                // tslint:disable-next-line:no-string-literal
+                var dispatcher = WebAtoms["dispatcher"];
+                if (viewModel !== undefined) {
+                    viewModel.frameId = windowDiv.id;
+                    Atom.set(windowCtrl, "viewModel", viewModel);
+                }
+                ctrl.push(windowCtrl);
+                var d = {};
+                d.disposable = WebAtoms.AtomDevice.instance.subscribe("pop-frame:" + windowDiv.id, function () {
+                    ctrl.backCommand();
+                    d.disposable.dispose();
+                });
+                resolve();
             });
         };
         /**
