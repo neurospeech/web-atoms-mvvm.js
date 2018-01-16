@@ -687,9 +687,9 @@ var WebAtoms;
                     this.stack.push(this.current);
                 }
                 else {
-                    var ctrl = this.current;
-                    var e = ctrl._element;
-                    ctrl.dispose();
+                    var c1 = this.current;
+                    var e = c1._element;
+                    c1.dispose();
                     e.remove();
                 }
             }

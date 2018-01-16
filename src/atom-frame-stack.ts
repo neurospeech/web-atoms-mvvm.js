@@ -58,9 +58,9 @@ namespace WebAtoms {
                     this.current._element.style.display = "none";
                     this.stack.push(this.current);
                 } else {
-                    var ctrl:AtomControl = this.current;
-                    var e:HTMLElement = ctrl._element;
-                    ctrl.dispose();
+                    var c1:AtomControl = this.current;
+                    var e:HTMLElement = c1._element;
+                    c1.dispose();
                     e.remove();
                 }
             }
