@@ -1266,7 +1266,7 @@ declare namespace WebAtoms {
          * @returns {Promise<any>}
          * @memberof WindowService
          */
-        pushFrame(frameHostId: string, frameType: (string | {
+        pushPage(frameHostId: string, frameType: (string | {
             new (e: any);
         }), viewModel?: AtomPageViewModel): Promise<any>;
         /**

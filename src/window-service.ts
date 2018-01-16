@@ -264,7 +264,7 @@ namespace WebAtoms {
          * @returns {Promise<any>}
          * @memberof WindowService
          */
-        async pushFrame(frameHostId: string, frameType: (string | {new (e:any)}), viewModel?: AtomPageViewModel): Promise<any> {
+        async pushPage(frameHostId: string, frameType: (string | {new (e:any)}), viewModel?: AtomPageViewModel): Promise<any> {
 
             var host:HTMLElement = window.document.getElementById(frameHostId);
             if(!host) {

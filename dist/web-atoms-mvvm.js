@@ -2525,7 +2525,7 @@ var WebAtoms;
          * @returns {Promise<any>}
          * @memberof WindowService
          */
-        WindowService.prototype.pushFrame = function (frameHostId, frameType, viewModel) {
+        WindowService.prototype.pushPage = function (frameHostId, frameType, viewModel) {
             return __awaiter(this, void 0, void 0, function () {
                 var host, ctrl, canClose;
                 return __generator(this, function (_a) {
