@@ -2545,6 +2545,10 @@ var WebAtoms;
                             return [4 /*yield*/, new Promise(function (resolve, reject) {
                                     var windowDiv = document.createElement("div");
                                     windowDiv.id = "atom_frame_" + frameHostId + "_" + (ctrl.stack.length + 1);
+                                    var p = null;
+                                    if (frameType instanceof String || frameType.constructor === String) {
+                                        var uri = new AtomUri(frameType);
+                                    }
                                     var windowCtrl = AtomUI.createControl(windowDiv, frameType);
                                     windowDiv.setAttribute("atom-local-scope", "true");
                                     windowCtrl.init();

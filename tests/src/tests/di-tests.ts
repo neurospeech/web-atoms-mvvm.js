@@ -1,7 +1,7 @@
 @DIGlobal
-class DateTimeService{
+class DateTimeService {
 
-    get now(): Date{
+    get now(): Date {
         return new Date();
     }
 

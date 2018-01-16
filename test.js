@@ -35,6 +35,7 @@ global.window = {
     }
 };
 
+global.AtomUri = global.window.AtomUri;
 global.WebAtoms = global.window.WebAtoms;
 global.location = window.location;
 global.AtomConfig = window.AtomConfig;

@@ -521,6 +521,23 @@ var DITests = /** @class */ (function (_super) {
     ], DITests);
     return DITests;
 }(TestItem));
+var UrlTests = /** @class */ (function (_super) {
+    __extends(UrlTests, _super);
+    function UrlTests() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    UrlTests.prototype.urlSplit = function () {
+        debugger;
+        var url = new AtomUri("something?a=b&c=d");
+    };
+    __decorate([
+        Test("Url Test")
+    ], UrlTests.prototype, "urlSplit", null);
+    UrlTests = __decorate([
+        Category("Url Tests")
+    ], UrlTests);
+    return UrlTests;
+}(TestItem));
 var MockWindowService = WebAtoms.MockWindowService;
 var WindowTest = /** @class */ (function (_super) {
     __extends(WindowTest, _super);

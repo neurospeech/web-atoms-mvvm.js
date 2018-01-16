@@ -283,6 +283,11 @@ namespace WebAtoms {
                 var windowDiv:HTMLDivElement = document.createElement("div");
                 windowDiv.id = `atom_frame_${frameHostId}_${ctrl.stack.length+1}`;
 
+                var p:any = null;
+
+                if(frameType instanceof String || frameType.constructor === String) {
+                    var uri:AtomUri = new AtomUri(frameType as string);
+                }
 
                 var windowCtrl:any = AtomUI.createControl(windowDiv,frameType);
 
