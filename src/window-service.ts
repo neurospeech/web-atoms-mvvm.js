@@ -285,10 +285,6 @@ namespace WebAtoms {
 
                 var p:any = null;
 
-                if(frameType instanceof String || frameType.constructor === String) {
-                    var uri:AtomUri = new AtomUri(frameType as string);
-                }
-
                 var windowCtrl:any = AtomUI.createControl(windowDiv,frameType);
 
                 windowDiv.setAttribute("atom-local-scope","true");

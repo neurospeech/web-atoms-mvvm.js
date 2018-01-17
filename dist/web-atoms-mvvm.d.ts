@@ -437,14 +437,27 @@ declare namespace WebAtoms {
 }
 declare namespace WebAtoms {
     class AtomPageView extends AtomControl {
+        url: string;
+        private disposables;
         stack: AtomControl[];
         keepStack: boolean;
         current: AtomControl;
+        currentDisposable: AtomDisposable;
+        watchUrl: boolean;
         backCommand: Function;
         constructor(e: HTMLElement);
         onBackCommand(): void;
         canChange(): Promise<boolean>;
         push(ctrl: AtomControl): void;
+        init(): void;
+        dispose(e?: HTMLElement): void;
+        createControl(c: {
+            new (e: HTMLElement);
+        }, vmt: {
+            new ();
+        }): AtomControl;
+        load(url: string): void;
+        toUpperCase(s: string): string;
     }
 }
 declare namespace WebAtoms {
@@ -906,7 +919,7 @@ declare namespace WebAtoms {
         _element: HTMLElement;
         constructor(e: HTMLElement);
         init(): void;
-        dispose(): void;
+        dispose(e?: HTMLElement): void;
         createChildren(): void;
         bindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string, method?: Function): void;
         unbindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string): void;

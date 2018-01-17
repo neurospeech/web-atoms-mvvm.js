@@ -35,7 +35,6 @@ global.window = {
     }
 };
 
-global.AtomUri = global.window.AtomUri;
 global.WebAtoms = global.window.WebAtoms;
 global.location = window.location;
 global.AtomConfig = window.AtomConfig;
@@ -44,6 +43,8 @@ loadScript("./node_modules/web-atoms-unit/web-atoms-mock.js")
 loadScript("./dist/web-atoms-mvvm.js");
 loadScript("./dist/web-atoms-mvvm-mock.js");
 loadScript("./node_modules/web-atoms-unit/index.js");
+
+global.AtomUri = global.window.AtomUri;
 
 // load your tests..
 // ideally all typescript files should be transpiled into

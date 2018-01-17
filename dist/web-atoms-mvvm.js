@@ -635,9 +635,12 @@ var WebAtoms;
         __extends(AtomPageView, _super);
         function AtomPageView(e) {
             var _this = _super.call(this, e) || this;
+            _this.disposables = [];
             _this.stack = [];
             _this.keepStack = true;
             _this.current = null;
+            _this.currentDisposable = null;
+            _this.watchUrl = false;
             e.style.position = "relative";
             _this.backCommand = function () {
                 _this.onBackCommand();
@@ -702,12 +705,94 @@ var WebAtoms;
             this._element.appendChild(element);
             this.current = ctrl;
         };
+        AtomPageView.prototype.init = function () {
+            var _this = this;
+            _super.prototype.init.call(this);
+            if (this.watchUrl) {
+                this.disposables.push(Atom.watch(WebAtoms.BrowserService.instance.appScope, this._element.id, function () {
+                    _this.url = WebAtoms.BrowserService.instance.appScope[_this._element.id];
+                }));
+            }
+            this.disposables.push(Atom.watch(this, "url", function () {
+                _this.load(_this.url);
+            }));
+        };
+        AtomPageView.prototype.dispose = function (e) {
+            _super.prototype.dispose.call(this, e);
+            if (!e) {
+                for (var _i = 0, _a = this.disposables; _i < _a.length; _i++) {
+                    var d = _a[_i];
+                    d.dispose();
+                }
+            }
+        };
+        AtomPageView.prototype.createControl = function (c, vmt) {
+            var div = document.createElement("div");
+            div.id = this._element.id + "_" + (this.stack.length + 1);
+            var ctrl = new (c)(div);
+            var vm = null;
+            if (vmt) {
+                vm = new (vmt)();
+                Atom.post(function () {
+                    ctrl.viewModel = vm;
+                });
+            }
+            return ctrl;
+        };
+        AtomPageView.prototype.load = function (url) {
+            var _this = this;
+            var uri = new AtomUri(url);
+            var fragments = uri.path.split(/(\/|\.)/)
+                .map(function (f) { return _this.toUpperCase(f); });
+            var scope = WebAtoms.BrowserService.instance.appScope;
+            var vm = null;
+            for (var _i = 0, fragments_1 = fragments; _i < fragments_1.length; _i++) {
+                var f = fragments_1[_i];
+                vm = scope[f + "ViewModel"];
+                scope = scope[f];
+                if (!scope) {
+                    throw new Error("No " + f + " in " + url + " found.");
+                }
+            }
+            var ctrl = this.createControl(scope, vm);
+            Atom.post(function () {
+                var q = uri.query;
+                vm = ctrl.viewModel;
+                if (vm) {
+                    if (q) {
+                        for (var k in q) {
+                            if (q.hasOwnProperty(k)) {
+                                var v = q[k];
+                                vm[k] = v;
+                            }
+                        }
+                    }
+                    if (vm instanceof WebAtoms.AtomPageViewModel) {
+                        var pvm = vm;
+                        pvm.pageId = ctrl._element.id;
+                    }
+                }
+            });
+            this.push(ctrl);
+        };
+        AtomPageView.prototype.toUpperCase = function (s) {
+            return s.split("-")
+                .filter(function (t) { return t; })
+                .map(function (t) { return t.substr(0, 1).toUpperCase() + t.substr(1); })
+                .join("");
+        };
+        __decorate([
+            bindableProperty
+        ], AtomPageView.prototype, "url", void 0);
         __decorate([
             bindableProperty
         ], AtomPageView.prototype, "keepStack", void 0);
         __decorate([
             bindableProperty
         ], AtomPageView.prototype, "current", void 0);
+        __decorate([
+            bindableProperty
+        ], AtomPageView.prototype, "watchUrl", void 0);
         return AtomPageView;
     }(WebAtoms.AtomControl));
     WebAtoms.AtomPageView = AtomPageView;
@@ -2546,9 +2631,6 @@ var WebAtoms;
                                     var windowDiv = document.createElement("div");
                                     windowDiv.id = "atom_frame_" + frameHostId + "_" + (ctrl.stack.length + 1);
                                     var p = null;
-                                    if (frameType instanceof String || frameType.constructor === String) {
-                                        var uri = new AtomUri(frameType);
-                                    }
                                     var windowCtrl = AtomUI.createControl(windowDiv, frameType);
                                     windowDiv.setAttribute("atom-local-scope", "true");
                                     windowCtrl.init();

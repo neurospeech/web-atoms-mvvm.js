@@ -44,7 +44,7 @@ namespace WebAtoms {
 
 		init(): void;
 
-		dispose(): void;
+		dispose(e?:HTMLElement): void;
 
 		createChildren():void;
 
