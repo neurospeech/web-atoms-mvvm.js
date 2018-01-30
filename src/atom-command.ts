@@ -169,7 +169,7 @@ declare class Atom {
     static secureUrl(url: string, ... padding: string[]): string;
 
     /**
-     * Makes given object bindable that will automatically fire refresh event
+     * Creates bindable proxy for given object
      * @static
      * @param {*} e
      * @returns {*}
@@ -310,10 +310,7 @@ Atom.bindable = (e:any):any => {
          return e;
     }
     if(e instanceof Array) {
-        for(var item of e) {
-            Atom.bindable(e);
-        }
-        return e;
+        throw new TypeError("Invalid object, try to use AtomList instead of Atom.bindable");
     }
 
     if(typeof e === "string" || e.constructor === String) {
@@ -330,7 +327,28 @@ Atom.bindable = (e:any):any => {
 
     var self:any = e;
 
-    
+    if(e._$_isBindable) {
+        return e;
+    }
+
+    var keys: string[] = Object.keys(e);
+    e._$_isBindable = true;
+
+    for(var key of keys) {
+        var k:string = key;
+        var v:any = e[key];
+        var vk:string = `_${key}`;
+        e[vk] = v;
+        delete e[key];
+        Object.defineProperty(e, key, {
+            get: function():any { return this[vk]; },
+            set: function(v:any):void {
+                this[vk] = v;
+                Atom.refresh(this,k);
+            },
+            enumerable: true
+        });
+    }
 
     return e;
 };

@@ -220,6 +220,14 @@ declare class Atom {
      * @memberof Atom
      */
     static secureUrl(url: string, ...padding: string[]): string;
+    /**
+     * Creates bindable proxy for given object
+     * @static
+     * @param {*} e
+     * @returns {*}
+     * @memberof Atom
+     */
+    static bindable(e: any): any;
 }
 declare class AtomDate {
     static zoneOffsetMinutes: number;

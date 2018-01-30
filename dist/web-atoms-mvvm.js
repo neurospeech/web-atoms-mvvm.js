@@ -213,6 +213,46 @@ function bindableProperty(target, key) {
         }
     }
 }
+Atom.bindable = function (e) {
+    if (!e) {
+        return e;
+    }
+    if (e instanceof Array) {
+        throw new TypeError("Invalid object, try to use AtomList instead of Atom.bindable");
+    }
+    if (typeof e === "string" || e.constructor === String) {
+        return e;
+    }
+    if (typeof e === "number" || e.constructor === Number) {
+        return e;
+    }
+    if (e.constructor === Date) {
+        return e;
+    }
+    var self = e;
+    if (e._$_isBindable) {
+        return e;
+    }
+    var keys = Object.keys(e);
+    e._$_isBindable = true;
+    for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+        var key = keys_1[_i];
+        var k = key;
+        var v = e[key];
+        var vk = "_" + key;
+        e[vk] = v;
+        delete e[key];
+        Object.defineProperty(e, key, {
+            get: function () { return this[vk]; },
+            set: function (v) {
+                this[vk] = v;
+                Atom.refresh(this, k);
+            },
+            enumerable: true
+        });
+    }
+    return e;
+};
 var WebAtoms;
 (function (WebAtoms) {
     /**
