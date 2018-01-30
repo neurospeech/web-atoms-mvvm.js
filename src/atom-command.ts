@@ -168,6 +168,14 @@ declare class Atom {
      */
     static secureUrl(url: string, ... padding: string[]): string;
 
+    /**
+     * Makes given object bindable that will automatically fire refresh event
+     * @static
+     * @param {*} e
+     * @returns {*}
+     * @memberof Atom
+     */
+    static bindable(e:any):any;
 
 }
 
@@ -294,6 +302,38 @@ function bindableProperty(target: any, key: string):void {
             }
         }
     }
+
+
+
+Atom.bindable = (e:any):any => {
+    if(!e) {
+         return e;
+    }
+    if(e instanceof Array) {
+        for(var item of e) {
+            Atom.bindable(e);
+        }
+        return e;
+    }
+
+    if(typeof e === "string" || e.constructor === String) {
+        return e;
+    }
+
+    if(typeof e === "number" || e.constructor === Number) {
+        return e;
+    }
+
+    if(e.constructor === Date) {
+        return e;
+    }
+
+    var self:any = e;
+
+    
+
+    return e;
+};
 
 namespace WebAtoms {
 
