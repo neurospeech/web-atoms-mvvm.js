@@ -175,7 +175,7 @@ declare class Atom {
      * @returns {*}
      * @memberof Atom
      */
-    static bindable(e:any):any;
+    static bindable<T>(e:T):T;
 
 }
 
