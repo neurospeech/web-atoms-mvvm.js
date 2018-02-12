@@ -935,6 +935,7 @@ declare namespace WebAtoms {
         unbindEvent(e: HTMLElement, eventName: string, methodName: (string | Function), key?: string): void;
         bind(e: HTMLElement, key: string, value: (Array<string[]> | string[]), twoWays?: boolean, vf?: () => any, events?: string | string[]): void;
         viewModel: any;
+        setLocalValue(key: any, value: any, element: any, refresh: boolean): void;
     }
     class AtomItemsControl extends AtomControl {
         items: any;

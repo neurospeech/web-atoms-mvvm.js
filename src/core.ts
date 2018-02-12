@@ -59,6 +59,8 @@ namespace WebAtoms {
 			events?: string | string[] ): void;
 
 		viewModel:any;
+
+		setLocalValue(key:any,value:any,element:any,refresh:boolean):void;
 	}
 
 	export declare class AtomItemsControl extends AtomControl {

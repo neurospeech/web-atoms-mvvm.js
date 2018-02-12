@@ -274,9 +274,12 @@ function bindableProperty(target: any, key: string):void {
             }
             this[keyName] = newVal;
 
-            var c:any = this._$_supressRefresh;
-            if(!(c && c[key])) {
-                Atom.refresh(this, key);
+            // only if this is not an AtomControl...
+            if(!(this._element && this._element.atomControl === this)) {
+                var c:any = this._$_supressRefresh;
+                if(!(c && c[key])) {
+                    Atom.refresh(this, key);
+                }
             }
 
             if(this.onPropertyChanged) {
