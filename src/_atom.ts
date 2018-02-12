@@ -94,8 +94,9 @@ function classCreator(name, basePrototype, classConstructor, classPrototype, cla
 
     if (baseClass) {
         f.__baseType = baseClass;
-
+        var fx:Function = f;
         function __(){
+            fx.call(this,arguments);
             this.constructor = classPrototype;
         }
 

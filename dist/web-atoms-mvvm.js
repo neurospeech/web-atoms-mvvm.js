@@ -83,7 +83,9 @@ function classCreator(name, basePrototype, classConstructor, classPrototype, cla
     f.__typeName = name;
     if (baseClass) {
         f.__baseType = baseClass;
+        var fx = f;
         function __() {
+            fx.call(this, arguments);
             this.constructor = classPrototype;
         }
         __.prototype = basePrototype;
