@@ -811,7 +811,6 @@ var WebAtoms;
             }
             var ctrl = this.current;
             var e = ctrl._element;
-            // tslint:disable-next-line:no-string-literal
             ctrl.dispose();
             e.remove();
             this.current = this.stack.pop();
@@ -904,7 +903,7 @@ var WebAtoms;
                                 return [2 /*return*/];
                             }
                             uri = new AtomUri(url);
-                            fragments = uri.path.split(/(\/|\.)/)
+                            fragments = uri.path.split(".")
                                 .map(function (f) { return _this.toUpperCase(f); });
                             scope = window;
                             vm = null;

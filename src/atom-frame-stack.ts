@@ -34,7 +34,7 @@ namespace WebAtoms {
 
             var ctrl:AtomControl = this.current;
             var e:HTMLElement = ctrl._element;
-            // tslint:disable-next-line:no-string-literal
+
             ctrl.dispose();
             e.remove();
 
@@ -127,7 +127,7 @@ namespace WebAtoms {
             var uri:AtomUri = new AtomUri(url);
 
             var fragments:string[] =
-                uri.path.split(/(\/|\.)/)
+                uri.path.split(".")
                 .map(f => this.toUpperCase(f));
 
             var scope:any = window;
