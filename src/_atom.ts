@@ -3,7 +3,7 @@
 declare function mapLibrary(...a:any[]):any;
 declare function createProperty(...a:any[]):any;
 
-function classCreator(name, basePrototype, classConstructor, classPrototype, classProperties, thisPrototype, thisProperties) {
+function classCreator__(name, basePrototype, classConstructor, classPrototype, classProperties, thisPrototype, thisProperties) {
     var baseClass = basePrototype ? basePrototype.constructor : null;
     var old = classConstructor || (function () { });
     var cp = classProperties;

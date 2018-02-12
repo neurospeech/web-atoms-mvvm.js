@@ -1,6 +1,6 @@
 declare function mapLibrary(...a: any[]): any;
 declare function createProperty(...a: any[]): any;
-declare function classCreator(name: any, basePrototype: any, classConstructor: any, classPrototype: any, classProperties: any, thisPrototype: any, thisProperties: any): any;
+declare function classCreator__(name: any, basePrototype: any, classConstructor: any, classPrototype: any, classProperties: any, thisPrototype: any, thisProperties: any): any;
 /**
  * Easy and Simple Dependency Injection
  */

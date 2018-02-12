@@ -1,5 +1,5 @@
 // tslint:disable
-function classCreator(name, basePrototype, classConstructor, classPrototype, classProperties, thisPrototype, thisProperties) {
+function classCreator__(name, basePrototype, classConstructor, classPrototype, classProperties, thisPrototype, thisProperties) {
     var baseClass = basePrototype ? basePrototype.constructor : null;
     var old = classConstructor || (function () { });
     var cp = classProperties;
