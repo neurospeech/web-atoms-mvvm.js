@@ -903,7 +903,7 @@ var WebAtoms;
                             uri = new AtomUri(url);
                             fragments = uri.path.split(/(\/|\.)/)
                                 .map(function (f) { return _this.toUpperCase(f); });
-                            scope = WebAtoms.BrowserService.instance.appScope;
+                            scope = window;
                             vm = null;
                             for (_i = 0, fragments_1 = fragments; _i < fragments_1.length; _i++) {
                                 f = fragments_1[_i];

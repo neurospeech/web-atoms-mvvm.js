@@ -130,7 +130,7 @@ namespace WebAtoms {
                 uri.path.split(/(\/|\.)/)
                 .map(f => this.toUpperCase(f));
 
-            var scope:any = BrowserService.instance.appScope;
+            var scope:any = window;
             var vm:any = null;
             for(var f of fragments) {
                 vm = scope[f + "ViewModel"];
