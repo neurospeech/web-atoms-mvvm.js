@@ -7,6 +7,7 @@ function classCreator(name, basePrototype, classConstructor, classPrototype, cla
     if (baseClass) {
         if (classProperties) {
             f = function () {
+                this.constructor = classPrototype;
                 for (var k in cp) {
                     this["_" + k] = cp[k];
                 }
@@ -18,6 +19,7 @@ function classCreator(name, basePrototype, classConstructor, classPrototype, cla
         }
         else {
             f = function () {
+                this.constructor = classPrototype;
                 baseClass.apply(this, arguments);
                 this.__typeName = name;
                 old.apply(this, arguments);
@@ -83,17 +85,19 @@ function classCreator(name, basePrototype, classConstructor, classPrototype, cla
     f.__typeName = name;
     if (baseClass) {
         f.__baseType = baseClass;
-        var fx = f;
-        function __() {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            fx.call(this, args);
-            this.constructor = classPrototype;
-        }
-        __.prototype = basePrototype;
-        f = new __();
+        // var fx = f;
+        // function __() {
+        //     var args = [];
+        //     for (var _i = 0; _i < arguments.length; _i++) {
+        //         args[_i] = arguments[_i];
+        //     }
+        //     fx.call(this, args);
+        //     this.constructor = classPrototype;
+        // }
+        // __.prototype = basePrototype;
+        // f = new __();
+        f.prototype = basePrototype;
+        f = new f();
     }
     else {
         f.prototype = classPrototype;
