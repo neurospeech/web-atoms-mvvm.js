@@ -107,7 +107,13 @@ namespace WebAtoms {
         createControl(c: {new(e:HTMLElement)}, vmt: {new()}): AtomControl {
             var div:HTMLElement = document.createElement("div");
             div.id = `${this._element.id}_${this.stack.length + 1}`;
-            var ctrl:AtomControl = new (c)(div);
+
+            var ctrl:any = AtomUI.createControl(div,c);
+
+            div.setAttribute("atom-local-scope","true");
+
+            ctrl.init();
+
             var vm:any = null;
             if(vmt) {
                 vm = new (vmt)();

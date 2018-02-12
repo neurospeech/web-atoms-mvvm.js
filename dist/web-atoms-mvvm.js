@@ -1,262 +1,3 @@
-// tslint:disable
-function classCreator__(name, basePrototype, classConstructor, classPrototype, classProperties, thisPrototype, thisProperties) {
-    var baseClass = basePrototype ? basePrototype.constructor : null;
-    var old = classConstructor || (function () { });
-    var cp = classProperties;
-    var f = null;
-    if (baseClass) {
-        if (classProperties) {
-            f = function () {
-                this.constructor = classPrototype;
-                for (var k in cp) {
-                    this["_" + k] = cp[k];
-                }
-                baseClass.apply(this, arguments);
-                this.__typeName = name;
-                //var cp = Atom.clone(classProperties);
-                old.apply(this, arguments);
-            };
-        }
-        else {
-            f = function () {
-                this.constructor = classPrototype;
-                baseClass.apply(this, arguments);
-                this.__typeName = name;
-                old.apply(this, arguments);
-            };
-        }
-        var bpt = baseClass.prototype;
-        // extend
-        for (var k in bpt) {
-            if (classPrototype[k])
-                continue;
-            if (bpt.hasOwnProperty(k)) {
-                var pd = Object.getOwnPropertyDescriptor(bpt, k);
-                if (!pd) {
-                    classPrototype[k] = bpt[k];
-                }
-                else {
-                    Object.defineProperty(classPrototype, k, pd);
-                }
-            }
-        }
-    }
-    else {
-        if (classProperties) {
-            f = function () {
-                this.__typeName = name;
-                //var cp = Atom.clone(classProperties);
-                for (var k in cp) {
-                    this["_" + k] = cp[k];
-                }
-                old.apply(this, arguments);
-            };
-        }
-        else {
-            f = function () {
-                this.__typeName = name;
-                old.apply(this, arguments);
-            };
-        }
-    }
-    if (classProperties) {
-        for (var k in classProperties) {
-            if (!classPrototype["get_" + k]) {
-                classPrototype["get_" + k] = createProperty("_" + k, true);
-            }
-            if (!classPrototype["set_" + k]) {
-                classPrototype["set_" + k] = createProperty("_" + k);
-            }
-        }
-    }
-    for (var k in classPrototype) {
-        if (/^get\_/.test(k)) {
-            var gx = classPrototype[k];
-            var nx = k.substr(4);
-            var sx = classPrototype["set_" + nx];
-            Object.defineProperty(classPrototype, nx, {
-                get: gx,
-                set: sx ? createProperty("_" + nx, false, nx) : undefined,
-                enumerable: true,
-                configurable: true
-            });
-        }
-    }
-    f.__typeName = name;
-    if (baseClass) {
-        f.__baseType = baseClass;
-        // var fx = f;
-        // function __() {
-        //     var args = [];
-        //     for (var _i = 0; _i < arguments.length; _i++) {
-        //         args[_i] = arguments[_i];
-        //     }
-        //     fx.call(this, args);
-        //     this.constructor = classPrototype;
-        // }
-        // __.prototype = basePrototype;
-        // f = new __();
-        f.prototype = basePrototype;
-        f = new f();
-    }
-    else {
-        f.prototype = classPrototype;
-        f.prototype.constructor = f;
-    }
-    //f.constructor = classPrototype;
-    if (!classPrototype.hasOwnProperty("toString")) {
-        f.prototype.toString = function () {
-            return name;
-        };
-    }
-    mapLibrary(/\./.test(name) ? name : 'WebAtoms.' + name, window, f);
-    return f;
-}
-;
-/**
- * Easy and Simple Dependency Injection
- */
-var WebAtoms;
-(function (WebAtoms) {
-    var DIFactory = /** @class */ (function () {
-        function DIFactory(key, factory, transient) {
-            this.transient = transient;
-            this.factory = factory;
-            this.key = key;
-        }
-        DIFactory.prototype.resolve = function () {
-            if (this.transient) {
-                return this.factory();
-            }
-            return this.instance || (this.instance = this.factory());
-        };
-        DIFactory.prototype.push = function (factory, transient) {
-            this.stack = this.stack || [];
-            this.stack.push({
-                factory: this.factory,
-                instance: this.instance,
-                transient: this.transient
-            });
-            this.transient = transient;
-            this.instance = undefined;
-            this.factory = factory;
-        };
-        DIFactory.prototype.pop = function () {
-            if (!(this.stack && this.stack.length)) {
-                throw new Error("Stack in DIFactory is empty");
-            }
-            var obj = this.stack.pop();
-            this.factory = obj.factory;
-            this.transient = obj.transient;
-            this.instance = obj.instance;
-        };
-        return DIFactory;
-    }());
-    /**
-     * @export
-     * @class DI
-     */
-    var DI = /** @class */ (function () {
-        function DI() {
-        }
-        /**
-         * @static
-         * @template T
-         * @param {new () => T} key
-         * @param {() => T} factory
-         * @param {boolean} [transient=false] - If true, always new instance will be created
-         * @memberof DI
-         */
-        DI.register = function (key, factory, transient) {
-            if (transient === void 0) { transient = false; }
-            var k = key;
-            var existing = DI.factory[k];
-            if (existing) {
-                throw new Error("Factory for " + key.name + " is already registered");
-            }
-            DI.factory[k] = new DIFactory(key, factory, transient);
-        };
-        /**
-         * @static
-         * @template T
-         * @param {new () => T} c
-         * @returns {T}
-         * @memberof DI
-         */
-        DI.resolve = function (c) {
-            var f = DI.factory[c];
-            if (!f) {
-                throw new Error("No factory registered for " + c);
-            }
-            return f.resolve();
-        };
-        /**
-         * Use this for unit testing, this will push existing
-         * DI factory and all instances will be resolved with
-         * given instance
-         *
-         * @static
-         * @param {*} key
-         * @param {*} instance
-         * @memberof DI
-         */
-        DI.push = function (key, instance) {
-            var f = DI.factory[key];
-            if (!f) {
-                DI.register(key, function () { return instance; });
-            }
-            else {
-                f.push(function () { return instance; }, true);
-            }
-        };
-        /**
-         * @static
-         * @param {*} key
-         * @memberof DI
-         */
-        DI.pop = function (key) {
-            var f = DI.factory[key];
-            if (f) {
-                f.pop();
-            }
-        };
-        DI.factory = {};
-        return DI;
-    }());
-    WebAtoms.DI = DI;
-    /**
-     * This decorator will register given class as singleton instance on DI.
-     * @example
-     *      @DIGlobal
-     *      class BackendService{
-     *      }
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIGlobal(c) {
-        DI.register(c, function () { return new c(); });
-        return c;
-    }
-    WebAtoms.DIGlobal = DIGlobal;
-    /**
-     * This decorator will register given class as transient instance on DI.
-     * @example
-     *      @DIAlwaysNew
-     *      class StringHelper{
-     *      }
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIAlwaysNew(c) {
-        DI.register(c, function () { return new c(); }, true);
-        return c;
-    }
-    WebAtoms.DIAlwaysNew = DIAlwaysNew;
-})(WebAtoms || (WebAtoms = {}));
-var DIGlobal = WebAtoms.DIGlobal;
-var DIAlwaysNew = WebAtoms.DIAlwaysNew;
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -881,7 +622,9 @@ var WebAtoms;
         AtomPageView.prototype.createControl = function (c, vmt) {
             var div = document.createElement("div");
             div.id = this._element.id + "_" + (this.stack.length + 1);
-            var ctrl = new (c)(div);
+            var ctrl = AtomUI.createControl(div, c);
+            div.setAttribute("atom-local-scope", "true");
+            ctrl.init();
             var vm = null;
             if (vmt) {
                 vm = new (vmt)();
@@ -2933,4 +2676,263 @@ var WebAtoms;
 })(WebAtoms || (WebAtoms = {}));
 // tslint:disable-next-line:typedef
 var WindowService = WebAtoms.WindowService;
+// tslint:disable
+function classCreator__(name, basePrototype, classConstructor, classPrototype, classProperties, thisPrototype, thisProperties) {
+    var baseClass = basePrototype ? basePrototype.constructor : null;
+    var old = classConstructor || (function () { });
+    var cp = classProperties;
+    var f = null;
+    if (baseClass) {
+        if (classProperties) {
+            f = function () {
+                this.constructor = classPrototype;
+                for (var k in cp) {
+                    this["_" + k] = cp[k];
+                }
+                baseClass.apply(this, arguments);
+                this.__typeName = name;
+                //var cp = Atom.clone(classProperties);
+                old.apply(this, arguments);
+            };
+        }
+        else {
+            f = function () {
+                this.constructor = classPrototype;
+                baseClass.apply(this, arguments);
+                this.__typeName = name;
+                old.apply(this, arguments);
+            };
+        }
+        var bpt = baseClass.prototype;
+        // extend
+        for (var k in bpt) {
+            if (classPrototype[k])
+                continue;
+            if (bpt.hasOwnProperty(k)) {
+                var pd = Object.getOwnPropertyDescriptor(bpt, k);
+                if (!pd) {
+                    classPrototype[k] = bpt[k];
+                }
+                else {
+                    Object.defineProperty(classPrototype, k, pd);
+                }
+            }
+        }
+    }
+    else {
+        if (classProperties) {
+            f = function () {
+                this.__typeName = name;
+                //var cp = Atom.clone(classProperties);
+                for (var k in cp) {
+                    this["_" + k] = cp[k];
+                }
+                old.apply(this, arguments);
+            };
+        }
+        else {
+            f = function () {
+                this.__typeName = name;
+                old.apply(this, arguments);
+            };
+        }
+    }
+    if (classProperties) {
+        for (var k in classProperties) {
+            if (!classPrototype["get_" + k]) {
+                classPrototype["get_" + k] = createProperty("_" + k, true);
+            }
+            if (!classPrototype["set_" + k]) {
+                classPrototype["set_" + k] = createProperty("_" + k);
+            }
+        }
+    }
+    for (var k in classPrototype) {
+        if (/^get\_/.test(k)) {
+            var gx = classPrototype[k];
+            var nx = k.substr(4);
+            var sx = classPrototype["set_" + nx];
+            Object.defineProperty(classPrototype, nx, {
+                get: gx,
+                set: sx ? createProperty("_" + nx, false, nx) : undefined,
+                enumerable: true,
+                configurable: true
+            });
+        }
+    }
+    f.__typeName = name;
+    if (baseClass) {
+        f.__baseType = baseClass;
+        // var fx = f;
+        // function __() {
+        //     var args = [];
+        //     for (var _i = 0; _i < arguments.length; _i++) {
+        //         args[_i] = arguments[_i];
+        //     }
+        //     fx.call(this, args);
+        //     this.constructor = classPrototype;
+        // }
+        // __.prototype = basePrototype;
+        // f = new __();
+        f.prototype = basePrototype;
+        f = new f();
+    }
+    else {
+        f.prototype = classPrototype;
+        f.prototype.constructor = f;
+    }
+    //f.constructor = classPrototype;
+    if (!classPrototype.hasOwnProperty("toString")) {
+        f.prototype.toString = function () {
+            return name;
+        };
+    }
+    mapLibrary(/\./.test(name) ? name : 'WebAtoms.' + name, window, f);
+    return f;
+}
+;
+/**
+ * Easy and Simple Dependency Injection
+ */
+var WebAtoms;
+(function (WebAtoms) {
+    var DIFactory = /** @class */ (function () {
+        function DIFactory(key, factory, transient) {
+            this.transient = transient;
+            this.factory = factory;
+            this.key = key;
+        }
+        DIFactory.prototype.resolve = function () {
+            if (this.transient) {
+                return this.factory();
+            }
+            return this.instance || (this.instance = this.factory());
+        };
+        DIFactory.prototype.push = function (factory, transient) {
+            this.stack = this.stack || [];
+            this.stack.push({
+                factory: this.factory,
+                instance: this.instance,
+                transient: this.transient
+            });
+            this.transient = transient;
+            this.instance = undefined;
+            this.factory = factory;
+        };
+        DIFactory.prototype.pop = function () {
+            if (!(this.stack && this.stack.length)) {
+                throw new Error("Stack in DIFactory is empty");
+            }
+            var obj = this.stack.pop();
+            this.factory = obj.factory;
+            this.transient = obj.transient;
+            this.instance = obj.instance;
+        };
+        return DIFactory;
+    }());
+    /**
+     * @export
+     * @class DI
+     */
+    var DI = /** @class */ (function () {
+        function DI() {
+        }
+        /**
+         * @static
+         * @template T
+         * @param {new () => T} key
+         * @param {() => T} factory
+         * @param {boolean} [transient=false] - If true, always new instance will be created
+         * @memberof DI
+         */
+        DI.register = function (key, factory, transient) {
+            if (transient === void 0) { transient = false; }
+            var k = key;
+            var existing = DI.factory[k];
+            if (existing) {
+                throw new Error("Factory for " + key.name + " is already registered");
+            }
+            DI.factory[k] = new DIFactory(key, factory, transient);
+        };
+        /**
+         * @static
+         * @template T
+         * @param {new () => T} c
+         * @returns {T}
+         * @memberof DI
+         */
+        DI.resolve = function (c) {
+            var f = DI.factory[c];
+            if (!f) {
+                throw new Error("No factory registered for " + c);
+            }
+            return f.resolve();
+        };
+        /**
+         * Use this for unit testing, this will push existing
+         * DI factory and all instances will be resolved with
+         * given instance
+         *
+         * @static
+         * @param {*} key
+         * @param {*} instance
+         * @memberof DI
+         */
+        DI.push = function (key, instance) {
+            var f = DI.factory[key];
+            if (!f) {
+                DI.register(key, function () { return instance; });
+            }
+            else {
+                f.push(function () { return instance; }, true);
+            }
+        };
+        /**
+         * @static
+         * @param {*} key
+         * @memberof DI
+         */
+        DI.pop = function (key) {
+            var f = DI.factory[key];
+            if (f) {
+                f.pop();
+            }
+        };
+        DI.factory = {};
+        return DI;
+    }());
+    WebAtoms.DI = DI;
+    /**
+     * This decorator will register given class as singleton instance on DI.
+     * @example
+     *      @DIGlobal
+     *      class BackendService{
+     *      }
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIGlobal(c) {
+        DI.register(c, function () { return new c(); });
+        return c;
+    }
+    WebAtoms.DIGlobal = DIGlobal;
+    /**
+     * This decorator will register given class as transient instance on DI.
+     * @example
+     *      @DIAlwaysNew
+     *      class StringHelper{
+     *      }
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIAlwaysNew(c) {
+        DI.register(c, function () { return new c(); }, true);
+        return c;
+    }
+    WebAtoms.DIAlwaysNew = DIAlwaysNew;
+})(WebAtoms || (WebAtoms = {}));
+var DIGlobal = WebAtoms.DIGlobal;
+var DIAlwaysNew = WebAtoms.DIAlwaysNew;
 //# sourceMappingURL=web-atoms-mvvm.js.map
