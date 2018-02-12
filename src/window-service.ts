@@ -1,6 +1,6 @@
 namespace WebAtoms {
 
-    export declare type AtomControlType = new (e:HTMLElement) => AtomControl;
+    export declare type AtomControlType = {new(e:any): AtomControl};
 
     /**
      *
@@ -367,7 +367,7 @@ namespace WebAtoms {
                 atomApplication._element.appendChild(windowDiv);
 
                 if(windowType instanceof String) {
-                    windowType = window[windowType] as {new (e:any)};
+                    windowType = window[windowType as string] as {new (e:any)};
                 }
 
                 var windowCtrl:any = AtomUI.createControl(windowDiv,windowType);

@@ -1193,7 +1193,9 @@ declare namespace WebAtoms.Rest {
     }
 }
 declare namespace WebAtoms {
-    type AtomControlType = new (e: HTMLElement) => AtomControl;
+    type AtomControlType = {
+        new (e: any): AtomControl;
+    };
     /**
      *
      *
