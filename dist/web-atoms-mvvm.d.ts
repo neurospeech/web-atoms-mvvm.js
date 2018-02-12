@@ -451,7 +451,6 @@ declare namespace WebAtoms {
         keepStack: boolean;
         current: AtomControl;
         currentDisposable: AtomDisposable;
-        watchUrl: boolean;
         backCommand: Function;
         constructor(e: HTMLElement);
         onBackCommand(): void;
@@ -464,7 +463,7 @@ declare namespace WebAtoms {
         }, vmt: {
             new ();
         }): AtomControl;
-        load(url: string): void;
+        load(url: string): Promise<any>;
         toUpperCase(s: string): string;
     }
 }

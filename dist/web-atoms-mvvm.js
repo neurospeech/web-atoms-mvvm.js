@@ -680,7 +680,6 @@ var WebAtoms;
             _this.keepStack = true;
             _this.current = null;
             _this.currentDisposable = null;
-            _this.watchUrl = false;
             e.style.position = "relative";
             _this.backCommand = function () {
                 _this.onBackCommand();
@@ -748,11 +747,6 @@ var WebAtoms;
         AtomPageView.prototype.init = function () {
             var _this = this;
             _super.prototype.init.call(this);
-            if (this.watchUrl) {
-                this.disposables.push(Atom.watch(WebAtoms.BrowserService.instance.appScope, this._element.id, function () {
-                    _this.url = WebAtoms.BrowserService.instance.appScope[_this._element.id];
-                }));
-            }
             this.disposables.push(Atom.watch(this, "url", function () {
                 _this.load(_this.url);
             }));
@@ -764,6 +758,7 @@ var WebAtoms;
                     var d = _a[_i];
                     d.dispose();
                 }
+                this.disposables = [];
             }
         };
         AtomPageView.prototype.createControl = function (c, vmt) {
@@ -780,40 +775,53 @@ var WebAtoms;
             return ctrl;
         };
         AtomPageView.prototype.load = function (url) {
-            var _this = this;
-            var uri = new AtomUri(url);
-            var fragments = uri.path.split(/(\/|\.)/)
-                .map(function (f) { return _this.toUpperCase(f); });
-            var scope = WebAtoms.BrowserService.instance.appScope;
-            var vm = null;
-            for (var _i = 0, fragments_1 = fragments; _i < fragments_1.length; _i++) {
-                var f = fragments_1[_i];
-                vm = scope[f + "ViewModel"];
-                scope = scope[f];
-                if (!scope) {
-                    throw new Error("No " + f + " in " + url + " found.");
-                }
-            }
-            var ctrl = this.createControl(scope, vm);
-            Atom.post(function () {
-                var q = uri.query;
-                vm = ctrl.viewModel;
-                if (vm) {
-                    if (q) {
-                        for (var k in q) {
-                            if (q.hasOwnProperty(k)) {
-                                var v = q[k];
-                                vm[k] = v;
+            return __awaiter(this, void 0, void 0, function () {
+                var _this = this;
+                var uri, fragments, scope, vm, _i, fragments_1, f, ctrl;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, this.canChange()];
+                        case 1:
+                            if (!(_a.sent())) {
+                                return [2 /*return*/];
                             }
-                        }
+                            uri = new AtomUri(url);
+                            fragments = uri.path.split(/(\/|\.)/)
+                                .map(function (f) { return _this.toUpperCase(f); });
+                            scope = WebAtoms.BrowserService.instance.appScope;
+                            vm = null;
+                            for (_i = 0, fragments_1 = fragments; _i < fragments_1.length; _i++) {
+                                f = fragments_1[_i];
+                                vm = scope[f + "ViewModel"];
+                                scope = scope[f];
+                                if (!scope) {
+                                    throw new Error("No " + f + " in " + url + " found.");
+                                }
+                            }
+                            ctrl = this.createControl(scope, vm);
+                            Atom.post(function () {
+                                var q = uri.query;
+                                vm = ctrl.viewModel;
+                                if (vm) {
+                                    if (q) {
+                                        for (var k in q) {
+                                            if (q.hasOwnProperty(k)) {
+                                                var v = q[k];
+                                                vm[k] = v;
+                                            }
+                                        }
+                                    }
+                                    if (vm instanceof WebAtoms.AtomPageViewModel) {
+                                        var pvm = vm;
+                                        pvm.pageId = ctrl._element.id;
+                                    }
+                                }
+                            });
+                            this.push(ctrl);
+                            return [2 /*return*/];
                     }
-                    if (vm instanceof WebAtoms.AtomPageViewModel) {
-                        var pvm = vm;
-                        pvm.pageId = ctrl._element.id;
-                    }
-                }
+                });
             });
-            this.push(ctrl);
         };
         AtomPageView.prototype.toUpperCase = function (s) {
             return s.split("-")
@@ -830,9 +838,6 @@ var WebAtoms;
         __decorate([
             bindableProperty
         ], AtomPageView.prototype, "current", void 0);
-        __decorate([
-            bindableProperty
-        ], AtomPageView.prototype, "watchUrl", void 0);
         return AtomPageView;
     }(WebAtoms.AtomControl));
     WebAtoms.AtomPageView = AtomPageView;

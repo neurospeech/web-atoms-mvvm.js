@@ -16,9 +16,6 @@ namespace WebAtoms {
 
         currentDisposable:AtomDisposable = null;
 
-        @bindableProperty
-        watchUrl: boolean = false;
-
         backCommand: Function;
 
         constructor(e:HTMLElement) {
@@ -86,18 +83,10 @@ namespace WebAtoms {
             this._element.appendChild(element);
 
             this.current = ctrl;
-
-            
         }
 
         init(): void {
             super.init();
-
-            if(this.watchUrl) {
-                this.disposables.push(Atom.watch(BrowserService.instance.appScope, this._element.id, () => {
-                    this.url = BrowserService.instance.appScope[this._element.id];
-                }));
-            }
 
             this.disposables.push(Atom.watch(this,"url", () => {
                 this.load(this.url);
@@ -111,6 +100,7 @@ namespace WebAtoms {
                 for(var d of this.disposables) {
                     d.dispose();
                 }
+                this.disposables = [];
             }
         }
 
@@ -128,7 +118,11 @@ namespace WebAtoms {
             return ctrl;
         }
 
-        load(url: string): void {
+        async load(url: string): Promise<any> {
+
+            if(! await this.canChange()) {
+                return;
+            }
 
             var uri:AtomUri = new AtomUri(url);
 
