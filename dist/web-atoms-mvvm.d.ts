@@ -1195,7 +1195,7 @@ declare var DIGlobal: any;
 declare var DIAlwaysNew: any;
 declare namespace WebAtoms {
     type AtomControlType = {
-        new (e: any): AtomControl;
+        new (e: any);
     };
     /**
      *
