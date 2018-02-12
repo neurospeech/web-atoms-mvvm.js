@@ -118,7 +118,7 @@
             var f:DIFactory = DI.factory[key] as DIFactory;
             if(!f) {
                 DI.register(key, () => instance);
-            }else {
+            } else {
                 f.push(()=> instance, true);
             }
         }
