@@ -320,7 +320,7 @@ namespace WebAtoms {
          * @type {number}
          * @memberof WindowService
          */
-        private zIndex: number = 10001;
+        private zIndex: number = 1001;
 
         /**
          * This method will open a new window identified by name of the window or class of window.

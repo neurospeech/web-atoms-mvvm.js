@@ -2446,7 +2446,7 @@ var WebAtoms;
              * @type {number}
              * @memberof WindowService
              */
-            this.zIndex = 10001;
+            this.zIndex = 1001;
             window.addEventListener("click", function (e) {
                 _this.currentTarget = e.target;
                 _this.closePopup();
