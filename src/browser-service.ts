@@ -1,3 +1,5 @@
+/// <reference path="__di.ts" />
+
 namespace WebAtoms {
 
 	export type AtomLocation = {
@@ -86,7 +88,7 @@ namespace WebAtoms {
 		 * @type {*}
 		 * @memberof BrowserService
 		 */
-		get appScope(): any{
+		get appScope(): any {
 			// tslint:disable-next-line:no-string-literal
 			return window["appScope"];
 		}

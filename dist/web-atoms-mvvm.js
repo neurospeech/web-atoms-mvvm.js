@@ -1664,6 +1664,151 @@ var WebAtoms;
     }());
     WebAtoms.AtomWatcher = AtomWatcher;
 })(WebAtoms || (WebAtoms = {}));
+/**
+ * Easy and Simple Dependency Injection
+ */
+var WebAtoms;
+(function (WebAtoms) {
+    var DIFactory = /** @class */ (function () {
+        function DIFactory(key, factory, transient) {
+            this.transient = transient;
+            this.factory = factory;
+            this.key = key;
+        }
+        DIFactory.prototype.resolve = function () {
+            if (this.transient) {
+                return this.factory();
+            }
+            return this.instance || (this.instance = this.factory());
+        };
+        DIFactory.prototype.push = function (factory, transient) {
+            this.stack = this.stack || [];
+            this.stack.push({
+                factory: this.factory,
+                instance: this.instance,
+                transient: this.transient
+            });
+            this.transient = transient;
+            this.instance = undefined;
+            this.factory = factory;
+        };
+        DIFactory.prototype.pop = function () {
+            if (!(this.stack && this.stack.length)) {
+                throw new Error("Stack in DIFactory is empty");
+            }
+            var obj = this.stack.pop();
+            this.factory = obj.factory;
+            this.transient = obj.transient;
+            this.instance = obj.instance;
+        };
+        return DIFactory;
+    }());
+    /**
+     * @export
+     * @class DI
+     */
+    var DI = /** @class */ (function () {
+        function DI() {
+        }
+        /**
+         * @static
+         * @template T
+         * @param {new () => T} key
+         * @param {() => T} factory
+         * @param {boolean} [transient=false] - If true, always new instance will be created
+         * @memberof DI
+         */
+        DI.register = function (key, factory, transient) {
+            if (transient === void 0) { transient = false; }
+            var k = key;
+            var existing = DI.factory[k];
+            if (existing) {
+                throw new Error("Factory for " + key.name + " is already registered");
+            }
+            DI.factory[k] = new DIFactory(key, factory, transient);
+        };
+        /**
+         * @static
+         * @template T
+         * @param {new () => T} c
+         * @returns {T}
+         * @memberof DI
+         */
+        DI.resolve = function (c) {
+            var f = DI.factory[c];
+            if (!f) {
+                throw new Error("No factory registered for " + c);
+            }
+            return f.resolve();
+        };
+        /**
+         * Use this for unit testing, this will push existing
+         * DI factory and all instances will be resolved with
+         * given instance
+         *
+         * @static
+         * @param {*} key
+         * @param {*} instance
+         * @memberof DI
+         */
+        DI.push = function (key, instance) {
+            var f = DI.factory[key];
+            if (!f) {
+                DI.register(key, function () { return instance; });
+            }
+            else {
+                f.push(function () { return instance; }, true);
+            }
+        };
+        /**
+         * @static
+         * @param {*} key
+         * @memberof DI
+         */
+        DI.pop = function (key) {
+            var f = DI.factory[key];
+            if (f) {
+                f.pop();
+            }
+        };
+        DI.factory = {};
+        return DI;
+    }());
+    WebAtoms.DI = DI;
+    /**
+     * This decorator will register given class as singleton instance on DI.
+     * @example
+     *      @DIGlobal
+     *      class BackendService{
+     *      }
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIGlobal(c) {
+        DI.register(c, function () { return new c(); });
+        return c;
+    }
+    WebAtoms.DIGlobal = DIGlobal;
+    /**
+     * This decorator will register given class as transient instance on DI.
+     * @example
+     *      @DIAlwaysNew
+     *      class StringHelper{
+     *      }
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIAlwaysNew(c) {
+        DI.register(c, function () { return new c(); }, true);
+        return c;
+    }
+    WebAtoms.DIAlwaysNew = DIAlwaysNew;
+})(WebAtoms || (WebAtoms = {}));
+var DIGlobal = WebAtoms.DIGlobal;
+var DIAlwaysNew = WebAtoms.DIAlwaysNew;
+/// <reference path="__di.ts" />
 var WebAtoms;
 (function (WebAtoms) {
     /**
@@ -2279,150 +2424,6 @@ var WebAtoms;
         Rest.BaseService = BaseService;
     })(Rest = WebAtoms.Rest || (WebAtoms.Rest = {}));
 })(WebAtoms || (WebAtoms = {}));
-/**
- * Easy and Simple Dependency Injection
- */
-var WebAtoms;
-(function (WebAtoms) {
-    var DIFactory = /** @class */ (function () {
-        function DIFactory(key, factory, transient) {
-            this.transient = transient;
-            this.factory = factory;
-            this.key = key;
-        }
-        DIFactory.prototype.resolve = function () {
-            if (this.transient) {
-                return this.factory();
-            }
-            return this.instance || (this.instance = this.factory());
-        };
-        DIFactory.prototype.push = function (factory, transient) {
-            this.stack = this.stack || [];
-            this.stack.push({
-                factory: this.factory,
-                instance: this.instance,
-                transient: this.transient
-            });
-            this.transient = transient;
-            this.instance = undefined;
-            this.factory = factory;
-        };
-        DIFactory.prototype.pop = function () {
-            if (!(this.stack && this.stack.length)) {
-                throw new Error("Stack in DIFactory is empty");
-            }
-            var obj = this.stack.pop();
-            this.factory = obj.factory;
-            this.transient = obj.transient;
-            this.instance = obj.instance;
-        };
-        return DIFactory;
-    }());
-    /**
-     * @export
-     * @class DI
-     */
-    var DI = /** @class */ (function () {
-        function DI() {
-        }
-        /**
-         * @static
-         * @template T
-         * @param {new () => T} key
-         * @param {() => T} factory
-         * @param {boolean} [transient=false] - If true, always new instance will be created
-         * @memberof DI
-         */
-        DI.register = function (key, factory, transient) {
-            if (transient === void 0) { transient = false; }
-            var k = key;
-            var existing = DI.factory[k];
-            if (existing) {
-                throw new Error("Factory for " + key.name + " is already registered");
-            }
-            DI.factory[k] = new DIFactory(key, factory, transient);
-        };
-        /**
-         * @static
-         * @template T
-         * @param {new () => T} c
-         * @returns {T}
-         * @memberof DI
-         */
-        DI.resolve = function (c) {
-            var f = DI.factory[c];
-            if (!f) {
-                throw new Error("No factory registered for " + c);
-            }
-            return f.resolve();
-        };
-        /**
-         * Use this for unit testing, this will push existing
-         * DI factory and all instances will be resolved with
-         * given instance
-         *
-         * @static
-         * @param {*} key
-         * @param {*} instance
-         * @memberof DI
-         */
-        DI.push = function (key, instance) {
-            var f = DI.factory[key];
-            if (!f) {
-                DI.register(key, function () { return instance; });
-            }
-            else {
-                f.push(function () { return instance; }, true);
-            }
-        };
-        /**
-         * @static
-         * @param {*} key
-         * @memberof DI
-         */
-        DI.pop = function (key) {
-            var f = DI.factory[key];
-            if (f) {
-                f.pop();
-            }
-        };
-        DI.factory = {};
-        return DI;
-    }());
-    WebAtoms.DI = DI;
-    /**
-     * This decorator will register given class as singleton instance on DI.
-     * @example
-     *      @DIGlobal
-     *      class BackendService{
-     *      }
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIGlobal(c) {
-        DI.register(c, function () { return new c(); });
-        return c;
-    }
-    WebAtoms.DIGlobal = DIGlobal;
-    /**
-     * This decorator will register given class as transient instance on DI.
-     * @example
-     *      @DIAlwaysNew
-     *      class StringHelper{
-     *      }
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIAlwaysNew(c) {
-        DI.register(c, function () { return new c(); }, true);
-        return c;
-    }
-    WebAtoms.DIAlwaysNew = DIAlwaysNew;
-})(WebAtoms || (WebAtoms = {}));
-var DIGlobal = WebAtoms.DIGlobal;
-var DIAlwaysNew = WebAtoms.DIAlwaysNew;
 /// <reference path="__di.ts" />
 var WebAtoms;
 (function (WebAtoms) {
