@@ -104,7 +104,7 @@ namespace WebAtoms {
             }
         }
 
-        createControl(c: {new(e:HTMLElement)}, vmt: {new()}): AtomControl {
+        createControl(c: {new(e:HTMLElement)}, vmt: {new(q?:any)}, q?:any): AtomControl {
             var div:HTMLElement = document.createElement("div");
             div.id = `${this._element.id}_${this.stack.length + 1}`;
 
@@ -112,15 +112,14 @@ namespace WebAtoms {
 
             div.setAttribute("atom-local-scope","true");
 
-            ctrl.init();
-
             var vm:any = null;
             if(vmt) {
-                vm = new (vmt)();
-                Atom.post(()=> {
-                    ctrl.viewModel = vm;
-                });
+                vm = new (vmt)(q);
+                ctrl.viewModel = vm;
             }
+
+            ctrl.init();
+
             return ctrl;
         }
 
@@ -149,21 +148,14 @@ namespace WebAtoms {
                 }
             }
 
-            var ctrl:AtomControl = this.createControl(scope,vm);
+            var q:any = uri.query;
+
+
+            var ctrl:AtomControl = this.createControl(scope,vm, q);
 
             Atom.post(() => {
-                var q:any = uri.query;
                 vm = ctrl.viewModel;
                 if(vm) {
-                    if(q) {
-                        for(var k in q) {
-                            if(q.hasOwnProperty(k)) {
-                                var v:any = q[k];
-                                vm[k] = v;
-                            }
-                        }
-                    }
-
                     if(vm instanceof AtomPageViewModel) {
                         var pvm:AtomPageViewModel = vm as AtomPageViewModel;
                         pvm.pageId = ctrl._element.id;

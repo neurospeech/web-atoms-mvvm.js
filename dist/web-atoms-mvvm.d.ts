@@ -391,8 +391,8 @@ declare namespace WebAtoms {
         createControl(c: {
             new (e: HTMLElement);
         }, vmt: {
-            new ();
-        }): AtomControl;
+            new (q?: any);
+        }, q?: any): AtomControl;
         load(url: string): Promise<any>;
         toUpperCase(s: string): string;
     }

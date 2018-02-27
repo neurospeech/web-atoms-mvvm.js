@@ -619,25 +619,23 @@ var WebAtoms;
                 this.disposables = [];
             }
         };
-        AtomPageView.prototype.createControl = function (c, vmt) {
+        AtomPageView.prototype.createControl = function (c, vmt, q) {
             var div = document.createElement("div");
             div.id = this._element.id + "_" + (this.stack.length + 1);
             var ctrl = AtomUI.createControl(div, c);
             div.setAttribute("atom-local-scope", "true");
-            ctrl.init();
             var vm = null;
             if (vmt) {
-                vm = new (vmt)();
-                Atom.post(function () {
-                    ctrl.viewModel = vm;
-                });
+                vm = new (vmt)(q);
+                ctrl.viewModel = vm;
             }
+            ctrl.init();
             return ctrl;
         };
         AtomPageView.prototype.load = function (url) {
             return __awaiter(this, void 0, void 0, function () {
                 var _this = this;
-                var uri, fragments, scope, vm, _i, fragments_1, f, ctrl;
+                var uri, fragments, scope, vm, _i, fragments_1, f, q, ctrl;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0: return [4 /*yield*/, this.canChange()];
@@ -661,19 +659,11 @@ var WebAtoms;
                                     throw new Error("No " + f + " in " + url + " found.");
                                 }
                             }
-                            ctrl = this.createControl(scope, vm);
+                            q = uri.query;
+                            ctrl = this.createControl(scope, vm, q);
                             Atom.post(function () {
-                                var q = uri.query;
                                 vm = ctrl.viewModel;
                                 if (vm) {
-                                    if (q) {
-                                        for (var k in q) {
-                                            if (q.hasOwnProperty(k)) {
-                                                var v = q[k];
-                                                vm[k] = v;
-                                            }
-                                        }
-                                    }
                                     if (vm instanceof WebAtoms.AtomPageViewModel) {
                                         var pvm = vm;
                                         pvm.pageId = ctrl._element.id;
