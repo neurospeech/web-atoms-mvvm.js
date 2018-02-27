@@ -140,6 +140,9 @@ namespace WebAtoms {
             var vm:any = null;
             for(var f of fragments) {
                 vm = scope[f + "ViewModel"];
+                if(!vm) {
+                    vm = scope[f + "Model"];
+                }
                 scope = scope[f];
                 if(!scope) {
                     throw new Error(`No ${f} in ${url} found.`);

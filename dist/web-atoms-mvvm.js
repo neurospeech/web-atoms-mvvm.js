@@ -653,6 +653,9 @@ var WebAtoms;
                             for (_i = 0, fragments_1 = fragments; _i < fragments_1.length; _i++) {
                                 f = fragments_1[_i];
                                 vm = scope[f + "ViewModel"];
+                                if (!vm) {
+                                    vm = scope[f + "Model"];
+                                }
                                 scope = scope[f];
                                 if (!scope) {
                                     throw new Error("No " + f + " in " + url + " found.");
