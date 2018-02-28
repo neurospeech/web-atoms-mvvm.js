@@ -891,6 +891,7 @@ declare namespace WebAtoms {
          * @memberof BrowserService
          */
         readonly appScope: any;
+        back(): void;
     }
 }
 declare class AtomUI {

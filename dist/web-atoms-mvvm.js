@@ -1895,6 +1895,9 @@ var WebAtoms;
             enumerable: true,
             configurable: true
         });
+        BrowserService.prototype.back = function () {
+            window.history.back();
+        };
         BrowserService = BrowserService_1 = __decorate([
             WebAtoms.DIGlobal
         ], BrowserService);

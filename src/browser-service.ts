@@ -92,6 +92,11 @@ namespace WebAtoms {
 			// tslint:disable-next-line:no-string-literal
 			return window["appScope"];
 		}
+
+
+		back(): void {
+			window.history.back();
+		}
 	}
 
 }
