@@ -2344,7 +2344,7 @@ var WebAtoms;
             BaseService.prototype.invoke = function (url, method, bag, values, returns) {
                 return __awaiter(this, void 0, void 0, function () {
                     var _this = this;
-                    var options, i, p, v, pr, rp;
+                    var options, i, p, v, vs, pr, rp;
                     return __generator(this, function (_a) {
                         options = new AjaxOptions();
                         options.method = method;
@@ -2355,7 +2355,9 @@ var WebAtoms;
                                 v = values[i];
                                 switch (p.type) {
                                     case "path":
-                                        url = url.replace("{" + p.key + "}", encodeURIComponent(v));
+                                        vs = v;
+                                        vs = vs.split("/").map(function (s) { return encodeURIComponent(s); }).join("/");
+                                        url = url.replace("{" + p.key + "}", vs);
                                         break;
                                     case "query":
                                         if (url.indexOf("?") === -1) {
