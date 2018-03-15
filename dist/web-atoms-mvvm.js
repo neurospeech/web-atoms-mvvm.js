@@ -796,8 +796,10 @@ var WebAtoms;
          * @memberof AtomList
          */
         AtomList.prototype.replace = function (items) {
-            this.length = 0;
-            this.concat(items);
+            this.length = items.length;
+            for (var i = 0; i < items.length; i++) {
+                this[i] = items[i];
+            }
             this.refresh();
             // tslint:disable-next-line:no-string-literal
             var t = items["total"];

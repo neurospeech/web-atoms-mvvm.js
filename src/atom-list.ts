@@ -100,8 +100,10 @@ namespace WebAtoms {
          * @memberof AtomList
          */
         replace(items:T[]):void {
-            this.length = 0;
-            this.concat(items);
+            this.length = items.length;
+            for(var i:number=0;i<items.length;i++) {
+                this[i] = items[i];
+            }
             this.refresh();
             // tslint:disable-next-line:no-string-literal
             var t:number = items["total"];
