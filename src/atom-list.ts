@@ -94,6 +94,23 @@ namespace WebAtoms {
         }
 
         /**
+         * Replaces list with given items, use this
+         * to avoid flickering in screen
+         * @param {T[]} items
+         * @memberof AtomList
+         */
+        replace(items:T[]):void {
+            this.length = 0;
+            this.concat(items);
+            this.refresh();
+            // tslint:disable-next-line:no-string-literal
+            var t:number = this["total"];
+            if(t) {
+                this.total = t;
+            }
+        }
+
+        /**
          * Inserts given number in the list at position `i`
          * and refreshes the bindings.
          * @param {number} i

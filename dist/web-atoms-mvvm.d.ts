@@ -430,6 +430,13 @@ declare namespace WebAtoms {
          */
         addAll(items: Array<T>): void;
         /**
+         * Replaces list with given items, use this
+         * to avoid flickering in screen
+         * @param {T[]} items
+         * @memberof AtomList
+         */
+        replace(items: T[]): void;
+        /**
          * Inserts given number in the list at position `i`
          * and refreshes the bindings.
          * @param {number} i

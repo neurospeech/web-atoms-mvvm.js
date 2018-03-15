@@ -790,6 +790,22 @@ var WebAtoms;
             }
         };
         /**
+         * Replaces list with given items, use this
+         * to avoid flickering in screen
+         * @param {T[]} items
+         * @memberof AtomList
+         */
+        AtomList.prototype.replace = function (items) {
+            this.length = 0;
+            this.concat(items);
+            this.refresh();
+            // tslint:disable-next-line:no-string-literal
+            var t = this["total"];
+            if (t) {
+                this.total = t;
+            }
+        };
+        /**
          * Inserts given number in the list at position `i`
          * and refreshes the bindings.
          * @param {number} i
