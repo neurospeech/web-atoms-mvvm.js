@@ -36,6 +36,9 @@ namespace WebAtoms {
             return this._start;
         }
         public set start(v:number) {
+            if(v === this._start) {
+                return ;
+            }
             this._start = v;
             Atom.refresh(this,"start");
         }
@@ -45,6 +48,9 @@ namespace WebAtoms {
             return this._total;
         }
         public set total(v:number) {
+            if(v === this._total) {
+                return ;
+            }
             this._total = v;
             Atom.refresh(this,"total");
         }
@@ -54,6 +60,9 @@ namespace WebAtoms {
             return this._size;
         }
         public set size(v:number) {
+            if(v === this._size) {
+                return ;
+            }
             this._size = v;
             Atom.refresh(this,"size");
         }
@@ -99,7 +108,7 @@ namespace WebAtoms {
          * @param {T[]} items
          * @memberof AtomList
          */
-        replace(items:T[]):void {
+        replace(items:T[], size?:number):void {
             this.length = items.length;
             for(var i:number=0;i<items.length;i++) {
                 this[i] = items[i];
@@ -109,6 +118,10 @@ namespace WebAtoms {
             var t:number = items["total"];
             if(t) {
                 this.total = t;
+            }
+            this.start = 0;
+            if(size) {
+                this.size = size;
             }
         }
 

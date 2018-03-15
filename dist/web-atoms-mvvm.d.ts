@@ -435,7 +435,7 @@ declare namespace WebAtoms {
          * @param {T[]} items
          * @memberof AtomList
          */
-        replace(items: T[]): void;
+        replace(items: T[], size?: number): void;
         /**
          * Inserts given number in the list at position `i`
          * and refreshes the bindings.

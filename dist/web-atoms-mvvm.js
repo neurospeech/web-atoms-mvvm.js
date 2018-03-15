@@ -729,6 +729,9 @@ var WebAtoms;
                 return this._start;
             },
             set: function (v) {
+                if (v === this._start) {
+                    return;
+                }
                 this._start = v;
                 Atom.refresh(this, "start");
             },
@@ -740,6 +743,9 @@ var WebAtoms;
                 return this._total;
             },
             set: function (v) {
+                if (v === this._total) {
+                    return;
+                }
                 this._total = v;
                 Atom.refresh(this, "total");
             },
@@ -751,6 +757,9 @@ var WebAtoms;
                 return this._size;
             },
             set: function (v) {
+                if (v === this._size) {
+                    return;
+                }
                 this._size = v;
                 Atom.refresh(this, "size");
             },
@@ -795,7 +804,7 @@ var WebAtoms;
          * @param {T[]} items
          * @memberof AtomList
          */
-        AtomList.prototype.replace = function (items) {
+        AtomList.prototype.replace = function (items, size) {
             this.length = items.length;
             for (var i = 0; i < items.length; i++) {
                 this[i] = items[i];
@@ -805,6 +814,10 @@ var WebAtoms;
             var t = items["total"];
             if (t) {
                 this.total = t;
+            }
+            this.start = 0;
+            if (size) {
+                this.size = size;
             }
         };
         /**
