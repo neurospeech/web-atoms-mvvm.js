@@ -784,7 +784,7 @@ var WebAtoms;
                 Atom.refresh(this, "length");
             }
             // tslint:disable-next-line:no-string-literal
-            var t = this["total"];
+            var t = items["total"];
             if (t) {
                 this.total = t;
             }
@@ -800,7 +800,7 @@ var WebAtoms;
             this.concat(items);
             this.refresh();
             // tslint:disable-next-line:no-string-literal
-            var t = this["total"];
+            var t = items["total"];
             if (t) {
                 this.total = t;
             }

@@ -87,7 +87,7 @@ namespace WebAtoms {
                 Atom.refresh(this, "length");
             }
             // tslint:disable-next-line:no-string-literal
-            var t:number = this["total"];
+            var t:number = items["total"];
             if(t) {
                 this.total = t;
             }
@@ -104,7 +104,7 @@ namespace WebAtoms {
             this.concat(items);
             this.refresh();
             // tslint:disable-next-line:no-string-literal
-            var t:number = this["total"];
+            var t:number = items["total"];
             if(t) {
                 this.total = t;
             }
