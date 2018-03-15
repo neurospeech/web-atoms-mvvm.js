@@ -49,7 +49,7 @@ namespace WebAtoms {
             Atom.refresh(this,"total");
         }
 
-        private _size:number = 0;
+        private _size:number = 10;
         public get size():number {
             return this._size;
         }

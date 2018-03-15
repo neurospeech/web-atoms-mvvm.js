@@ -711,7 +711,7 @@ var WebAtoms;
             var _this = _super.call(this) || this;
             _this._start = 0;
             _this._total = 0;
-            _this._size = 0;
+            _this._size = 10;
             // tslint:disable-next-line
             _this["__proto__"] = AtomList.prototype;
             _this.next = function () {
