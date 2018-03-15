@@ -408,6 +408,14 @@ declare namespace WebAtoms {
      */
     class AtomList<T> extends Array<T> {
         constructor();
+        next: Function;
+        prev: Function;
+        private _start;
+        start: number;
+        private _total;
+        total: number;
+        private _size;
+        size: number;
         /**
          * Adds the item in the list and refresh bindings
          * @param {T} item

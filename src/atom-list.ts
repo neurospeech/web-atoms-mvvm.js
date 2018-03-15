@@ -17,7 +17,48 @@ namespace WebAtoms {
             // tslint:disable-next-line
             this["__proto__"] = AtomList.prototype;
 
+            this.next = () => {
+                this.start = this.start + this.size;
+            };
+
+            this.prev = () => {
+                if(this.start >= this.size) {
+                    this.start = this.start - this.size;
+                }
+            };
         }
+
+        public next: Function;
+        public prev: Function;
+
+        private _start:number = 0;
+        public get start():number {
+            return this._start;
+        }
+        public set start(v:number) {
+            this._start = v;
+            Atom.refresh(this,"start");
+        }
+
+        private _total:number = 0;
+        public get total():number {
+            return this._total;
+        }
+        public set total(v:number) {
+            this._total = v;
+            Atom.refresh(this,"total");
+        }
+
+        private _size:number = 0;
+        public get size():number {
+            return this._size;
+        }
+        public set size(v:number) {
+            this._size = v;
+            Atom.refresh(this,"size");
+        }
+
+
 
         /**
          * Adds the item in the list and refresh bindings
@@ -44,6 +85,11 @@ namespace WebAtoms {
                 this.push(item);
                 AtomBinder.invokeItemsEvent(this, "add", i, item);
                 Atom.refresh(this, "length");
+            }
+            // tslint:disable-next-line:no-string-literal
+            var t:number = this["total"];
+            if(t) {
+                this.total = t;
             }
         }
 

@@ -709,10 +709,54 @@ var WebAtoms;
         __extends(AtomList, _super);
         function AtomList() {
             var _this = _super.call(this) || this;
+            _this._start = 0;
+            _this._total = 0;
+            _this._size = 0;
             // tslint:disable-next-line
             _this["__proto__"] = AtomList.prototype;
+            _this.next = function () {
+                _this.start = _this.start + _this.size;
+            };
+            _this.prev = function () {
+                if (_this.start >= _this.size) {
+                    _this.start = _this.start - _this.size;
+                }
+            };
             return _this;
         }
+        Object.defineProperty(AtomList.prototype, "start", {
+            get: function () {
+                return this._start;
+            },
+            set: function (v) {
+                this._start = v;
+                Atom.refresh(this, "start");
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AtomList.prototype, "total", {
+            get: function () {
+                return this._total;
+            },
+            set: function (v) {
+                this._total = v;
+                Atom.refresh(this, "total");
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AtomList.prototype, "size", {
+            get: function () {
+                return this._size;
+            },
+            set: function (v) {
+                this._size = v;
+                Atom.refresh(this, "size");
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Adds the item in the list and refresh bindings
          * @param {T} item
@@ -738,6 +782,11 @@ var WebAtoms;
                 this.push(item);
                 AtomBinder.invokeItemsEvent(this, "add", i, item);
                 Atom.refresh(this, "length");
+            }
+            // tslint:disable-next-line:no-string-literal
+            var t = this["total"];
+            if (t) {
+                this.total = t;
             }
         };
         /**
