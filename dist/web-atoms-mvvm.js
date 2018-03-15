@@ -815,7 +815,6 @@ var WebAtoms;
             if (t) {
                 this.total = t;
             }
-            this.start = 0;
             if (size) {
                 this.size = size;
             }
