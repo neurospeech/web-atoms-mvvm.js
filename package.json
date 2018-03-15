@@ -1,6 +1,6 @@
 {
   "name": "web-atoms-mvvm",
-  "version": "1.4.82",
+  "version": "1.4.83",
   "description": "MVVM, REST Json Service, Message Subscriptions for Web Atoms",
   "main": "web-atoms-mvvm.js",
   "directories": {
