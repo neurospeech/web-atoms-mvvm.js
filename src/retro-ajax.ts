@@ -455,7 +455,8 @@ namespace WebAtoms.Rest {
                     switch(p.type) {
                         case "path":
                             var vs:string = v + "";
-                            vs = vs.split("/").map(s => encodeURIComponent(s)).join("/");
+                            // escaping should be responsibility of the caller
+                            // vs = vs.split("/").map(s => encodeURIComponent(s)).join("/");
                             url = url.replace(`{${p.key}}`,vs);
                         break;
                         case "query":
