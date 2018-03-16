@@ -454,7 +454,7 @@ namespace WebAtoms.Rest {
                     var v:any = values[i];
                     switch(p.type) {
                         case "path":
-                            var vs:string = v;
+                            var vs:string = v + "";
                             vs = vs.split("/").map(s => encodeURIComponent(s)).join("/");
                             url = url.replace(`{${p.key}}`,vs);
                         break;

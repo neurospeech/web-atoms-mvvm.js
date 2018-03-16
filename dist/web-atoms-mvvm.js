@@ -2434,7 +2434,7 @@ var WebAtoms;
                                 v = values[i];
                                 switch (p.type) {
                                     case "path":
-                                        vs = v;
+                                        vs = v + "";
                                         vs = vs.split("/").map(function (s) { return encodeURIComponent(s); }).join("/");
                                         url = url.replace("{" + p.key + "}", vs);
                                         break;
