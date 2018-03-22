@@ -2051,6 +2051,18 @@ var WebAtoms;
         return Core;
     }());
     WebAtoms.Core = Core;
+    var oldParse = AtomDate.parse;
+    AtomDate.parse = function (s) {
+        if (!s) {
+            return s;
+        }
+        if (typeof s === "string" || s.constructor === String) {
+            if (/^\d{4}-([0]\d|1[0-2])-([0-2]\d|3[01])/.test(s)) {
+                return new Date(Date.parse(s));
+            }
+        }
+        return oldParse(s);
+    };
 })(WebAtoms || (WebAtoms = {}));
 // tslint:disable-next-line
 function methodBuilder(method) {

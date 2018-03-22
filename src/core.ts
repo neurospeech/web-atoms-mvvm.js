@@ -153,4 +153,19 @@ namespace WebAtoms {
 		height: number;
 	};
 
+	var oldParse:(s:any) => Date = AtomDate.parse;
+	AtomDate.parse = (s:any):Date => {
+
+		if(!s) {
+			return s;
+		}
+		if(typeof s === "string" || s.constructor === String) {
+			if(/^\d{4}-([0]\d|1[0-2])-([0-2]\d|3[01])/.test(s)) {
+				return new Date(Date.parse(s));
+			}
+		}
+
+		return oldParse(s);
+	};
+
 }
