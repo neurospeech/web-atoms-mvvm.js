@@ -804,7 +804,7 @@ var WebAtoms;
          * @param {T[]} items
          * @memberof AtomList
          */
-        AtomList.prototype.replace = function (items, size) {
+        AtomList.prototype.replace = function (items, start, size) {
             this.length = items.length;
             for (var i = 0; i < items.length; i++) {
                 this[i] = items[i];
@@ -815,7 +815,10 @@ var WebAtoms;
             if (t) {
                 this.total = t;
             }
-            if (size) {
+            if (start !== undefined) {
+                this.start = start;
+            }
+            if (size !== undefined) {
                 this.size = size;
             }
         };

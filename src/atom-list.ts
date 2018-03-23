@@ -108,7 +108,7 @@ namespace WebAtoms {
          * @param {T[]} items
          * @memberof AtomList
          */
-        replace(items:T[], size?:number):void {
+        replace(items:T[], start?:number, size?:number):void {
             this.length = items.length;
             for(var i:number=0;i<items.length;i++) {
                 this[i] = items[i];
@@ -119,7 +119,10 @@ namespace WebAtoms {
             if(t) {
                 this.total = t;
             }
-            if(size) {
+            if(start !== undefined) {
+                this.start = start;
+            }
+            if(size !== undefined) {
                 this.size = size;
             }
         }
