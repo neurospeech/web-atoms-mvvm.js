@@ -2455,7 +2455,8 @@ var WebAtoms;
             BaseService.prototype.encodeData = function (o) {
                 o.inputProcessed = true;
                 o.dataType = "json";
-                o.data = BaseService.cloneObject(o.data);
+                o.data = JSON.stringify(BaseService.cloneObject(o.data));
+                o.contentType = "application/json";
                 return o;
             };
             BaseService.prototype.sendResult = function (result, error) {

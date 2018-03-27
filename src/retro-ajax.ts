@@ -465,7 +465,8 @@ namespace WebAtoms.Rest {
         public encodeData(o:AjaxOptions):AjaxOptions {
             o.inputProcessed = true;
             o.dataType = "json";
-            o.data = BaseService.cloneObject(o.data);
+            o.data = JSON.stringify(BaseService.cloneObject(o.data));
+            o.contentType = "application/json";
             return o;
         }
 
