@@ -909,6 +909,8 @@ declare namespace WebAtoms {
         back(): void;
     }
 }
+declare var $: any;
+declare var atomApplication: any;
 declare class AtomUI {
     static createControl(e: HTMLElement, ctrl: (string | {
         new (e: any);
@@ -927,7 +929,7 @@ declare class AtomBinder {
 declare class AtomPromise {
     static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;
     abort(): void;
-    then(f: Function): AtomPromise;
+    then(f: (p: AtomPromise) => void): AtomPromise;
     failed(f: Function): AtomPromise;
     showError(v: boolean): void;
     showProgress(v: boolean): void;
@@ -936,6 +938,11 @@ declare class AtomPromise {
     error: {
         msg?: string;
     };
+    success: any;
+    onInvoke(f: Function): void;
+    errors: any[];
+    handle: Function;
+    static parseDates(v: any): any;
 }
 declare namespace WebAtoms {
     class AtomControl {
@@ -1172,6 +1179,12 @@ declare namespace WebAtoms.Rest {
         cancel: CancelToken;
         headers: any;
         inputProcessed: boolean;
+        success: Function;
+        error: any;
+        cache: any;
+        attachments: any[];
+        xhr: any;
+        processData: boolean;
     }
     /**
      *
@@ -1202,11 +1215,13 @@ declare namespace WebAtoms.Rest {
         showError: boolean;
         methods: any;
         methodReturns: any;
+        static cloneObject(dupeObj: any): any;
         encodeData(o: AjaxOptions): AjaxOptions;
         sendResult(result: any, error?: any): Promise<any>;
         invoke(url: string, method: string, bag: Array<ServiceParameter>, values: Array<any>, returns: {
             new ();
         }): Promise<any>;
+        ajax(url: string, options: AjaxOptions): AtomPromise;
     }
 }
 declare namespace WebAtoms {

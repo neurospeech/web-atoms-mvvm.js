@@ -2413,9 +2413,49 @@ var WebAtoms;
                 this.methods = {};
                 this.methodReturns = {};
             }
+            BaseService.cloneObject = function (dupeObj) {
+                if (typeof (dupeObj) === "object") {
+                    if (typeof (dupeObj.length) !== "undefined") {
+                        retObj = new Array();
+                        for (var _i = 0, dupeObj_1 = dupeObj; _i < dupeObj_1.length; _i++) {
+                            var iterator = dupeObj_1[_i];
+                            retObj.push(BaseService.cloneObject(iterator));
+                        }
+                        return retObj;
+                    }
+                    var retObj = {};
+                    for (var objInd in dupeObj) {
+                        if (!objInd || /^\_\$\_/gi.test(objInd)) {
+                            continue;
+                        }
+                        var val = dupeObj[objInd];
+                        if (val === undefined || val === null) {
+                            continue;
+                        }
+                        var type = typeof (val);
+                        if (type === "object") {
+                            if (val.constructor === Date) {
+                                retObj[objInd] = val.toJSON();
+                            }
+                            else {
+                                retObj[objInd] = BaseService.cloneObject(val);
+                            }
+                        }
+                        else if (type === "date") {
+                            retObj[objInd] = val.toJSON();
+                        }
+                        else {
+                            retObj[objInd] = val;
+                        }
+                    }
+                    return retObj;
+                }
+                return dupeObj;
+            };
             BaseService.prototype.encodeData = function (o) {
                 o.inputProcessed = true;
                 o.dataType = "json";
+                o.data = BaseService.cloneObject(o.data);
                 return o;
             };
             BaseService.prototype.sendResult = function (result, error) {
@@ -2479,7 +2519,7 @@ var WebAtoms;
                             }
                         }
                         options.url = url;
-                        pr = AtomPromise.json(url, null, options);
+                        pr = this.ajax(url, options);
                         if (options.cancel) {
                             options.cancel.registerForCancel(function () {
                                 pr.abort();
@@ -2511,6 +2551,80 @@ var WebAtoms;
                             })];
                     });
                 });
+            };
+            BaseService.prototype.ajax = function (url, options) {
+                var p = new AtomPromise();
+                options.success = p.success;
+                options.error = p.error;
+                // caching is disabled by default...
+                if (options.cache === undefined) {
+                    options.cache = false;
+                }
+                var u = url;
+                var o = options;
+                var attachments = o.attachments;
+                if (attachments && attachments.length) {
+                    var fd = new FormData();
+                    var index = 0;
+                    for (var _i = 0, attachments_1 = attachments; _i < attachments_1.length; _i++) {
+                        var file = attachments_1[_i];
+                        fd.append("file" + index, file);
+                    }
+                    if (o.data) {
+                        for (var k in o.data) {
+                            if (k) {
+                                fd.append(k, o.data[k]);
+                            }
+                        }
+                    }
+                    o.type = "POST";
+                    o.xhr = function () {
+                        var myXhr = $.ajaxSettings.xhr();
+                        if (myXhr.upload) {
+                            myXhr.upload.addEventListener("progress", function (e) {
+                                if (e.lengthComputable) {
+                                    var percentComplete = Math.round(e.loaded * 100 / e.total);
+                                    AtomBinder.setValue(atomApplication, "progress", percentComplete);
+                                }
+                            }, false);
+                        }
+                        return myXhr;
+                    };
+                    o.cache = false;
+                    o.contentType = null;
+                    o.processData = false;
+                }
+                if (url) {
+                    p.onInvoke(function () {
+                        p.handle = $.ajax(u, o);
+                    });
+                }
+                p.failed(function () {
+                    var res = p.errors[0].responseText;
+                    if (!res) {
+                        if (!res || p.errors[2] !== "Internal Server Error") {
+                            var m = p.errors[2];
+                            if (m) {
+                                res = m;
+                            }
+                        }
+                    }
+                    p.error = {
+                        msg: res
+                    };
+                });
+                p.then(function (p) {
+                    var v = p.value();
+                    v = AtomPromise.parseDates(v);
+                    if (v && v.items && v.merge) {
+                        v.items.total = v.total;
+                        v = v.items;
+                        p.value(v);
+                    }
+                });
+                p.showError(true);
+                p.showProgress(true);
+                return p;
             };
             return BaseService;
         }());

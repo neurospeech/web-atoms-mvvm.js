@@ -346,6 +346,12 @@ namespace WebAtoms.Rest {
         public cancel: CancelToken;
         public headers: any;
         public inputProcessed: boolean;
+        success: Function;
+        error: any;
+        cache: any;
+        attachments:any[];
+        xhr:any;
+        processData: boolean;
     }
 
     /**
@@ -398,6 +404,7 @@ namespace WebAtoms.Rest {
         return o;
     };
 
+
     /**
      *
      *
@@ -419,9 +426,46 @@ namespace WebAtoms.Rest {
 
         public methodReturns: any = {};
 
+        public static cloneObject(dupeObj:any):any {
+            if (typeof (dupeObj) === "object") {
+                if (typeof (dupeObj.length) !== "undefined") {
+                    retObj = new Array();
+                    for (const iterator of dupeObj) {
+                        (retObj as any[]).push( BaseService.cloneObject(iterator) );
+                    }
+                    return retObj;
+                }
+                var retObj:any = {};
+                for (var objInd in dupeObj) {
+                    if (!objInd || /^\_\$\_/gi.test(objInd)) {
+                        continue;
+                    }
+                    var val:any = dupeObj[objInd];
+                    if (val === undefined || val === null) {
+                        continue;
+                    }
+                    var type:string = typeof (val);
+                    if (type === "object") {
+                        if (val.constructor === Date) {
+                            retObj[objInd] = (val as Date).toJSON();
+                        } else {
+                            retObj[objInd] = BaseService.cloneObject(val);
+                        }
+                    } else if (type === "date") {
+                        retObj[objInd] = (val as Date).toJSON();
+                    } else {
+                        retObj[objInd] = val;
+                    }
+                }
+                return retObj;
+            }
+            return dupeObj;
+        }
+
         public encodeData(o:AjaxOptions):AjaxOptions {
             o.inputProcessed = true;
             o.dataType = "json";
+            o.data = BaseService.cloneObject(o.data);
             return o;
         }
 
@@ -485,7 +529,7 @@ namespace WebAtoms.Rest {
             }
             options.url = url;
 
-            var pr:AtomPromise = AtomPromise.json(url,null,options);
+            var pr:AtomPromise = this.ajax(url,options);
 
 
             if(options.cancel) {
@@ -525,6 +569,92 @@ namespace WebAtoms.Rest {
             return new CancellablePromise(rp, ()=> {
                 pr.abort();
             });
+        }
+
+        ajax(url:string, options:AjaxOptions):AtomPromise {
+            var p:AtomPromise = new AtomPromise();
+
+            options.success = p.success;
+            options.error = p.error;
+
+            // caching is disabled by default...
+            if (options.cache === undefined) {
+                options.cache = false;
+            }
+
+            var u:string = url;
+
+            var o:AjaxOptions = options;
+
+            var attachments:any[] = o.attachments;
+            if (attachments && attachments.length) {
+                var fd:FormData = new FormData();
+                var index:number = 0;
+                for (const file of attachments) {
+                    fd.append(`file${index}`, file);
+                }
+                if (o.data) {
+                    for (var k in o.data) {
+                        if(k) {
+                            fd.append(k, o.data[k]);
+                        }
+                    }
+                }
+                o.type = "POST";
+                o.xhr = () => {
+                    var myXhr:any = $.ajaxSettings.xhr();
+                    if (myXhr.upload) {
+                        myXhr.upload.addEventListener("progress", e => {
+                            if (e.lengthComputable) {
+                                var percentComplete:any = Math.round(e.loaded * 100 / e.total);
+                                AtomBinder.setValue(atomApplication, "progress", percentComplete);
+                            }
+                        }, false);
+                    }
+                    return myXhr;
+                };
+                o.cache = false;
+                o.contentType = null;
+                o.processData = false;
+            }
+
+            if (url) {
+                p.onInvoke( () => {
+                    p.handle = $.ajax(u, o);
+                });
+            }
+
+            p.failed(() => {
+
+                var res:string = p.errors[0].responseText;
+                if (!res) {
+                    if (!res || p.errors[2] !== "Internal Server Error") {
+                        var m:string = p.errors[2];
+                        if (m) {
+                            res = m;
+                        }
+                    }
+                }
+
+                p.error = {
+                    msg: res
+                };
+            });
+
+            p.then(p => {
+                var v:any = p.value();
+                v = AtomPromise.parseDates(v);
+                if (v && v.items && v.merge) {
+                    v.items.total = v.total;
+                    v = v.items;
+                    p.value(v);
+                }
+            });
+
+            p.showError(true);
+            p.showProgress(true);
+
+            return p;
         }
 
     }

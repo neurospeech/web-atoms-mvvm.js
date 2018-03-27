@@ -1,3 +1,6 @@
+declare var $:any;
+declare var atomApplication:any;
+
 declare class AtomUI {
 	static createControl(e:HTMLElement, ctrl: (string | {new (e:any)})): WebAtoms.AtomControl;
 }
@@ -23,7 +26,7 @@ declare class AtomPromise {
 	static json(url: string, query: any, options: WebAtoms.Rest.AjaxOptions): AtomPromise;
 
 	abort(): void;
-	then(f:Function): AtomPromise;
+	then(f: (p:AtomPromise) => void): AtomPromise;
 	failed(f:Function): AtomPromise;
 	showError(v:boolean): void;
 	showProgress(v:boolean): void;
@@ -31,6 +34,14 @@ declare class AtomPromise {
 	value(v?:any):any;
 
 	error: { msg?:string };
+
+	success:any;
+	onInvoke(f:Function):void;
+	errors:any[];
+
+	handle: Function;
+
+	static parseDates(v:any): any;
 }
 
 
