@@ -5,6 +5,8 @@
 
  namespace WebAtoms {
 
+    export declare type AtomControlType = {new (e:any)};
+
     class DIFactory {
 
         factory: () => any;

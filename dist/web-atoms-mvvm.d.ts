@@ -1,4 +1,80 @@
 /**
+ * Easy and Simple Dependency Injection
+ */
+declare namespace WebAtoms {
+    type AtomControlType = {
+        new (e: any);
+    };
+    /**
+     * @export
+     * @class DI
+     */
+    class DI {
+        private static factory;
+        /**
+         * @static
+         * @template T
+         * @param {new () => T} key
+         * @param {() => T} factory
+         * @param {boolean} [transient=false] - If true, always new instance will be created
+         * @memberof DI
+         */
+        static register<T>(key: new () => T, factory: () => T, transient?: boolean): void;
+        /**
+         * @static
+         * @template T
+         * @param {new () => T} c
+         * @returns {T}
+         * @memberof DI
+         */
+        static resolve<T>(c: new () => T): T;
+        /**
+         * Use this for unit testing, this will push existing
+         * DI factory and all instances will be resolved with
+         * given instance
+         *
+         * @static
+         * @param {*} key
+         * @param {*} instance
+         * @memberof DI
+         */
+        static push(key: any, instance: any): void;
+        /**
+         * @static
+         * @param {*} key
+         * @memberof DI
+         */
+        static pop(key: any): void;
+    }
+    /**
+     * This decorator will register given class as singleton instance on DI.
+     * @example
+     *      @DIGlobal
+     *      class BackendService{
+     *      }
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIGlobal(c: any): any;
+    /**
+     * This decorator will register given class as transient instance on DI.
+     * @example
+     *      @DIAlwaysNew
+     *      class StringHelper{
+     *      }
+     * @export
+     * @param {new () => any} c
+     * @returns
+     */
+    function DIAlwaysNew(c: any): any;
+}
+declare var DIGlobal: any;
+declare var DIAlwaysNew: any;
+declare function mapLibrary(...a: any[]): any;
+declare function createProperty(...a: any[]): any;
+declare function classCreator__(name: any, basePrototype: any, classConstructor: any, classPrototype: any, classProperties: any, thisPrototype: any, thisProperties: any): any;
+/**
  * Atom helper class
  * @class Atom
  */
@@ -158,6 +234,16 @@ declare class Atom {
      * @memberof Atom
      */
     static bindable<T>(e: T): T;
+    /**
+     * Creates an element enclosing given control name or class
+     *
+     * @static
+     * @param {((string | WebAtoms.AtomControlType))} name
+     * @param {string} tagName
+     * @returns {HTMLElement}
+     * @memberof Atom
+     */
+    static controlToElement(name: (string | WebAtoms.AtomControlType), tagName?: string): HTMLElement;
 }
 declare class AtomDate {
     static zoneOffsetMinutes: number;
@@ -776,76 +862,6 @@ declare namespace WebAtoms {
         dispose(): void;
     }
 }
-/**
- * Easy and Simple Dependency Injection
- */
-declare namespace WebAtoms {
-    /**
-     * @export
-     * @class DI
-     */
-    class DI {
-        private static factory;
-        /**
-         * @static
-         * @template T
-         * @param {new () => T} key
-         * @param {() => T} factory
-         * @param {boolean} [transient=false] - If true, always new instance will be created
-         * @memberof DI
-         */
-        static register<T>(key: new () => T, factory: () => T, transient?: boolean): void;
-        /**
-         * @static
-         * @template T
-         * @param {new () => T} c
-         * @returns {T}
-         * @memberof DI
-         */
-        static resolve<T>(c: new () => T): T;
-        /**
-         * Use this for unit testing, this will push existing
-         * DI factory and all instances will be resolved with
-         * given instance
-         *
-         * @static
-         * @param {*} key
-         * @param {*} instance
-         * @memberof DI
-         */
-        static push(key: any, instance: any): void;
-        /**
-         * @static
-         * @param {*} key
-         * @memberof DI
-         */
-        static pop(key: any): void;
-    }
-    /**
-     * This decorator will register given class as singleton instance on DI.
-     * @example
-     *      @DIGlobal
-     *      class BackendService{
-     *      }
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIGlobal(c: any): any;
-    /**
-     * This decorator will register given class as transient instance on DI.
-     * @example
-     *      @DIAlwaysNew
-     *      class StringHelper{
-     *      }
-     * @export
-     * @param {new () => any} c
-     * @returns
-     */
-    function DIAlwaysNew(c: any): any;
-}
-declare var DIGlobal: any;
-declare var DIAlwaysNew: any;
 declare namespace WebAtoms {
     type AtomLocation = {
         href?: string;
@@ -1225,9 +1241,6 @@ declare namespace WebAtoms.Rest {
     }
 }
 declare namespace WebAtoms {
-    type AtomControlType = {
-        new (e: any);
-    };
     /**
      *
      *
@@ -1364,6 +1377,3 @@ declare namespace WebAtoms {
     }
 }
 declare var WindowService: typeof WebAtoms.WindowService;
-declare function mapLibrary(...a: any[]): any;
-declare function createProperty(...a: any[]): any;
-declare function classCreator__(name: any, basePrototype: any, classConstructor: any, classPrototype: any, classProperties: any, thisPrototype: any, thisProperties: any): any;
