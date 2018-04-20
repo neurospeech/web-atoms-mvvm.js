@@ -1,3 +1,4 @@
+/// <reference path="__di.ts" />
 
 /**
  * Atom helper class
@@ -177,6 +178,18 @@ declare class Atom {
      */
     static bindable<T>(e:T):T;
 
+
+    /**
+     * Creates an element enclosing given control name or class
+     *
+     * @static
+     * @param {((string | WebAtoms.AtomControlType))} name
+     * @param {string} tagName
+     * @returns {HTMLElement}
+     * @memberof Atom
+     */
+    static controlToElement(name:(string | WebAtoms.AtomControlType),tagName?:string):HTMLElement;
+
 }
 
 declare class AtomDate {
@@ -354,6 +367,22 @@ Atom.bindable = (e:any):any => {
     }
 
     return e;
+};
+
+Atom.controlToElement = (type:(string | WebAtoms.AtomControlType),tagName:string = "div"): HTMLElement => {
+    if(!type) {
+        return undefined;
+    }
+    var name:string = "";
+    if(!(typeof type === "string")) {
+        // tslint:disable-next-line:no-string-literal
+        name = type["__typeName"];
+    } else {
+        name = type;
+    }
+    var div:HTMLElement = document.createElement("div");
+    div.setAttribute("atom-type", name);
+    return div;
 };
 
 namespace WebAtoms {

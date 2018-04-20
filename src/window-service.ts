@@ -2,7 +2,7 @@
 
 namespace WebAtoms {
 
-    export declare type AtomControlType = {new (e:any)};
+
 
     /**
      *
