@@ -214,3 +214,13 @@ namespace WebAtoms {
     Array.prototype["removeAt"] = AtomList.prototype.removeAt;
     Array.prototype["watch"] = AtomList.prototype.watch;
 }
+
+interface Array<T> {
+    add?(item:T):number;
+    addAll?(item:T[]):void;
+    clear?():void;
+    refresh?():void;
+    remove?(item: T | ((i:T) => boolean)):boolean;
+    removeAt?(i: number):void;
+    watch?(f:()=>void): WebAtoms.AtomDisposable;
+}

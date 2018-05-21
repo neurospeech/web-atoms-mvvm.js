@@ -553,6 +553,15 @@ declare namespace WebAtoms {
         watch(f: () => void): AtomDisposable;
     }
 }
+interface Array<T> {
+    add?(item: T): number;
+    addAll?(item: T[]): void;
+    clear?(): void;
+    refresh?(): void;
+    remove?(item: T | ((i: T) => boolean)): boolean;
+    removeAt?(i: number): void;
+    watch?(f: () => void): WebAtoms.AtomDisposable;
+}
 declare namespace WebAtoms {
     /**
      *
