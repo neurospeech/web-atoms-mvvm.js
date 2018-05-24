@@ -216,7 +216,7 @@ declare class Atom {
      * @returns {string}
      * @memberof Atom
      */
-    static url(url: string, queryString: any, hash: any): string;
+    static url(url: string, queryString: any, hash?: any): string;
     /**
      * Creates secure version of the given url with fragments
      * @static
