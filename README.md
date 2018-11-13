@@ -1,3 +1,9 @@
+# Repository Archived: The project has been replaced with following repository.
+
+<a 
+   target="_blank"
+   href="https://github.com/neurospeech/web-atoms-core">Web Atoms Core</a>
+
 # Web Atoms MVVM
 
 Web Atoms MVVM Pattern Library
